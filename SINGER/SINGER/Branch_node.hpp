@@ -23,8 +23,6 @@ public:
     Branch_node(Branch b, int x);
     
     void add_prev_node(Branch_node *bn);
-    
-    void mutation_update(float x, Node *n);
 };
 
 bool operator<(const Branch_node& b, const Branch_node& c);
