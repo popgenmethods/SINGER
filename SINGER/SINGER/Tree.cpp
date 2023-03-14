@@ -167,4 +167,5 @@ float Tree::log_exp(float lambda, float x) {
 float Tree::random() {
     float p = (float) rand()/RAND_MAX;
     p = min(p, 0.999f);
+    return p;
 }
