@@ -1,12 +1,12 @@
 //
-//  RSP.hpp
+//  RSP_smc.hpp
 //  SINGER
 //
-//  Created by Yun Deng on 10/13/22.
+//  Created by Yun Deng on 3/13/23.
 //
 
-#ifndef RSP_hpp
-#define RSP_hpp
+#ifndef RSP_smc_hpp
+#define RSP_smc_hpp
 
 #include <stdio.h>
 #include <math.h>
@@ -15,11 +15,13 @@
 #include "Tree.hpp"
 #include "Recombination.hpp"
 
-class RSP {
+class RSP_smc {
     
 public:
     
-    virtual void exact_sample_recombination(Recombination &r, float cut_time, Tree tree) = 0;
+    RSP_smc();
+    
+    void exact_sample_recombination(Recombination &r, float cut_time, Tree tree);
     
 private:
     
@@ -39,4 +41,4 @@ private:
     
 };
 
-#endif /* RSP_hpp */
+#endif /* RSP_smc_hpp */

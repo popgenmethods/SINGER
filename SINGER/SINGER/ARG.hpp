@@ -13,8 +13,9 @@
 #include "Recombination.hpp"
 #include "Tree.hpp"
 #include "RSP.hpp"
-#include "Fitch_reconstruction.hpp"
+#include "RSP_smc.hpp"
 #include "Reconstruction.hpp"
+#include "Fitch_reconstruction.hpp"
 
 class ARG {
     

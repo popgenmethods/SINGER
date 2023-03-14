@@ -1,6 +1,6 @@
 //
 //  ARG.cpp
-//  conditional-coalescent
+//  SINGER
 //
 //  Created by Yun Deng on 4/14/22.
 //
@@ -225,7 +225,7 @@ void ARG::add(map<int, pair<Branch, Node*>> joining_points) {
 }
 
 void ARG::sample_recombinations() {
-    RSP rsp = RSP();
+    RSP_smc rsp = RSP_smc();
     Tree tree = Tree();
     for (auto &x : recombination_info) {
         if (x.second.deleted_branches.size() != 0 and x.second.pos < bin_num) {
@@ -842,67 +842,15 @@ tuple<int, Branch, float> ARG::sample_internal_cut() {
             return {i, branch, time};
         }
     }
-    // time = branch.lower_node->time + 1e-6;
     cerr << "sample internal cut failed" << endl;
     exit(1);
-    //return {0, Branch(), 0};
 }
-
-/*
-tuple<int, Branch, float> ARG::sample_internal_cut() {
-    float p = random();
-    int pos = floor(bin_num*p);
-    Branch branch;
-    float time;
-    Tree tree = get_tree_at(pos);
-    float q = random();
-    q *= (tree.branches.size() - 1);
-    for (Branch b : tree.branches) {
-        if (b.upper_node->time < numeric_limits<float>::infinity()) {
-            q -= 1;
-        }
-        if (q < 0) {
-            branch = b;
-            break;
-        }
-    }
-    // time = branch.lower_node->time + 1e-6;
-    tie(branch, time) = tree.sample_cut_point();
-    // time = branch.lower_node->time + 1e-6;
-    return {pos, branch, time};
-}
- */
-
-/*
-tuple<int, Branch, float> ARG::sample_internal_cut() {
-    int pos = 0;
-    Branch branch;
-    float time;
-    float q = random()*(recombination_info.size() - 2);
-    for (auto x : recombination_info) {
-        Recombination r = x.second;
-        if (r.pos != 0) {
-            q -= 1;
-        }
-        if (q < 0) {
-            branch = r.recombined_branch;
-            pos = r.pos;
-            break;
-        }
-    }
-    assert(pos < bin_num and pos > 0);
-    Tree tree = get_tree_at(pos);
-    time = branch.lower_node->time + 1e-6;
-    return {pos, branch, time};
-}
- */
 
 tuple<int, Branch, float> ARG::sample_terminal_cut() {
     Branch branch;
     float time = 1e-10;
     vector<Node *> nodes = vector<Node *>(sample_nodes.begin(), sample_nodes.end());
     int index = rand() % nodes.size();
-    // index = 0;
     Node *terminal_node = nodes[index];
     Tree start_tree = get_tree_at(0);
     for (Branch b : start_tree.branches) {
