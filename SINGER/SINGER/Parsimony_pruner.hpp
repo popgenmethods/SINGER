@@ -10,27 +10,26 @@
 
 #include <stdio.h>
 #include "ARG.hpp"
-#include "Branch_node.hpp"
+#include "Pruner.hpp"
 
-class Parsimony_pruner {
+class Parsimony_pruner : public Pruner {
     
-    int max_mismatch = 0;
-    map<int, set<Branch_node*, compare_branch_node>> prune_graph = {};
-    set<Branch_node *, compare_branch_node> curr_nodes = {};
+    int max_mismatch = 1;
+    int curr_pos = 0;
+    map<Branch, float> curr_mismatch = {};
+    map<int, set<Branch>> reduced_set = {};
 
     Parsimony_pruner();
-
-    void prune(ARG a, map<int, Node *> lower_nodes);
-
-    void mutation_update(float x, Node *n);
+    
+    void start_search(Node *n, set<float> mutations, set<Branch> branches);
 
     void mutation_update(set<float> mutations, Node *n);
 
     void recombination_update(Recombination &r);
 
     // private:
-
-    void update_helper(Branch_node *bn, Branch b, int x);
+    
+    float count_mismatch(Branch branch, set<float> mutations, Node *n);
     
 };
 

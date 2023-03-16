@@ -1,17 +1,17 @@
 //
-//  Thread.hpp
+//  Threader.hpp
 //  SINGER
 //
 //  Created by Yun Deng on 1/2/23.
 //
 
-#ifndef Thread_hpp
-#define Thread_hpp
+#ifndef Threader_hpp
+#define Threader_hpp
 
 #include <stdio.h>
 #include "ARG.hpp"
 
-class Thread {
+class Threader {
     
 public:
     
@@ -23,4 +23,4 @@ public:
     
 };
 
-#endif /* Thread_hpp */
+#endif /* Threader_hpp */

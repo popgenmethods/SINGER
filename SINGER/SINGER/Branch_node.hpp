@@ -18,7 +18,7 @@ public:
     Branch branch = Branch();
     set<Branch_node *> prev_nodes = {};
     int start_pos = 0;
-    int curr_mismatch = 0;
+    float curr_mismatch = 0;
     
     Branch_node(Branch b, int x);
     

@@ -16,7 +16,7 @@ class Pruner {
     
 public:
     
-    virtual void prune_arg(ARG a) = 0;
+    virtual map<int, set<Branch>> prune_arg(ARG a, map<int, Node *> lower_nodes) = 0;
     
 };
 
