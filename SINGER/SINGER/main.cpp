@@ -6,9 +6,11 @@
 //
 
 #include <iostream>
+#include "Test.hpp"
 
 int main(int argc, const char * argv[]) {
     // insert code here...
+    test_read_arg();
     std::cout << "Hello, World!\n";
     return 0;
 }

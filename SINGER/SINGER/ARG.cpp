@@ -11,22 +11,29 @@ ARG::ARG(float N, float l) {
     root->set_index(-1);
     Ne = N;
     sequence_length = l;
+    Recombination r = Recombination({}, {});
+    r.set_pos(0.0);
+    recombinations[0] = r;
+    recombinations[INT_MAX] = r;
+    mutation_sites.insert(INT_MAX);
 }
 
 ARG::~ARG() {
 }
 
 void ARG::discretize(float s) {
-    map<float, Recombination>::iterator recomb_it = recombinations.begin();
+    map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(0);
     float curr_pos = 0;
     while (curr_pos < sequence_length) {
         coordinates.push_back(curr_pos);
         if (recomb_it->first < curr_pos + s) {
             curr_pos = recomb_it->first;
+            recomb_it++;
         } else {
-            curr_pos += s ;
+            curr_pos = min(curr_pos + s, sequence_length);
         }
     }
+    coordinates.push_back(sequence_length);
 }
 
 void ARG::init_arg(Node *n) {
@@ -598,7 +605,7 @@ void ARG::read_branches(string filename) {
             inserted_branches.insert({left, {b}});
         }
     }
-    deleted_branches.erase(bin_num);
+    deleted_branches.erase(sequence_length);
     for (auto x : deleted_branches) {
         float pos = x.first;
         set<Branch> db = deleted_branches.at(pos);
