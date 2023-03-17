@@ -15,7 +15,7 @@ class Recombination {
     
 public:
     
-    int pos;
+    float pos;
     Branch source_branch;
     Branch target_branch;
     Branch recombined_branch;
@@ -32,7 +32,7 @@ public:
     
     Recombination(set<Branch> db, set<Branch> ib);
     
-    void set_pos(int x);
+    void set_pos(float x);
     
     bool affect(Branch b);
     

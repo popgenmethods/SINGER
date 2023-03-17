@@ -10,7 +10,6 @@
 
 #include <stdio.h>
 #include <map>
-#include "Tree.hpp"
 #include "Reconstruction.hpp"
 
 class Fitch_reconstruction : public Reconstruction {

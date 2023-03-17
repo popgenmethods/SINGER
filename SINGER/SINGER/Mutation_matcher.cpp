@@ -8,22 +8,21 @@
 #include "Mutation_matcher.hpp"
 
 Mutation_matcher::Mutation_matcher(ARG &a) {
-    int start = 0;
-    int end = a.bin_num;
-    map<int, Recombination>::iterator recomb_it = a.recombination_info.upper_bound(0);
-    map<int, set<float>>::iterator mut_it = a.mutation_info.lower_bound(0);
+    float start = 0;
+    float end = a.sequence_length;
+    map<float, Recombination>::iterator recomb_it = a.recombinations.upper_bound(0);
+    set<float>::iterator mut_it = a.mutation_sites.lower_bound(0);
     Tree tree = Tree();
-    for (int i = start; i < end; i++) {
-        if (i == recomb_it->first) {
-            Recombination r = recomb_it->second;
-            tree.forward_update(r);
-            recomb_it++;
-        }
-        if (i == mut_it->first) {
-            set<float> mutations = mut_it->second;
-            for (float x : mutations) {
-                classify_branches(tree, x);
-            }
+    float curr_pos = start;
+    float x = 0;
+    while (curr_pos < end) {
+        Recombination r = recomb_it->second;
+        tree.forward_update(r);
+        recomb_it++;
+        curr_pos = recomb_it->first;
+        while (*mut_it < curr_pos) {
+            x = *mut_it;
+            classify_branches(tree, x);
         }
     }
 }

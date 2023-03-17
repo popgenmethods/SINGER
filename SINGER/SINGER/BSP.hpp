@@ -9,7 +9,9 @@
 #define BSP_hpp
 
 #include <stdio.h>
-#include "ARG.hpp"
+#include <iostream>
+#include <map>
+#include "Tree.hpp"
 
 class BSP {
     

@@ -10,7 +10,6 @@
 
 #include <stdio.h>
 #include "ARG.hpp"
-#include "Branch_node.hpp"
 
 class Pruner {
     

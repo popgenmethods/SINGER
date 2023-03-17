@@ -17,7 +17,7 @@ Recombination::Recombination(set<Branch> db, set<Branch> ib) {
     find_nodes();
 }
 
-void Recombination::set_pos(int x) {
+void Recombination::set_pos(float x) {
     pos = x;
 }
 
