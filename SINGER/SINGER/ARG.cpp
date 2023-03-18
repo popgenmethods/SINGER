@@ -34,6 +34,7 @@ void ARG::discretize(float s) {
         }
     }
     coordinates.push_back(sequence_length);
+    bin_num = (int) coordinates.size() - 1;
 }
 
 void ARG::init_arg(Node *n) {
@@ -53,8 +54,8 @@ void ARG::add_sample(Node *n) {
         mutation_sites.insert(x);
     }
     base_nodes.clear();
-    base_nodes.insert({0, n});
-    base_nodes.insert({bin_num, n});
+    base_nodes[0] = n;
+    base_nodes[sequence_length] = n;
 }
 
 void ARG::add_node(Node *n) {
@@ -80,7 +81,7 @@ Tree ARG::get_tree_at(float x) {
     Tree tree = Tree();
     map<float, Recombination>::iterator recomb_it = recombinations.begin();
     Recombination r;
-    while (recomb_it->first < x) {
+    while (recomb_it->first <= x) {
         r = recomb_it->second;
         tree.forward_update(r);
         recomb_it++;
@@ -215,7 +216,7 @@ int ARG::count_incompatibility() {
     float end = 0;
     float x = 0;
     int count = 0;
-    for (int i = 0; i < bin_num - 1; i++) {
+    for (int i = 0; i < bin_num; i++) {
         start = coordinates[i];
         end = coordinates[i+1];
         if (start  == recomb_it->first) {
@@ -258,19 +259,17 @@ void ARG::impute_nodes(float x, float y) {
     Fitch_reconstruction rc = Fitch_reconstruction(start_tree);
     map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(x);
     set<float>::iterator mut_it = mutation_sites.lower_bound(x);
-    float curr_pos = recomb_it->first;
+    float curr_pos = x;
     float m = 0;
     while (curr_pos < y) {
-        if (curr_pos == recomb_it->first) {
-            rc.update(recomb_it->second);
-            recomb_it++;
-            curr_pos = recomb_it->first;
-        }
+        curr_pos = recomb_it->first;
         while (*mut_it < curr_pos) {
             m = *mut_it;
             rc.reconstruct(m);
             mut_it++;
         }
+        rc.update(recomb_it->second);
+        recomb_it++;
     }
     return;
 }
@@ -330,7 +329,7 @@ float ARG::smc_prior_likelihood(float r) {
     map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(0);
     float bin_start = 0;
     float bin_end = 0;
-    for (int i = 0; i < bin_num - 1; i++) {
+    for (int i = 0; i < bin_num; i++) {
         bin_start = coordinates[i];
         bin_end = coordinates[i+1];
         rho = (bin_end - bin_start)*r*Ne;
@@ -362,7 +361,7 @@ float ARG::data_likelihood(float m) {
     float bin_end = 0;
     float prev_mut_pos = 0;
     float next_mut_pos = 0;
-    for (int i = 0; i < bin_num - 1; i++) {
+    for (int i = 0; i < bin_num; i++) {
         bin_start = coordinates[i];
         bin_end = coordinates[i+1];
         if (bin_start == recomb_it->first) {
@@ -612,7 +611,7 @@ void ARG::read_branches(string filename) {
         set<Branch> ib = inserted_branches.at(pos);
         Recombination r = Recombination(db, ib);
         r.set_pos(pos);
-        recombinations.insert({pos, r});
+        recombinations[pos] = r;
     }
 }
 

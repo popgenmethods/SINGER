@@ -11,5 +11,12 @@ void test_read_arg() {
     ARG a = ARG(2e4, 1e7);
     a.read("/Users/yun_deng/Desktop/SINGER/arg_files/continuous_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/continuous_ts_branches.txt");
     a.discretize(100);
-    cout << "Finish reading" << endl;
+    for (Node *n : a.sample_nodes) {
+        int index = n->index;
+        string mutation_file = "/Users/yun_deng/Desktop/SINGER/arg_files/continuous_sample" + to_string(index) + ".txt";
+        n->read_mutation(mutation_file);
+        a.add_sample(n);
+    }
+    a.impute_nodes(0, 1e7);
+    cout << a.count_incompatibility() <<  endl;
 }
