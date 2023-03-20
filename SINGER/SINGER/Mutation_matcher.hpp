@@ -13,6 +13,8 @@
 
 class Mutation_matcher {
     
+public:
+    
     map<float, set<Branch>> derived_branches = {};
     map<float, set<Branch>> ancestral_branches = {};
     
@@ -25,6 +27,8 @@ class Mutation_matcher {
     // private:
     
     void classify_branches(Tree tree, float x);
+    
+    map<float, float> build_match_map(map<float, Node *> base_nodes);
     
 };
 

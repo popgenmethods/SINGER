@@ -10,7 +10,11 @@
 
 #include <stdio.h>
 #include "ARG.hpp"
+#include "Mutation_matcher.hpp"
+#include "Parsimony_pruner.hpp"
 
 void test_read_arg();
+
+void test_pruner();
 
 #endif /* Test_hpp */
