@@ -18,8 +18,6 @@ public:
     
     int max_mismatch = 0;
     map<Branch, float> curr_mismatch = {};
-    map<float, float> ancestral_count = {};
-    map<float, float> derived_count = {};
     map<float, float> match_map = {};
     
     map<Branch, set<Branch>> transitions = {};
@@ -36,9 +34,7 @@ public:
 
     // private:
     
-    void get_allele_freq(ARG &a);
-    
-    void get_match_map(Node *n);
+    void get_match_map(ARG &a, map<float, Node *> base_nodes);
     
     float find_minimum_match();
     

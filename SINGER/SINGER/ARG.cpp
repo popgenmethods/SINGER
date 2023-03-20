@@ -139,10 +139,24 @@ map<float, pair<Branch, Node *>> ARG::remove(tuple<float, Branch, float> cut_poi
     remove_empty_recombinations();
     int start_pos = base_nodes.begin()->first;
     int end_pos = base_nodes.rbegin()->first;
-    impute_nodes(start_pos, end_pos);
+    // impute_nodes(start_pos, end_pos);
     joining_points.erase(end_pos);
     joining_points.insert({end_pos, joining_points.rbegin()->second});
     return joining_points;
+}
+
+void ARG::remove_leaf(int index) {
+    Tree tree = get_tree_at(0);
+    float pos = 0;
+    float time = 1e-6;
+    Branch branch = Branch();
+    for (Branch b : tree.branches) {
+        if (b.lower_node->index == index) {
+            branch = b;
+        }
+    }
+    tuple<float, Branch, float> cut_point = {pos, branch, time};
+    remove(cut_point);
 }
 
 

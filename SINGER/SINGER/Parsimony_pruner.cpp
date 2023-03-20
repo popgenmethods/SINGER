@@ -8,8 +8,6 @@
 #include "Parsimony_pruner.hpp"
 
 Parsimony_pruner::Parsimony_pruner(ARG &a, Node *n) {
-    get_allele_freq(a);
-    get_match_map(n);
 }
 
 void Parsimony_pruner::start_search(ARG &a, Node *n, float m) {
@@ -68,23 +66,37 @@ void Parsimony_pruner::recombination_forward(Recombination &r) {
     update_mismatch();
 }
 
-void Parsimony_pruner::get_allele_freq(ARG &a) {
-    for (Node *n : a.sample_nodes) {
-        for (float m : n->mutation_sites) {
-            if (allele_freq.count(m) == 0) {
-                allele_freq[m] = 1;
-            } else {
-                allele_freq[m] = allele_freq[m] + 1;
+void Parsimony_pruner::get_match_map(ARG &a, map<float, Node *> base_nodes) {
+    float start = base_nodes.begin()->first;
+    float end = base_nodes.rbegin()->first;
+    float curr_pos = start;
+    map<float, Recombination>::iterator recomb_it = a.recombinations.upper_bound(start);
+    set<float>::iterator mut_it = a.mutation_sites.lower_bound(start);
+    map<float, Node *>::iterator base_it = base_nodes.begin();
+    float m = 0;
+    Tree tree = a.get_tree_at(start);
+    Recombination r;
+    Node *base_node = nullptr;
+    float match = 0;
+    while (curr_pos < end) {
+        while (base_it->first < m) {
+            base_node = base_it->second;
+            base_it++;
+        }
+        while (recomb_it->first < m) {
+            r = recomb_it->second;
+            tree.forward_update(r);
+            recomb_it++;
+        }
+        m = *mut_it;
+        match = 0;
+        for (Branch b : tree.branches) {
+            if (b.lower_node != base_node and b.upper_node->time > base_node->time) {
+                match += count_mismatch(b, base_node, m);
             }
         }
-    }
-        
-}
-
-void Parsimony_pruner::get_match_map(Node *n) {
-    for (float m : n->mutation_sites) {
-        if (allele_freq.count(m) > 0) {
-            match_map[m] = 2*allele_freq[m] - 1;
+        if (match > 0) {
+            match_map[m] = match;
         }
     }
 }

@@ -33,10 +33,8 @@ void test_pruner() {
         a.add_sample(n);
     }
     a.impute_nodes(0, 1e7);
-    Node *query_node = new Node(0.0);
-    query_node->read_mutation("/Users/yun_deng/Desktop/SINGER/arg_files/continuous_sample_99.txt");
-    query_node->set_index(99);
-    map<float, Node *> base_nodes = {{0, query_node}, {INT_MAX, query_node}};
-    Parsimony_pruner parsimony_pruner = Parsimony_pruner();
-    parsimony_pruner.extend(a, query_node);
+    a.remove_leaf(99);
+    // map<float, Node *> base_nodes = {{0, query_node}, {INT_MAX, query_node}};
+    // Parsimony_pruner parsimony_pruner = Parsimony_pruner();
+    // parsimony_pruner.extend(a, query_node);
 }

@@ -51,6 +51,8 @@ public:
     
     map<float, pair<Branch, Node *>> remove(tuple<float, Branch, float> cut_point);
     
+    void remove_leaf(int index);
+    
     void add(map<float, pair<Branch, Node*>> joining_points);
     
     void smc_sample_recombinations();
