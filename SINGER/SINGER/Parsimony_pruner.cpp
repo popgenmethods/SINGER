@@ -7,10 +7,9 @@
 
 #include "Parsimony_pruner.hpp"
 
-Parsimony_pruner::Parsimony_pruner() {}
-
-void Parsimony_pruner::set_match_map(map<float, float> mm) {
-    match_map = mm;
+Parsimony_pruner::Parsimony_pruner(ARG &a, Node *n) {
+    get_allele_freq(a);
+    get_match_map(n);
 }
 
 void Parsimony_pruner::start_search(ARG &a, Node *n, float m) {
@@ -33,19 +32,23 @@ void Parsimony_pruner::extend(ARG &a, Node *n) {
 void Parsimony_pruner::mutation_forward(Node *n, float m) {
     int mismatch = 0;
     Branch branch = Branch();
+    set<Branch> bad_branches = {};
     for (auto x : curr_mismatch) {
         branch = x.first;
         mismatch = x.second;
+        mismatch += count_mismatch(branch, n, m);
+        curr_mismatch[branch] = mismatch;
         if (mismatch > max_mismatch) {
-            curr_mismatch.erase(branch);
-        } else {
-            mismatch += count_mismatch(branch, n, m);
-            curr_mismatch[branch] = mismatch;
+            bad_branches.insert(branch);
         }
+    }
+    for (Branch b : bad_branches) {
+        curr_mismatch.erase(b);
     }
 }
 
 void Parsimony_pruner::recombination_forward(Recombination &r) {
+    transitions.clear();
     Branch branch = Branch();
     for (auto x : curr_mismatch) {
         branch = x.first;
@@ -63,6 +66,27 @@ void Parsimony_pruner::recombination_forward(Recombination &r) {
         }
     }
     update_mismatch();
+}
+
+void Parsimony_pruner::get_allele_freq(ARG &a) {
+    for (Node *n : a.sample_nodes) {
+        for (float m : n->mutation_sites) {
+            if (allele_freq.count(m) == 0) {
+                allele_freq[m] = 1;
+            } else {
+                allele_freq[m] = allele_freq[m] + 1;
+            }
+        }
+    }
+        
+}
+
+void Parsimony_pruner::get_match_map(Node *n) {
+    for (float m : n->mutation_sites) {
+        if (allele_freq.count(m) > 0) {
+            match_map[m] = 2*allele_freq[m] - 1;
+        }
+    }
 }
 
 float Parsimony_pruner::find_minimum_match() {

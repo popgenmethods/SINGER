@@ -23,7 +23,7 @@ public:
     float Ne = 1;
     Node *root = new Node(numeric_limits<float>::infinity());
     Node *cut_node = nullptr;
-    float cut_time = -1;
+    float cut_time = 0;
     set<float> mutation_sites;
     map<float, Recombination> recombinations;
     int bin_num = 0;

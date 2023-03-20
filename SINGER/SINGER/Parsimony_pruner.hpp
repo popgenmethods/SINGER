@@ -18,13 +18,13 @@ public:
     
     int max_mismatch = 0;
     map<Branch, float> curr_mismatch = {};
+    map<float, float> ancestral_count = {};
+    map<float, float> derived_count = {};
     map<float, float> match_map = {};
     
     map<Branch, set<Branch>> transitions = {};
 
-    Parsimony_pruner();
-    
-    void set_match_map(map<float, float> mm);
+    Parsimony_pruner(ARG &a, Node *n);
     
     void start_search(ARG &a, Node *n, float m);
     
@@ -35,6 +35,10 @@ public:
     void recombination_forward(Recombination &r);
 
     // private:
+    
+    void get_allele_freq(ARG &a);
+    
+    void get_match_map(Node *n);
     
     float find_minimum_match();
     

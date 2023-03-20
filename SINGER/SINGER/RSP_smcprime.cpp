@@ -1,16 +1,16 @@
 //
-//  RSP_smc.cpp
+//  RSP_smcprime.cpp
 //  SINGER
 //
-//  Created by Yun Deng on 3/13/23.
+//  Created by Yun Deng on 3/19/23.
 //
 
-#include "RSP_smc.hpp"
+#include "RSP_smcprime.hpp"
 
-RSP_smc::RSP_smc() {
+RSP_smcprime::RSP_smcprime() {
 }
 
-float RSP_smc::sample_start_time(Branch b, int density, float join_time, float cut_time) {
+float RSP_smcprime::sample_start_time(Branch b, int density, float join_time, float cut_time) {
     float lb = b.lower_node->time;
     float ub = b.upper_node->time;
     lb = max(cut_time, lb);
@@ -31,7 +31,6 @@ float RSP_smc::sample_start_time(Branch b, int density, float join_time, float c
         weight_sum += w;
     }
     p = random();
-    p = min(p, 0.999f);
     weight_sum = weight_sum*p;
     for (int i = 0; i < density; i++) {
         weight_sum -= weights[i];
@@ -44,7 +43,7 @@ float RSP_smc::sample_start_time(Branch b, int density, float join_time, float c
     return start_time;
 }
 
-pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density, float join_time, float cut_time) {
+pair<Branch, float> RSP_smcprime::sample_start_time(Branch b1, Branch b2, int density, float join_time, float cut_time) {
     float lb1 = max(b1.lower_node->time, cut_time);
     float ub1 = min(b1.upper_node->time, join_time);
     float lb2 = max(b2.lower_node->time, cut_time);
@@ -80,7 +79,6 @@ pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density
         branch_indices.push_back(2);
     }
     p = random();
-    p = min(p, 0.999f);
     weight_sum = weight_sum*p;
     for (int i = 0; i < density; i++) {
         weight_sum -= weights[i];
@@ -99,7 +97,7 @@ pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density
     return {source_branch, start_time};
 }
 
-void RSP_smc::sample_recombination(Recombination &r, float cut_time, Tree tree) {
+void RSP_smcprime::sample_recombination(Recombination &r, float cut_time, Tree tree) {
     if (r.pos == 0) {
         return;
     }
@@ -138,7 +136,7 @@ void RSP_smc::sample_recombination(Recombination &r, float cut_time, Tree tree) 
 
 // private methods:
 
-float RSP_smc::recomb_pdf(float s, float t) {
+float RSP_smcprime::recomb_pdf(float s, float t) {
     float pdf = 1.0;
     float curr_time = s;
     float next_coalescence_time = s;
@@ -155,11 +153,11 @@ float RSP_smc::recomb_pdf(float s, float t) {
     return pdf;
 }
 
-void RSP_smc::get_coalescence_rate(Tree tree, Recombination r, float cut_time) {
+void RSP_smcprime::get_coalescence_rate(Tree tree, Recombination r, float cut_time) {
     coalescence_rates.clear();
     vector<float> coalescence_times = {cut_time};
     for (Branch b : tree.branches) {
-        if (b.lower_node->time > cut_time and b.lower_node != r.deleted_node) {
+        if (b.lower_node->time > cut_time) {
             coalescence_times.push_back(b.lower_node->time);
         }
     }
@@ -171,7 +169,7 @@ void RSP_smc::get_coalescence_rate(Tree tree, Recombination r, float cut_time) {
     }
 }
 
-float RSP_smc::random() {
+float RSP_smcprime::random() {
     float p = (float) rand()/RAND_MAX;
     return min(0.999f, p);
 }

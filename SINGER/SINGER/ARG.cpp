@@ -201,7 +201,7 @@ void ARG::smc_sample_recombinations() {
     RSP_smc rsp = RSP_smc();
     Tree tree = Tree();
     for (auto &x : recombinations) {
-        if (x.second.deleted_branches.size() != 0 and x.first < sequence_length) {
+        if (x.first != 0 and x.first < sequence_length) {
             rsp.sample_recombination(x.second, cut_time, tree);
         }
         tree.forward_update(x.second);
