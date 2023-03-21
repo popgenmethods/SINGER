@@ -7,7 +7,9 @@
 
 #include "Parsimony_pruner.hpp"
 
-Parsimony_pruner::Parsimony_pruner(ARG &a, Node *n) {
+Parsimony_pruner::Parsimony_pruner(ARG &a, map<float, Node *> base_nodes) {
+    nodes = base_nodes;
+    get_match_map(a, nodes);
 }
 
 void Parsimony_pruner::start_search(ARG &a, Node *n, float m) {
@@ -15,14 +17,15 @@ void Parsimony_pruner::start_search(ARG &a, Node *n, float m) {
     Tree tree = a.get_tree_at(m);
     for (Branch branch : tree.branches) {
         mismatch = count_mismatch(branch, n, m);
-        if (mismatch == 0) {
+        if (mismatch == 0 and branch.lower_node != n) {
             curr_mismatch[branch] = mismatch;
         }
     }
 }
 
-void Parsimony_pruner::extend(ARG &a, Node *n) {
+void Parsimony_pruner::extend(ARG &a) {
     float x = find_minimum_match();
+    Node *n = get_node_at(x);
     start_search(a, n, x);
     extend_forward(a, n, x);
 }
@@ -43,6 +46,12 @@ void Parsimony_pruner::mutation_forward(Node *n, float m) {
     for (Branch b : bad_branches) {
         curr_mismatch.erase(b);
     }
+}
+
+Node *Parsimony_pruner::get_node_at(float x) {
+    map<float, Node *>::iterator node_it = nodes.upper_bound(x);
+    node_it--;
+    return node_it->second;
 }
 
 void Parsimony_pruner::recombination_forward(Recombination &r) {
@@ -69,16 +78,15 @@ void Parsimony_pruner::recombination_forward(Recombination &r) {
 void Parsimony_pruner::get_match_map(ARG &a, map<float, Node *> base_nodes) {
     float start = base_nodes.begin()->first;
     float end = base_nodes.rbegin()->first;
-    float curr_pos = start;
     map<float, Recombination>::iterator recomb_it = a.recombinations.upper_bound(start);
     set<float>::iterator mut_it = a.mutation_sites.lower_bound(start);
     map<float, Node *>::iterator base_it = base_nodes.begin();
-    float m = 0;
+    float m = *mut_it;
     Tree tree = a.get_tree_at(start);
     Recombination r;
     Node *base_node = nullptr;
     float match = 0;
-    while (curr_pos < end) {
+    while (*mut_it < end) {
         while (base_it->first < m) {
             base_node = base_it->second;
             base_it++;
@@ -90,9 +98,10 @@ void Parsimony_pruner::get_match_map(ARG &a, map<float, Node *> base_nodes) {
         }
         m = *mut_it;
         match = 0;
+        mut_it++;
         for (Branch b : tree.branches) {
             if (b.lower_node != base_node and b.upper_node->time > base_node->time) {
-                match += count_mismatch(b, base_node, m);
+                match += 1 - count_mismatch(b, base_node, m);
             }
         }
         if (match > 0) {
@@ -153,7 +162,9 @@ void Parsimony_pruner::extend_forward(ARG &a, Node *n, float x) {
         recomb_it++;
         while (*mut_it < curr_pos) {
             m = *mut_it;
-            mutation_forward(n, m);
+            if (match_map.count(m) > 0) {
+                mutation_forward(n, m);
+            }
             mut_it++;
         }
         recombination_forward(r);

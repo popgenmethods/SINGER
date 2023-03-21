@@ -14,6 +14,8 @@ ARG::ARG(float N, float l) {
     Recombination r = Recombination({}, {});
     r.set_pos(0.0);
     recombinations[0] = r;
+    r = Recombination({}, {});
+    r.set_pos(INT_MAX);
     recombinations[INT_MAX] = r;
     mutation_sites.insert(INT_MAX);
 }
@@ -137,7 +139,7 @@ map<float, pair<Branch, Node *>> ARG::remove(tuple<float, Branch, float> cut_poi
         next_removed_branch = prev_removed_branch;
     }
     remove_empty_recombinations();
-    int start_pos = base_nodes.begin()->first;
+    // int start_pos = base_nodes.begin()->first;
     int end_pos = base_nodes.rbegin()->first;
     // impute_nodes(start_pos, end_pos);
     joining_points.erase(end_pos);

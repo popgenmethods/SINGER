@@ -17,22 +17,25 @@ class Parsimony_pruner {
 public:
     
     int max_mismatch = 0;
+    map<float, Node *> nodes = {};
     map<Branch, float> curr_mismatch = {};
     map<float, float> match_map = {};
     
     map<Branch, set<Branch>> transitions = {};
 
-    Parsimony_pruner(ARG &a, Node *n);
+    Parsimony_pruner(ARG &a, map<float, Node *> base_nodes);
     
     void start_search(ARG &a, Node *n, float m);
     
-    void extend(ARG &a, Node *n);
+    void extend(ARG &a);
 
     void mutation_forward(Node *n, float m);
 
     void recombination_forward(Recombination &r);
 
     // private:
+    
+    Node *get_node_at(float x);
     
     void get_match_map(ARG &a, map<float, Node *> base_nodes);
     

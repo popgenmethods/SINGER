@@ -34,7 +34,6 @@ void test_pruner() {
     }
     a.impute_nodes(0, 1e7);
     a.remove_leaf(99);
-    // map<float, Node *> base_nodes = {{0, query_node}, {INT_MAX, query_node}};
-    // Parsimony_pruner parsimony_pruner = Parsimony_pruner();
-    // parsimony_pruner.extend(a, query_node);
+    Parsimony_pruner parsimony_pruner = Parsimony_pruner(a, a.base_nodes);
+    parsimony_pruner.extend(a);
 }
