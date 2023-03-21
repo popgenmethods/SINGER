@@ -44,8 +44,6 @@ void ARG::init_arg(Node *n) {
     Recombination r = Recombination({}, {branch});
     r.set_pos(0.0);
     recombinations.insert({0, r});
-    recombinations.insert({sequence_length, r});
-    mutation_sites.insert(INT_MAX);
 }
 
 void ARG::add_sample(Node *n) {

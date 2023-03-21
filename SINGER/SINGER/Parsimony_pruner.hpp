@@ -20,18 +20,26 @@ public:
     map<float, Node *> nodes = {};
     map<Branch, float> curr_mismatch = {};
     map<float, float> match_map = {};
+    map<float, float> potential_seeds = {};
+    map<float, set<Branch>> reduced_sets = {};
     
     map<Branch, set<Branch>> transitions = {};
 
-    Parsimony_pruner(ARG &a, map<float, Node *> base_nodes);
+    Parsimony_pruner();
     
-    void start_search(ARG &a, Node *n, float m);
+    void prune_arg(ARG &a, map<float, Node *> base_nodes);
     
-    void extend(ARG &a);
+    void start_search(ARG &a, float m);
+    
+    void extend(ARG &a, float x);
 
     void mutation_forward(Node *n, float m);
+    
+    void mutation_backward(Node *n, float m);
 
     void recombination_forward(Recombination &r);
+    
+    void recombination_backward(Recombination &r);
 
     // private:
     
@@ -47,9 +55,9 @@ public:
     
     void update_mismatch();
     
-    void extend_forward(ARG &a, Node *n, float x);
+    void extend_forward(ARG &a, float x);
     
-    void extend_backward(ARG &a, Node *n, float x);
+    void extend_backward(ARG &a, float x);
     
 };
 

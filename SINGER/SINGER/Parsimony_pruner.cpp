@@ -7,13 +7,23 @@
 
 #include "Parsimony_pruner.hpp"
 
-Parsimony_pruner::Parsimony_pruner(ARG &a, map<float, Node *> base_nodes) {
-    nodes = base_nodes;
-    get_match_map(a, nodes);
+Parsimony_pruner::Parsimony_pruner() {
 }
 
-void Parsimony_pruner::start_search(ARG &a, Node *n, float m) {
-    int mismatch = 0;
+void Parsimony_pruner::prune_arg(ARG &a, map<float, Node *> base_nodes) {
+    nodes = base_nodes;
+    get_match_map(a, base_nodes);
+    float x = 0;
+    while (potential_seeds.size() > 2) {
+        x = find_minimum_match();
+        extend(a, x);
+    }
+    cout << endl;
+}
+
+void Parsimony_pruner::start_search(ARG &a, float m) {
+    Node *n = get_node_at(m);
+    float mismatch = 0;
     Tree tree = a.get_tree_at(m);
     for (Branch branch : tree.branches) {
         mismatch = count_mismatch(branch, n, m);
@@ -21,17 +31,36 @@ void Parsimony_pruner::start_search(ARG &a, Node *n, float m) {
             curr_mismatch[branch] = mismatch;
         }
     }
+    potential_seeds.erase(m);
 }
 
-void Parsimony_pruner::extend(ARG &a) {
-    float x = find_minimum_match();
-    Node *n = get_node_at(x);
-    start_search(a, n, x);
-    extend_forward(a, n, x);
+void Parsimony_pruner::extend(ARG &a, float x) {
+    start_search(a, x);
+    extend_forward(a, x);
+    start_search(a, x);
+    extend_backward(a, x);
 }
 
 void Parsimony_pruner::mutation_forward(Node *n, float m) {
-    int mismatch = 0;
+    float mismatch = 0;
+    Branch branch = Branch();
+    set<Branch> bad_branches = {};
+    for (auto x : curr_mismatch) {
+        branch = x.first;
+        mismatch = x.second;
+        mismatch += count_mismatch(branch, n, m);
+        curr_mismatch[branch] = mismatch;
+        if (mismatch > max_mismatch) {
+            bad_branches.insert(branch);
+        }
+    }
+    for (Branch b : bad_branches) {
+        curr_mismatch.erase(b);
+    }
+}
+
+void Parsimony_pruner::mutation_backward(Node *n, float m) {
+    float mismatch = 0;
     Branch branch = Branch();
     set<Branch> bad_branches = {};
     for (auto x : curr_mismatch) {
@@ -75,6 +104,31 @@ void Parsimony_pruner::recombination_forward(Recombination &r) {
     update_mismatch();
 }
 
+void Parsimony_pruner::recombination_backward(Recombination &r) {
+    transitions.clear();
+    Branch branch = Branch();
+    for (auto x : curr_mismatch) {
+        branch = x.first;
+        if (not r.create(branch)) {
+            transition_helper(branch, branch);
+        } else if (branch == r.recombined_branch) {
+            transition_helper(branch, r.source_branch);
+            transition_helper(branch, r.target_branch);
+        } else if (branch == r.lower_transfer_branch) {
+            transition_helper(branch, r.target_branch);
+        } else if (branch == r.upper_transfer_branch) {
+            transition_helper(branch, r.target_branch);
+        } else {
+            for (Branch b : r.deleted_branches) {
+                if (b != r.source_branch and b != r.target_branch) {
+                    transition_helper(branch, b);
+                }
+            }
+        }
+    }
+    update_mismatch();
+}
+
 void Parsimony_pruner::get_match_map(ARG &a, map<float, Node *> base_nodes) {
     float start = base_nodes.begin()->first;
     float end = base_nodes.rbegin()->first;
@@ -108,10 +162,13 @@ void Parsimony_pruner::get_match_map(ARG &a, map<float, Node *> base_nodes) {
             match_map[m] = match;
         }
     }
+    match_map[INT_MAX] = INT_MAX;
+    match_map[-1.0] = INT_MAX;
+    potential_seeds = match_map;
 }
 
 float Parsimony_pruner::find_minimum_match() {
-    auto it = min_element(match_map.begin(), match_map.end(),
+    auto it = min_element(potential_seeds.begin(), potential_seeds.end(),
                           [](const auto& l, const auto& r) { return l.second < r.second;});
     return it->first;
 }
@@ -151,22 +208,44 @@ void Parsimony_pruner::update_mismatch() {
     curr_mismatch = next_mismatch;
 }
 
-void Parsimony_pruner::extend_forward(ARG &a, Node *n, float x) {
+void Parsimony_pruner::extend_forward(ARG &a, float x) {
     map<float, Recombination>::iterator recomb_it = a.recombinations.upper_bound(x);
-    set<float>::iterator mut_it = a.mutation_sites.upper_bound(x);
-    float curr_pos = x;
+    map<float, float>::iterator match_it = match_map.upper_bound(x);
     float m = x;
-    while (curr_mismatch.size() > 0) {
-        curr_pos = recomb_it->first;
-        Recombination r = recomb_it->second;
-        recomb_it++;
-        while (*mut_it < curr_pos) {
-            m = *mut_it;
-            if (match_map.count(m) > 0) {
-                mutation_forward(n, m);
-            }
-            mut_it++;
+    Node *n = nullptr;
+    while (curr_mismatch.size() > 0 and match_it->first < a.sequence_length) {
+        m = match_it->first;
+        while (recomb_it->first < m) {
+            Recombination r = recomb_it->second;
+            recomb_it++;
+            recombination_forward(r);
         }
-        recombination_forward(r);
+        n = get_node_at(m);
+        mutation_forward(n, m);
+        potential_seeds.erase(m);
+        match_it++;
     }
+    cout << "Forward search from " << x << " to " << m << endl;
+}
+
+void Parsimony_pruner::extend_backward(ARG &a, float x) {
+    map<float, Recombination>::iterator recomb_it = a.recombinations.upper_bound(x);
+    map<float, float>::iterator match_it = match_map.find(x);
+    recomb_it--;
+    match_it--;
+    float m = x;
+    Node *n = nullptr;
+    while (curr_mismatch.size() > 0 and match_it->first > 0) {
+        m = match_it->first;
+        while (recomb_it->first >= m) {
+            Recombination r = recomb_it->second;
+            recomb_it--;
+            recombination_backward(r);
+        }
+        n = get_node_at(m);
+        mutation_backward(n, m);
+        potential_seeds.erase(m);
+        match_it--;
+    }
+    cout << "Backward search from " << x << " to " << m << endl;
 }

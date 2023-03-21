@@ -34,6 +34,6 @@ void test_pruner() {
     }
     a.impute_nodes(0, 1e7);
     a.remove_leaf(99);
-    Parsimony_pruner parsimony_pruner = Parsimony_pruner(a, a.base_nodes);
-    parsimony_pruner.extend(a);
+    Parsimony_pruner parsimony_pruner = Parsimony_pruner();
+    parsimony_pruner.prune_arg(a, a.base_nodes);
 }
