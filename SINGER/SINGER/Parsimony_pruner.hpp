@@ -21,6 +21,7 @@ public:
     map<Branch, float> curr_mismatch = {};
     map<float, float> match_map = {};
     map<float, float> potential_seeds = {};
+    set<float> used_seeds = {};
     map<float, set<Branch>> reduced_sets = {};
     
     map<Branch, set<Branch>> transitions = {};
