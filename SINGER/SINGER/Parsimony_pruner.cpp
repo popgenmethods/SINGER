@@ -34,16 +34,15 @@ void Parsimony_pruner::start_search(ARG &a, float m) {
         }
     }
     potential_seeds.erase(m);
+    write_reduced_set(m);
 }
 
 void Parsimony_pruner::extend(ARG &a, float x) {
     start_search(a, x);
-    cout << "Search size: " << curr_mismatch.size() << endl;
     extend_forward(a, x);
     start_search(a, x);
-    cout << "Search size: " << curr_mismatch.size() << endl;
     extend_backward(a, x);
-    used_seeds.insert(x);
+    used_seeds.insert(x); // when extending later seeds, don't go beyond previous seeds (to save computation)
 }
 
 void Parsimony_pruner::mutation_forward(Node *n, float m) {
@@ -62,6 +61,9 @@ void Parsimony_pruner::mutation_forward(Node *n, float m) {
     for (Branch b : bad_branches) {
         curr_mismatch.erase(b);
     }
+    if (bad_branches.size() > 0) {
+        write_reduced_set(m);
+    }
 }
 
 void Parsimony_pruner::mutation_backward(Node *n, float m) {
@@ -76,6 +78,9 @@ void Parsimony_pruner::mutation_backward(Node *n, float m) {
         if (mismatch > max_mismatch) {
             bad_branches.insert(branch);
         }
+    }
+    if (bad_branches.size() > 0) {
+        write_reduced_set(m);
     }
     for (Branch b : bad_branches) {
         curr_mismatch.erase(b);
@@ -107,6 +112,7 @@ void Parsimony_pruner::recombination_forward(Recombination &r) {
         }
     }
     update_mismatch();
+    write_reduced_set(r.pos);
 }
 
 void Parsimony_pruner::recombination_backward(Recombination &r) {
@@ -131,6 +137,7 @@ void Parsimony_pruner::recombination_backward(Recombination &r) {
             }
         }
     }
+    write_reduced_set(r.pos);
     update_mismatch();
 }
 
@@ -214,6 +221,20 @@ void Parsimony_pruner::update_mismatch() {
     curr_mismatch = next_mismatch;
 }
 
+void Parsimony_pruner::write_reduced_set(float pos) {
+    set<Branch> reduced_set = {};
+    for (auto x : curr_mismatch) {
+        reduced_set.insert(x.first);
+    }
+    if (reduced_sets.count(pos) == 0) {
+        reduced_sets[pos] = reduced_set;
+    } else {
+        set<Branch> curr_reduced_set = reduced_sets[pos];
+        curr_reduced_set.insert(reduced_set.begin(), reduced_set.end());
+        reduced_sets[pos] = curr_reduced_set;
+    }
+}
+
 void Parsimony_pruner::extend_forward(ARG &a, float x) {
     map<float, Recombination>::iterator recomb_it = a.recombinations.upper_bound(x);
     map<float, float>::iterator match_it = match_map.upper_bound(x);
@@ -233,7 +254,6 @@ void Parsimony_pruner::extend_forward(ARG &a, float x) {
         potential_seeds.erase(m);
         match_it++;
     }
-    cout << "Forward search from " << x << " to " << m << endl;
 }
 
 void Parsimony_pruner::extend_backward(ARG &a, float x) {
@@ -258,5 +278,4 @@ void Parsimony_pruner::extend_backward(ARG &a, float x) {
         potential_seeds.erase(m);
         match_it--;
     }
-    cout << "Backward search from " << x << " to " << m << endl;
 }

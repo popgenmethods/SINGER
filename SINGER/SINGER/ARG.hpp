@@ -24,8 +24,9 @@ public:
     Node *root = new Node(numeric_limits<float>::infinity());
     Node *cut_node = nullptr;
     float cut_time = 0;
-    set<float> mutation_sites;
-    map<float, Recombination> recombinations;
+    set<float> mutation_sites = {};
+    map<float, set<Branch>> mutation_branches = {};
+    map<float, Recombination> recombinations = {};
     int bin_num = 0;
     float sequence_length = 0;
     vector<float> coordinates = {};
@@ -76,6 +77,10 @@ public:
     tuple<float, Branch, float> sample_terminal_cut();
     
     void impute_nodes(float x, float y);
+    
+    void map_mutations(float x, float y);
+    
+    void map_mutation(Tree tree, float x);
     
     void clear_memory();
     

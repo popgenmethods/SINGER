@@ -288,6 +288,36 @@ void ARG::impute_nodes(float x, float y) {
     return;
 }
 
+void ARG::map_mutations(float x, float y) {
+    Tree tree = get_tree_at(x);
+    map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(x);
+    set<float>::iterator mut_it = mutation_sites.lower_bound(x);
+    float m = 0;
+    while (*mut_it < y) {
+        while (recomb_it->first < m) {
+            Recombination r = recomb_it->second;
+            tree.forward_update(r);
+            recomb_it++;
+        }
+        m = *mut_it;
+        map_mutation(tree, m);
+    }
+}
+
+void ARG::map_mutation(Tree tree, float x) {
+    set<Branch> branches = {};
+    float sl = 0;
+    float su = 0;
+    for (Branch b : tree.branches) {
+        sl = b.lower_node->get_state(x);
+        su = b.upper_node->get_state(x);
+        if (sl != su) {
+            branches.insert({b});
+        }
+    }
+    mutation_branches[x] = branches;
+}
+
 void ARG::clear_memory() {
     set<Node*, compare_node> reduced_node_set = {};
     set<Node *> deleted_nodes = {};

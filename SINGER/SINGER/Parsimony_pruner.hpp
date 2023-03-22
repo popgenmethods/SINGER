@@ -56,6 +56,8 @@ public:
     
     void update_mismatch();
     
+    void write_reduced_set(float pos);
+    
     void extend_forward(ARG &a, float x);
     
     void extend_backward(ARG &a, float x);
