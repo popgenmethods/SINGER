@@ -292,7 +292,7 @@ void ARG::map_mutations(float x, float y) {
     Tree tree = get_tree_at(x);
     map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(x);
     set<float>::iterator mut_it = mutation_sites.lower_bound(x);
-    float m = 0;
+    float m = *mut_it;
     while (*mut_it < y) {
         while (recomb_it->first < m) {
             Recombination r = recomb_it->second;
@@ -301,6 +301,7 @@ void ARG::map_mutations(float x, float y) {
         }
         m = *mut_it;
         map_mutation(tree, m);
+        mut_it++;
     }
 }
 

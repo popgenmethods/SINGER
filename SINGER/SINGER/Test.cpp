@@ -18,6 +18,7 @@ void test_read_arg() {
         a.add_sample(n);
     }
     a.impute_nodes(0, 1e7);
+    a.map_mutations(0, 1e7);
     cout << "Number of incompatibilities: " << a.count_incompatibility() <<  endl;
 }
 
