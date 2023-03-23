@@ -147,7 +147,7 @@ map<float, pair<Branch, Node *>> ARG::remove(tuple<float, Branch, float> cut_poi
     return joining_points;
 }
 
-void ARG::remove_leaf(int index) {
+map<float, pair<Branch, Node *>> ARG::remove_leaf(int index) {
     Tree tree = get_tree_at(0);
     float pos = 0;
     float time = 1e-6;
@@ -158,7 +158,7 @@ void ARG::remove_leaf(int index) {
         }
     }
     tuple<float, Branch, float> cut_point = {pos, branch, time};
-    remove(cut_point);
+    return remove(cut_point);
 }
 
 

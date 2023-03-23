@@ -23,6 +23,7 @@ void test_read_arg() {
 }
 
 void test_pruner() {
+    srand(23491256);
     ARG a = ARG(2e4, 1e6);
     a.read("/Users/yun_deng/Desktop/SINGER/arg_files/continuous_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/continuous_ts_branches.txt");
     a.discretize(10);
@@ -35,7 +36,8 @@ void test_pruner() {
     }
     a.impute_nodes(0, 1e6);
     a.map_mutations(0, 1e6);
-    a.remove_leaf(99);
+    map<float, pair<Branch, Node *>> joining_points = a.remove_leaf(99);
     Parsimony_pruner parsimony_pruner = Parsimony_pruner();
     parsimony_pruner.prune_arg(a, a.base_nodes);
+    parsimony_pruner.check_reduction(joining_points);
 }

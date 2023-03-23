@@ -41,6 +41,8 @@ public:
     void recombination_forward(Recombination &r);
     
     void recombination_backward(Recombination &r);
+    
+    void check_reduction(map<float, pair<Branch, Node *>> joining_points);
 
     // private:
     

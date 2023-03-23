@@ -103,11 +103,11 @@ void Parsimony_pruner::recombination_forward(Recombination &r) {
             transition_helper(branch, branch);
         } else if (branch == r.source_branch) {
             transition_helper(branch, r.recombined_branch);
-            transition_helper(branch, r.merging_branch);
+            // transition_helper(branch, r.merging_branch);
         } else if (branch == r.target_branch) {
             transition_helper(branch, r.lower_transfer_branch);
             transition_helper(branch, r.upper_transfer_branch);
-            transition_helper(branch, r.recombined_branch);
+            // transition_helper(branch, r.recombined_branch);
         } else {
             transition_helper(branch, r.merging_branch);
         }
@@ -139,7 +139,7 @@ void Parsimony_pruner::recombination_backward(Recombination &r) {
         if (not r.create(branch)) {
             transition_helper(branch, branch);
         } else if (branch == r.recombined_branch) {
-            transition_helper(branch, r.source_branch);
+            // transition_helper(branch, r.source_branch);
             transition_helper(branch, r.target_branch);
         } else if (branch == r.lower_transfer_branch) {
             transition_helper(branch, r.target_branch);
@@ -171,6 +171,26 @@ void Parsimony_pruner::recombination_backward(Recombination &r) {
     update_mismatch();
 }
 
+void Parsimony_pruner::check_reduction(map<float, pair<Branch, Node *>> joining_points) {
+    float start = joining_points.begin()->first;
+    float end = joining_points.rbegin()->first;
+    map<float, pair<Branch, Node *>>::iterator join_it = joining_points.begin();
+    map<float, set<Branch>>::iterator reduced_it = reduced_sets.begin();
+    Branch joining_branch = Branch();
+    float x = start;
+    set<Branch> reduced_set = reduced_it->second;
+    while (join_it->first < end) {
+        x = join_it->first;
+        joining_branch = join_it->second.first;
+        while (reduced_it->first < x) {
+            reduced_set = reduced_it->second;
+            reduced_it++;
+        }
+        cout << "Position " << join_it->first << " includes truth: " << reduced_set.count(joining_branch) << endl;
+        join_it++;
+    }
+}
+
 void Parsimony_pruner::build_match_map(ARG &a, map<float, Node *> base_nodes) {
     float start = base_nodes.begin()->first;
     float end = base_nodes.rbegin()->first;
@@ -178,6 +198,7 @@ void Parsimony_pruner::build_match_map(ARG &a, map<float, Node *> base_nodes) {
     float inf = INT_MAX;
     float lb = 0;
     float state = 0;
+    float num_samples = (float) a.sample_nodes.size();
     map<float, set<Branch>>::iterator mb_it = a.mutation_branches.lower_bound(start);
     Node *n = nullptr;
     while (mb_it->first < end) {
@@ -192,7 +213,7 @@ void Parsimony_pruner::build_match_map(ARG &a, map<float, Node *> base_nodes) {
                 }
             }
             if (lb < 0) {
-                match_map[m] = inf;
+                match_map[m] = num_samples;
             } else {
                 match_map[m] = lb;
             }
