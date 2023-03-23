@@ -46,7 +46,7 @@ public:
     
     Node *get_node_at(float x);
     
-    void get_match_map(ARG &a, map<float, Node *> base_nodes);
+    void build_match_map(ARG &a, map<float, Node *> base_nodes);
     
     float find_minimum_match();
     

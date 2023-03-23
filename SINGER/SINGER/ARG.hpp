@@ -80,6 +80,8 @@ public:
     
     void map_mutations(float x, float y);
     
+    void remap_mutations(map<float, pair<Branch, Node *>> prev_joining_points, map<float, Node *> base_nodes);
+    
     void map_mutation(Tree tree, float x);
     
     void clear_memory();

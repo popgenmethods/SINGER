@@ -18,6 +18,7 @@ ARG::ARG(float N, float l) {
     r.set_pos(INT_MAX);
     recombinations[INT_MAX] = r;
     mutation_sites.insert(INT_MAX);
+    mutation_branches[INT_MAX] = {};
 }
 
 ARG::~ARG() {
@@ -142,6 +143,7 @@ map<float, pair<Branch, Node *>> ARG::remove(tuple<float, Branch, float> cut_poi
     // impute_nodes(start_pos, end_pos);
     joining_points.erase(end_pos);
     joining_points.insert({end_pos, joining_points.rbegin()->second});
+    remap_mutations(joining_points, base_nodes);
     return joining_points;
 }
 
@@ -294,13 +296,50 @@ void ARG::map_mutations(float x, float y) {
     set<float>::iterator mut_it = mutation_sites.lower_bound(x);
     float m = *mut_it;
     while (*mut_it < y) {
+        m = *mut_it;
         while (recomb_it->first < m) {
             Recombination r = recomb_it->second;
             tree.forward_update(r);
             recomb_it++;
         }
-        m = *mut_it;
         map_mutation(tree, m);
+        mut_it++;
+    }
+}
+
+void ARG::remap_mutations(map<float, pair<Branch, Node *>> prev_joining_points, map<float, Node *> base_nodes) {
+    float x = prev_joining_points.begin()->first;
+    float y = prev_joining_points.rbegin()->first;
+    map<float, set<Branch>>::iterator mut_it = mutation_branches.lower_bound(x);
+    map<float, pair<Branch, Node *>>::iterator join_it = prev_joining_points.begin();
+    map<float, Node *>::iterator base_it = base_nodes.begin();
+    Node *base_node = nullptr;
+    Branch joining_branch = Branch();
+    Node *joining_node = nullptr;
+    Branch removed_branch = Branch();
+    Branch lower_branch = Branch();
+    Branch upper_branch = Branch();
+    while (mut_it->first < y) {
+        while (join_it->first < mut_it->first) {
+            joining_branch = join_it->second.first;
+            joining_node = join_it->second.second;
+            join_it++;
+        }
+        while (base_it->first < mut_it->first) {
+            base_node = base_it->second;
+            base_it++;
+        }
+        removed_branch = Branch(base_node, joining_node);
+        lower_branch = Branch(joining_branch.lower_node, joining_node);
+        upper_branch = Branch(joining_node, joining_branch.upper_node);
+        if (mut_it->second.count(removed_branch) > 0) {
+            mut_it->second.erase(removed_branch);
+        }
+        if (mut_it->second.count(lower_branch) > 0 or mut_it->second.count(upper_branch) > 0) {
+            mut_it->second.erase(lower_branch);
+            mut_it->second.erase(upper_branch);
+            mut_it->second.insert(joining_branch);
+        }
         mut_it++;
     }
 }
