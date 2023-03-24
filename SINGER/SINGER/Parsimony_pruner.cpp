@@ -93,7 +93,6 @@ Node *Parsimony_pruner::get_node_at(float x) {
     return node_it->second;
 }
 
-/*
 void Parsimony_pruner::recombination_forward(Recombination &r) {
     transitions.clear();
     Branch branch = Branch();
@@ -115,8 +114,8 @@ void Parsimony_pruner::recombination_forward(Recombination &r) {
     update_mismatch();
     write_reduced_set(r.pos);
 }
- */
 
+/*
 void Parsimony_pruner::recombination_forward(Recombination &r) {
     transitions.clear();
     Branch branch = Branch();
@@ -129,8 +128,8 @@ void Parsimony_pruner::recombination_forward(Recombination &r) {
     update_mismatch();
     write_reduced_set(r.pos);
 }
+ */
 
-/*
 void Parsimony_pruner::recombination_backward(Recombination &r) {
     transitions.clear();
     Branch branch = Branch();
@@ -139,8 +138,8 @@ void Parsimony_pruner::recombination_backward(Recombination &r) {
         if (not r.create(branch)) {
             transition_helper(branch, branch);
         } else if (branch == r.recombined_branch) {
-            // transition_helper(branch, r.source_branch);
-            transition_helper(branch, r.target_branch);
+            transition_helper(branch, r.source_branch);
+            // transition_helper(branch, r.target_branch);
         } else if (branch == r.lower_transfer_branch) {
             transition_helper(branch, r.target_branch);
         } else if (branch == r.upper_transfer_branch) {
@@ -156,8 +155,8 @@ void Parsimony_pruner::recombination_backward(Recombination &r) {
     write_reduced_set(r.pos);
     update_mismatch();
 }
- */
 
+/*
 void Parsimony_pruner::recombination_backward(Recombination &r) {
     transitions.clear();
     Branch branch = Branch();
@@ -170,6 +169,7 @@ void Parsimony_pruner::recombination_backward(Recombination &r) {
     write_reduced_set(r.pos);
     update_mismatch();
 }
+ */
 
 void Parsimony_pruner::check_reduction(map<float, pair<Branch, Node *>> joining_points) {
     float start = joining_points.begin()->first;
