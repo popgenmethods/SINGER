@@ -323,6 +323,8 @@ void Recombination::find_recomb_info() {
     }
     merging_branch = Branch(l, u);
     recombined_branch = Branch(source_branch.lower_node, inserted_node); // recombined branch is source lower node to inserted node;
+    source_sister_branch = search_upper_node(deleted_node); // find sister branch of source branch in a naive way
+    source_parent_branch = search_lower_node(deleted_node); // find parent branch of source branch in a naive way
     // find transfer branches
     Branch candidate_lower_transfer = Branch(target_branch.lower_node, inserted_node);
     if (create(candidate_lower_transfer)) {
@@ -339,21 +341,21 @@ void Recombination::find_recomb_info() {
 }
 
 Branch Recombination::search_upper_node(Node *n) {
+    Branch branch = Branch();
     for (Branch b : deleted_branches) {
         if (b != source_branch and b.upper_node == n) {
-            return b;
+            branch = b;
         }
     }
-    cerr << "search failed" << endl;
-    exit(1);
+    return branch;
 }
 
 Branch Recombination::search_lower_node(Node *n) {
+    Branch branch = Branch();
     for (Branch b : deleted_branches) {
         if (b.lower_node == n) {
-            return b;
+            branch = b;
         }
     }
-    cerr << "search failed" << endl;
-    exit(1);
+    return branch;
 }

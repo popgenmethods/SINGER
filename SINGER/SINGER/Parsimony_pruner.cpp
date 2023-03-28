@@ -137,19 +137,19 @@ void Parsimony_pruner::recombination_backward(Recombination &r) {
         branch = x.first;
         if (not r.create(branch)) {
             transition_helper(branch, branch);
-        } else if (branch == r.recombined_branch) {
+        }
+        if (branch == r.recombined_branch) {
             transition_helper(branch, r.source_branch);
-            // transition_helper(branch, r.target_branch);
-        } else if (branch == r.lower_transfer_branch) {
+        }
+        if (branch == r.lower_transfer_branch) {
             transition_helper(branch, r.target_branch);
-        } else if (branch == r.upper_transfer_branch) {
+        }
+        if (branch == r.upper_transfer_branch) {
             transition_helper(branch, r.target_branch);
-        } else {
-            for (Branch b : r.deleted_branches) {
-                if (b != r.source_branch and b != r.target_branch) {
-                    transition_helper(branch, b);
-                }
-            }
+        }
+        if (branch == r.merging_branch) {
+            transition_helper(branch, r.source_sister_branch);
+            transition_helper(branch, r.source_parent_branch);
         }
     }
     write_reduced_set(r.pos);
@@ -172,7 +172,7 @@ void Parsimony_pruner::recombination_backward(Recombination &r) {
  */
 
 void Parsimony_pruner::check_reduction(map<float, pair<Branch, Node *>> joining_points) {
-    float start = joining_points.begin()->first;
+      float start = joining_points.begin()->first;
     float end = joining_points.rbegin()->first;
     map<float, pair<Branch, Node *>>::iterator join_it = joining_points.begin();
     map<float, set<Branch>>::iterator reduced_it = reduced_sets.begin();

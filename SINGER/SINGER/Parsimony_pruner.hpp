@@ -17,6 +17,7 @@ class Parsimony_pruner {
 public:
     
     int max_mismatch = 0;
+    float max_time = 100;
     map<float, Node *> nodes = {};
     map<Branch, float> curr_mismatch = {};
     map<float, float> match_map = {};

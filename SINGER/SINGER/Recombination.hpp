@@ -18,6 +18,8 @@ public:
     float pos;
     Branch source_branch;
     Branch target_branch;
+    Branch source_sister_branch;
+    Branch source_parent_branch;
     Branch recombined_branch;
     Branch merging_branch;
     Branch lower_transfer_branch;
