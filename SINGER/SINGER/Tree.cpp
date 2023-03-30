@@ -50,6 +50,20 @@ void Tree::backward_update(Recombination &r) {
     }
 }
 
+float Tree::num_descendants(Node *n) {
+    if (n->time == 0) {
+        return 1;
+    }
+    Node *leaf = (*branches.begin()).lower_node;
+    Branch query_branch = Branch(leaf, n);
+    set<Branch>::iterator branch_it = branches.upper_bound(query_branch);
+    branch_it--;
+    Node *child_1 = (*branch_it).lower_node;
+    branch_it--;
+    Node *child_2 = (*branch_it).lower_node;
+    return num_descendants(child_1) + num_descendants(child_2);
+}
+
 Branch Tree::find_split_branch(Branch removed_branch) {
     Branch split_upper = Branch();
     Branch split_lower = Branch();

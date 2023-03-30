@@ -102,11 +102,9 @@ void Parsimony_pruner::recombination_forward(Recombination &r) {
             transition_helper(branch, branch);
         } else if (branch == r.source_branch) {
             transition_helper(branch, r.recombined_branch);
-            // transition_helper(branch, r.merging_branch);
         } else if (branch == r.target_branch) {
             transition_helper(branch, r.lower_transfer_branch);
             transition_helper(branch, r.upper_transfer_branch);
-            // transition_helper(branch, r.recombined_branch);
         } else {
             transition_helper(branch, r.merging_branch);
         }
@@ -114,21 +112,6 @@ void Parsimony_pruner::recombination_forward(Recombination &r) {
     update_mismatch();
     write_reduced_set(r.pos);
 }
-
-/*
-void Parsimony_pruner::recombination_forward(Recombination &r) {
-    transitions.clear();
-    Branch branch = Branch();
-    for (auto x : curr_mismatch) {
-        branch = x.first;
-        if (not r.affect(branch)) {
-            transition_helper(branch, branch);
-        }
-    }
-    update_mismatch();
-    write_reduced_set(r.pos);
-}
- */
 
 void Parsimony_pruner::recombination_backward(Recombination &r) {
     transitions.clear();
@@ -155,21 +138,6 @@ void Parsimony_pruner::recombination_backward(Recombination &r) {
     write_reduced_set(r.pos);
     update_mismatch();
 }
-
-/*
-void Parsimony_pruner::recombination_backward(Recombination &r) {
-    transitions.clear();
-    Branch branch = Branch();
-    for (auto x : curr_mismatch) {
-        branch = x.first;
-        if (not r.create(branch)) {
-            transition_helper(branch, branch);
-        }
-    }
-    write_reduced_set(r.pos);
-    update_mismatch();
-}
- */
 
 void Parsimony_pruner::check_reduction(map<float, pair<Branch, Node *>> joining_points) {
       float start = joining_points.begin()->first;
@@ -198,7 +166,6 @@ void Parsimony_pruner::build_match_map(ARG &a, map<float, Node *> base_nodes) {
     float inf = INT_MAX;
     float lb = 0;
     float state = 0;
-    float num_samples = (float) a.sample_nodes.size();
     map<float, set<Branch>>::iterator mb_it = a.mutation_branches.lower_bound(start);
     Node *n = nullptr;
     while (mb_it->first < end) {
@@ -206,24 +173,59 @@ void Parsimony_pruner::build_match_map(ARG &a, map<float, Node *> base_nodes) {
         n = get_node_at(m);
         state = n->get_state(m);
         lb = -1;
-        if (mb_it->second.size() > 0) {
-            for (Branch b : mb_it->second) {
-                if (b.lower_node->get_state(m) == state) {
-                    lb = max(lb, b.lower_node->time);
-                }
-            }
-            if (lb < 0) {
-                match_map[m] = num_samples;
+        for (Branch b : mb_it->second) {
+            if (b.lower_node->get_state(m) == state) {
+                lb = max(lb, b.lower_node->time);
             } else {
-                match_map[m] = lb;
+                lb = max(lb, max_time - b.lower_node->time);
             }
+        }
+        if (lb >= 0) {
+            match_map[m] = lb;
         }
         mb_it++;
     }
-    match_map[inf] = inf;
-    match_map[-1.0] = inf;
+    match_map[a.sequence_length] = inf;
+    match_map[0.0] = inf;
     potential_seeds = match_map;
 }
+
+/*
+void Parsimony_pruner::build_match_map(ARG &a, map<float, Node *> base_nodes) {
+    float start = base_nodes.begin()->first;
+    float end = base_nodes.rbegin()->first;
+    float m = 0;
+    float inf = INT_MAX;
+    float lb = inf;
+    float subtree_size = 0;
+    float state = 0;
+    map<float, Recombination>::iterator recomb_it = a.recombinations.upper_bound(start);
+    map<float, set<Branch>>::iterator mb_it = a.mutation_branches.lower_bound(start);
+    Node *n = nullptr;
+    Tree tree = a.get_tree_at(start);
+    while (mb_it->first < end) {
+        m = mb_it->first;
+        while (recomb_it->first < m) {
+            Recombination r = recomb_it->second;
+            tree.forward_update(r);
+            recomb_it++;
+        }
+        n = get_node_at(m);
+        state = n->get_state(m);
+        lb = inf;
+        if (mb_it->second.size() > 0) {
+            for (Branch b : mb_it->second) {
+                subtree_size = tree.num_descendants(b.lower_node);
+                if (b.lower_node->get_state(m) == state) {
+                    lb = max(lb, subtree_size);
+                } else {
+                    lb = max(lb, tree.branches.size() - subtree_size + 2);
+                }
+            }
+        }
+    }
+}
+ */
 
 float Parsimony_pruner::find_minimum_match() {
     auto it = min_element(potential_seeds.begin(), potential_seeds.end(),
@@ -233,6 +235,9 @@ float Parsimony_pruner::find_minimum_match() {
 }
 
 float Parsimony_pruner::count_mismatch(Branch branch, Node *n, float m) {
+    if (private_mutations.count(m) > 0) { // special penalty for singleton mutations
+        return 0.5;
+    }
     float s0 = n->get_state(m);
     float sl = branch.lower_node->get_state(m);
     float su = branch.upper_node->get_state(m);
@@ -283,22 +288,22 @@ void Parsimony_pruner::write_reduced_set(float pos) {
 
 void Parsimony_pruner::extend_forward(ARG &a, float x) {
     map<float, Recombination>::iterator recomb_it = a.recombinations.upper_bound(x);
-    map<float, float>::iterator match_it = match_map.upper_bound(x);
+    map<float, float>::iterator match_it = match_map.lower_bound(x);
     set<float>::iterator used_it = used_seeds.upper_bound(x);
     float m = x;
     Node *n = nullptr;
     float ub = *used_it;
     while (curr_mismatch.size() > 0 and match_it->first < ub) {
+        potential_seeds.erase(m);
+        match_it++;
         m = match_it->first;
-        while (recomb_it->first < m) {
+        while (recomb_it->first <= m) {
             Recombination r = recomb_it->second;
             recomb_it++;
             recombination_forward(r);
         }
         n = get_node_at(m);
         mutation_forward(n, m);
-        potential_seeds.erase(m);
-        match_it++;
     }
     cout << "Extend forward from " << x << " to " << m << endl;
 }
@@ -308,22 +313,21 @@ void Parsimony_pruner::extend_backward(ARG &a, float x) {
     map<float, float>::iterator match_it = match_map.find(x);
     set<float>::iterator used_it = used_seeds.upper_bound(x);
     recomb_it--;
-    match_it--;
     used_it--;
     float m = x;
     Node *n = nullptr;
     float lb = *used_it;
     while (curr_mismatch.size() > 0 and match_it->first > lb) {
+        potential_seeds.erase(m);
+        match_it--;
         m = match_it->first;
-        while (recomb_it->first >= m) {
+        while (recomb_it->first > m) {
             Recombination r = recomb_it->second;
             recomb_it--;
             recombination_backward(r);
         }
         n = get_node_at(m);
         mutation_backward(n, m);
-        potential_seeds.erase(m);
-        match_it--;
     }
     cout << "Extend backward from " << x << " to " << m << endl;
 }
