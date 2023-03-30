@@ -80,7 +80,7 @@ void Parsimony_pruner::mutation_backward(Node *n, float m) {
             bad_branches.insert(branch);
         }
     }
-    if (bad_branches.size() > 0) {
+    if (bad_branches.size() > 0 or m == 0) {
         write_reduced_set(m);
     }
     for (Branch b : bad_branches) {
