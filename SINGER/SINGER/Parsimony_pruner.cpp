@@ -34,7 +34,6 @@ void Parsimony_pruner::start_search(ARG &a, float m) {
         }
     }
     potential_seeds.erase(m);
-    write_reduced_set(m);
 }
 
 void Parsimony_pruner::extend(ARG &a, float x) {
@@ -63,7 +62,7 @@ void Parsimony_pruner::mutation_forward(Node *n, float m) {
         curr_mismatch.erase(b);
     }
     if (bad_branches.size() > 0) {
-        write_reduced_set(m);
+        write_reduction_change(m, bad_branches, {});
     }
 }
 
@@ -80,11 +79,14 @@ void Parsimony_pruner::mutation_backward(Node *n, float m) {
             bad_branches.insert(branch);
         }
     }
-    if (bad_branches.size() > 0 or m == 0) {
-        write_reduced_set(m);
-    }
     for (Branch b : bad_branches) {
         curr_mismatch.erase(b);
+    }
+    if (bad_branches.size() > 0) {
+        write_reduction_change(m, {}, bad_branches);
+    }
+    if (m == 0) {
+        write_init_set();
     }
 }
 
@@ -97,26 +99,37 @@ Node *Parsimony_pruner::get_node_at(float x) {
 void Parsimony_pruner::recombination_forward(Recombination &r) {
     transitions.clear();
     Branch branch = Branch();
+    set<Branch> db = {};
+    set<Branch> ib = {};
     for (auto x : curr_mismatch) {
         branch = x.first;
         if (not r.affect(branch)) {
             transition_helper(branch, branch);
         } else if (branch == r.source_branch) {
             transition_helper(branch, r.recombined_branch);
+            db.insert(branch);
+            ib.insert(r.recombined_branch);
         } else if (branch == r.target_branch) {
             transition_helper(branch, r.lower_transfer_branch);
             transition_helper(branch, r.upper_transfer_branch);
+            db.insert(branch);
+            ib.insert(r.lower_transfer_branch);
+            ib.insert(r.upper_transfer_branch);
         } else {
             transition_helper(branch, r.merging_branch);
+            db.insert(branch);
+            ib.insert(r.merging_branch);
         }
     }
+    write_reduction_change(r.pos, db, ib);
     update_mismatch();
-    write_reduced_set(r.pos);
 }
 
 void Parsimony_pruner::recombination_backward(Recombination &r) {
     transitions.clear();
     Branch branch = Branch();
+    set<Branch> db = {};
+    set<Branch> ib = {};
     for (auto x : curr_mismatch) {
         branch = x.first;
         if (not r.create(branch)) {
@@ -124,19 +137,28 @@ void Parsimony_pruner::recombination_backward(Recombination &r) {
         }
         if (branch == r.recombined_branch) {
             transition_helper(branch, r.source_branch);
+            ib.insert(branch);
+            db.insert(r.source_branch);
         }
         if (branch == r.lower_transfer_branch) {
             transition_helper(branch, r.target_branch);
+            ib.insert(branch);
+            db.insert(r.target_branch);
         }
         if (branch == r.upper_transfer_branch) {
             transition_helper(branch, r.target_branch);
+            ib.insert(branch);
+            db.insert(r.target_branch);
         }
         if (branch == r.merging_branch) {
             transition_helper(branch, r.source_sister_branch);
             transition_helper(branch, r.source_parent_branch);
+            ib.insert(branch);
+            db.insert(r.source_sister_branch);
+            db.insert(r.source_parent_branch);
         }
     }
-    write_reduced_set(r.pos);
+    write_reduction_change(r.pos, db, ib);
     update_mismatch();
 }
 
@@ -199,43 +221,6 @@ void Parsimony_pruner::build_match_map(ARG &a, map<float, Node *> base_nodes) {
     potential_seeds = match_map;
 }
 
-/*
-void Parsimony_pruner::build_match_map(ARG &a, map<float, Node *> base_nodes) {
-    float start = base_nodes.begin()->first;
-    float end = base_nodes.rbegin()->first;
-    float m = 0;
-    float inf = INT_MAX;
-    float lb = inf;
-    float subtree_size = 0;
-    float state = 0;
-    map<float, Recombination>::iterator recomb_it = a.recombinations.upper_bound(start);
-    map<float, set<Branch>>::iterator mb_it = a.mutation_branches.lower_bound(start);
-    Node *n = nullptr;
-    Tree tree = a.get_tree_at(start);
-    while (mb_it->first < end) {
-        m = mb_it->first;
-        while (recomb_it->first < m) {
-            Recombination r = recomb_it->second;
-            tree.forward_update(r);
-            recomb_it++;
-        }
-        n = get_node_at(m);
-        state = n->get_state(m);
-        lb = inf;
-        if (mb_it->second.size() > 0) {
-            for (Branch b : mb_it->second) {
-                subtree_size = tree.num_descendants(b.lower_node);
-                if (b.lower_node->get_state(m) == state) {
-                    lb = max(lb, subtree_size);
-                } else {
-                    lb = max(lb, tree.branches.size() - subtree_size + 2);
-                }
-            }
-        }
-    }
-}
- */
-
 float Parsimony_pruner::find_minimum_match() {
     auto it = min_element(potential_seeds.begin(), potential_seeds.end(),
                           [](const auto& l, const auto& r) { return l.second < r.second;});
@@ -282,7 +267,19 @@ void Parsimony_pruner::update_mismatch() {
     curr_mismatch = next_mismatch;
 }
 
-void Parsimony_pruner::update_change(float x, set<Branch> db, set<Branch> ib) {
+void Parsimony_pruner::write_init_set() {
+    set<Branch> init_branches = {};
+    for (auto x : curr_mismatch) {
+        init_branches.insert(x.first);
+    }
+    deleted_branches[0] = {};
+    inserted_branches[0] = init_branches;
+}
+
+void Parsimony_pruner::write_reduction_change(float x, set<Branch> db, set<Branch> ib) {
+    if (db.size() == 0 and ib.size() == 0) { // skip the no information change
+        return;
+    }
     if (deleted_branches.count(x) > 0) {
         deleted_branches[x].insert(db.begin(), db.end());
     } else {
@@ -292,18 +289,6 @@ void Parsimony_pruner::update_change(float x, set<Branch> db, set<Branch> ib) {
         inserted_branches[x].insert(ib.begin(), ib.end());
     } else {
         inserted_branches[x] = ib;
-    }
-}
-
-void Parsimony_pruner::write_reduced_set(float pos) {
-    set<Branch> reduced_set = {};
-    for (auto x : curr_mismatch) {
-        reduced_set.insert(x.first);
-    }
-    if (reduced_sets.count(pos) > 0) {
-        reduced_sets[pos].insert(reduced_set.begin(), reduced_set.end());
-    } else {
-        reduced_sets[pos] = reduced_set;
     }
 }
 

@@ -65,9 +65,9 @@ public:
     
     void update_mismatch();
     
-    void update_change(float x, set<Branch> db, set<Branch> ib);
+    void write_init_set();
     
-    void write_reduced_set(float pos);
+    void write_reduction_change(float x, set<Branch> db, set<Branch> ib);
     
     void extend_forward(ARG &a, float x);
     
