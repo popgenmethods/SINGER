@@ -40,4 +40,5 @@ void test_pruner() {
     Parsimony_pruner parsimony_pruner = Parsimony_pruner();
     parsimony_pruner.prune_arg(a, a.base_nodes);
     parsimony_pruner.check_reduction(joining_points);
+    parsimony_pruner.print_reduction_size();
 }

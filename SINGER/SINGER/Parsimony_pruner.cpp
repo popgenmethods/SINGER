@@ -39,6 +39,7 @@ void Parsimony_pruner::start_search(ARG &a, float m) {
 
 void Parsimony_pruner::extend(ARG &a, float x) {
     start_search(a, x);
+    cout << "Seed search size: " << curr_mismatch.size() << endl;
     extend_forward(a, x);
     start_search(a, x);
     extend_backward(a, x);
@@ -159,6 +160,12 @@ void Parsimony_pruner::check_reduction(map<float, pair<Branch, Node *>> joining_
     }
 }
 
+void Parsimony_pruner::print_reduction_size() {
+    for (auto x : reduced_sets) {
+        cout << x.first << " : " << x.second.size() << endl;
+    }
+}
+
 void Parsimony_pruner::build_match_map(ARG &a, map<float, Node *> base_nodes) {
     float start = base_nodes.begin()->first;
     float end = base_nodes.rbegin()->first;
@@ -176,6 +183,8 @@ void Parsimony_pruner::build_match_map(ARG &a, map<float, Node *> base_nodes) {
         for (Branch b : mb_it->second) {
             if (b.lower_node->get_state(m) == state) {
                 lb = max(lb, b.lower_node->time);
+            } else if (b.upper_node->index == -1) {
+                lb = max(lb, 0.0f);
             } else {
                 lb = max(lb, max_time - b.lower_node->time);
             }
@@ -231,6 +240,7 @@ float Parsimony_pruner::find_minimum_match() {
     auto it = min_element(potential_seeds.begin(), potential_seeds.end(),
                           [](const auto& l, const auto& r) { return l.second < r.second;});
     float x = it->first;
+    cout << "Seed mutation age: " << it->second << endl;
     return x;
 }
 
@@ -272,17 +282,28 @@ void Parsimony_pruner::update_mismatch() {
     curr_mismatch = next_mismatch;
 }
 
+void Parsimony_pruner::update_change(float x, set<Branch> db, set<Branch> ib) {
+    if (deleted_branches.count(x) > 0) {
+        deleted_branches[x].insert(db.begin(), db.end());
+    } else {
+        deleted_branches[x] = db;
+    }
+    if (inserted_branches.count(x) > 0) {
+        inserted_branches[x].insert(ib.begin(), ib.end());
+    } else {
+        inserted_branches[x] = ib;
+    }
+}
+
 void Parsimony_pruner::write_reduced_set(float pos) {
     set<Branch> reduced_set = {};
     for (auto x : curr_mismatch) {
         reduced_set.insert(x.first);
     }
-    if (reduced_sets.count(pos) == 0) {
-        reduced_sets[pos] = reduced_set;
+    if (reduced_sets.count(pos) > 0) {
+        reduced_sets[pos].insert(reduced_set.begin(), reduced_set.end());
     } else {
-        set<Branch> curr_reduced_set = reduced_sets[pos];
-        curr_reduced_set.insert(reduced_set.begin(), reduced_set.end());
-        reduced_sets[pos] = curr_reduced_set;
+        reduced_sets[pos] = reduced_set;
     }
 }
 

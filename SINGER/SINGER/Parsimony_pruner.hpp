@@ -24,7 +24,10 @@ public:
     map<float, float> match_map = {};
     map<float, float> potential_seeds = {};
     set<float> used_seeds = {};
+    
     map<float, set<Branch>> reduced_sets = {};
+    map<float, set<Branch>> deleted_branches = {};
+    map<float, set<Branch>> inserted_branches = {};
     
     map<Branch, set<Branch>> transitions = {};
 
@@ -45,6 +48,8 @@ public:
     void recombination_backward(Recombination &r);
     
     void check_reduction(map<float, pair<Branch, Node *>> joining_points);
+    
+    void print_reduction_size();
 
     // private:
     
@@ -59,6 +64,8 @@ public:
     void transition_helper(Branch sb, Branch tb);
     
     void update_mismatch();
+    
+    void update_change(float x, set<Branch> db, set<Branch> ib);
     
     void write_reduced_set(float pos);
     
