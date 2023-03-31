@@ -12,13 +12,18 @@ Parsimony_pruner::Parsimony_pruner() {
 
 void Parsimony_pruner::prune_arg(ARG &a, map<float, Node *> base_nodes) {
     nodes = base_nodes;
-    used_seeds = {0.0, a.sequence_length};
+    start = base_nodes.begin()->first;
+    end = base_nodes.rbegin()->first;
+    used_seeds = {start, end};
     build_match_map(a, base_nodes);
     float x = 0;
     while (potential_seeds.size() > 2) {
         x = find_minimum_match();
         extend(a, x);
     }
+    deleted_branches.insert({a.sequence_length, {}});
+    inserted_branches.insert({a.sequence_length, {}});
+    write_reductions(a);
     cout << endl;
 }
 
@@ -85,7 +90,7 @@ void Parsimony_pruner::mutation_backward(Node *n, float m) {
     if (bad_branches.size() > 0) {
         write_reduction_change(m, {}, bad_branches);
     }
-    if (m == 0) {
+    if (m == start) {
         write_init_set();
     }
 }
@@ -166,7 +171,7 @@ void Parsimony_pruner::check_reduction(map<float, pair<Branch, Node *>> joining_
       float start = joining_points.begin()->first;
     float end = joining_points.rbegin()->first;
     map<float, pair<Branch, Node *>>::iterator join_it = joining_points.begin();
-    map<float, set<Branch>>::iterator reduced_it = reduced_sets.begin();
+    map<float, set<Branch>>::iterator reduced_it = reductions.begin();
     Branch joining_branch = Branch();
     float x = start;
     set<Branch> reduced_set = reduced_it->second;
@@ -183,14 +188,12 @@ void Parsimony_pruner::check_reduction(map<float, pair<Branch, Node *>> joining_
 }
 
 void Parsimony_pruner::print_reduction_size() {
-    for (auto x : reduced_sets) {
+    for (auto x : reductions) {
         cout << x.first << " : " << x.second.size() << endl;
     }
 }
 
 void Parsimony_pruner::build_match_map(ARG &a, map<float, Node *> base_nodes) {
-    float start = base_nodes.begin()->first;
-    float end = base_nodes.rbegin()->first;
     float m = 0;
     float inf = INT_MAX;
     float lb = 0;
@@ -216,8 +219,8 @@ void Parsimony_pruner::build_match_map(ARG &a, map<float, Node *> base_nodes) {
         }
         mb_it++;
     }
-    match_map[a.sequence_length] = inf;
-    match_map[0.0] = inf;
+    match_map[end] = inf;
+    match_map[start] = inf;
     potential_seeds = match_map;
 }
 
@@ -289,6 +292,29 @@ void Parsimony_pruner::write_reduction_change(float x, set<Branch> db, set<Branc
         inserted_branches[x].insert(ib.begin(), ib.end());
     } else {
         inserted_branches[x] = ib;
+    }
+}
+
+void Parsimony_pruner::write_reductions(ARG &a) {
+    map<float, set<Branch>>::iterator deleted_it = deleted_branches.begin();
+    map<float, set<Branch>>::iterator inserted_it = inserted_branches.begin();
+    vector<float>::iterator start_it = std::lower_bound(a.coordinates.begin(), a.coordinates.end(), start);
+    int start_index = (int) (start_it - a.coordinates.begin());
+    vector<float>::iterator end_it = std::lower_bound(a.coordinates.begin(), a.coordinates.end(), end);
+    int end_index = (int) (end_it - a.coordinates.begin());
+    set<Branch> reduced_set = {};
+    for (int i = start_index; i < end_index; i++) {
+        while (deleted_it->first < a.coordinates[i+1]) {
+            for (auto x : deleted_it->second) {
+                reduced_set.erase(x);
+            }
+            for (auto x : inserted_it->second) {
+                reduced_set.insert(x);
+            }
+            deleted_it++;
+            inserted_it++;
+            reductions[a.coordinates[i]] = reduced_set;
+        }
     }
 }
 

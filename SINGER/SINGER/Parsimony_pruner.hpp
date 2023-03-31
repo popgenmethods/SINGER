@@ -9,6 +9,7 @@
 #define Parsimony_pruner_hpp
 
 #include <stdio.h>
+#include <algorithm>
 #include "Pruner.hpp"
 #include "ARG.hpp"
 
@@ -18,6 +19,8 @@ public:
     
     float max_mismatch = 0.999;
     float max_time = 100;
+    float start = 0;
+    float end = 0;
     map<float, Node *> nodes = {};
     set<float> private_mutations = {};
     map<Branch, float> curr_mismatch = {};
@@ -25,7 +28,7 @@ public:
     map<float, float> potential_seeds = {};
     set<float> used_seeds = {};
     
-    map<float, set<Branch>> reduced_sets = {};
+    map<float, set<Branch>> reductions = {};
     map<float, set<Branch>> deleted_branches = {};
     map<float, set<Branch>> inserted_branches = {};
     
@@ -68,6 +71,8 @@ public:
     void write_init_set();
     
     void write_reduction_change(float x, set<Branch> db, set<Branch> ib);
+    
+    void write_reductions(ARG &a);
     
     void extend_forward(ARG &a, float x);
     
