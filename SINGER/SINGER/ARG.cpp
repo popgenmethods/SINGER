@@ -26,7 +26,7 @@ ARG::~ARG() {
 
 void ARG::discretize(float s) {
     map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(0);
-    float curr_pos = 0;
+    float curr_pos = -0.1;
     while (curr_pos < sequence_length) {
         coordinates.push_back(curr_pos);
         if (recomb_it->first < curr_pos + s) {

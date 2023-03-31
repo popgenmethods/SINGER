@@ -15,14 +15,14 @@ void Parsimony_pruner::prune_arg(ARG &a, map<float, Node *> base_nodes) {
     start = base_nodes.begin()->first;
     end = base_nodes.rbegin()->first;
     used_seeds = {start, end};
+    deleted_branches.insert({end, {}});
+    inserted_branches.insert({end, {}});
     build_match_map(a, base_nodes);
     float x = 0;
     while (potential_seeds.size() > 2) {
         x = find_minimum_match();
         extend(a, x);
     }
-    deleted_branches.insert({a.sequence_length, {}});
-    inserted_branches.insert({a.sequence_length, {}});
     write_reductions(a);
     cout << endl;
 }
@@ -63,11 +63,11 @@ void Parsimony_pruner::mutation_forward(Node *n, float m) {
             bad_branches.insert(branch);
         }
     }
-    for (Branch b : bad_branches) {
-        curr_mismatch.erase(b);
-    }
     if (bad_branches.size() > 0) {
         write_reduction_change(m, bad_branches, {});
+    }
+    for (Branch b : bad_branches) {
+        curr_mismatch.erase(b);
     }
 }
 
@@ -84,11 +84,11 @@ void Parsimony_pruner::mutation_backward(Node *n, float m) {
             bad_branches.insert(branch);
         }
     }
-    for (Branch b : bad_branches) {
-        curr_mismatch.erase(b);
-    }
     if (bad_branches.size() > 0) {
         write_reduction_change(m, {}, bad_branches);
+    }
+    for (Branch b : bad_branches) {
+        curr_mismatch.erase(b);
     }
     if (m == start) {
         write_init_set();
@@ -228,6 +228,7 @@ float Parsimony_pruner::find_minimum_match() {
     auto it = min_element(potential_seeds.begin(), potential_seeds.end(),
                           [](const auto& l, const auto& r) { return l.second < r.second;});
     float x = it->first;
+    cout << "Seed mutation position: " << it->first << endl;
     cout << "Seed mutation age: " << it->second << endl;
     return x;
 }
@@ -275,8 +276,8 @@ void Parsimony_pruner::write_init_set() {
     for (auto x : curr_mismatch) {
         init_branches.insert(x.first);
     }
-    deleted_branches[0] = {};
-    inserted_branches[0] = init_branches;
+    deleted_branches[start] = {};
+    inserted_branches[start] = init_branches;
 }
 
 void Parsimony_pruner::write_reduction_change(float x, set<Branch> db, set<Branch> ib) {
@@ -306,6 +307,7 @@ void Parsimony_pruner::write_reductions(ARG &a) {
     for (int i = start_index; i < end_index; i++) {
         while (deleted_it->first < a.coordinates[i+1]) {
             for (auto x : deleted_it->second) {
+                assert(reduced_set.count(x) > 0);
                 reduced_set.erase(x);
             }
             for (auto x : inserted_it->second) {
