@@ -52,7 +52,7 @@ public:
     
     void check_reduction(map<float, pair<Branch, Node *>> joining_points);
     
-    void print_reduction_size();
+    void write_reduction_size(string filename);
 
     // private:
     

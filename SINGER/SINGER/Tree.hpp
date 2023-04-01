@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <map>
 #include "Branch.hpp"
 #include "Recombination.hpp"
 
@@ -18,6 +19,7 @@ class Tree {
 public:
     
     set<Branch> branches = {};
+    map<Node *, Node *> parents = {};
     
     Tree();
     
@@ -31,7 +33,7 @@ public:
     
     void backward_update(Recombination &r);
     
-    float num_descendants(Node *n);
+    Node *find_sibling(Node *n);
     
     Branch find_split_branch(Branch removed_branch);
     

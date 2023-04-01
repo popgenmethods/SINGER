@@ -34,13 +34,15 @@ public:
     set<Node *, compare_node> node_set = {};
     map<float, Node*> base_nodes = {};
     
+    ARG();
+    
     ARG(float N, float l);
     
     ~ARG();
     
     void discretize(float s);
     
-    void init_arg(Node *n);
+    void build_singleton_arg(Node *n);
     
     void add_sample(Node *n);
     
@@ -51,6 +53,8 @@ public:
     Tree get_tree_at(float x);
     
     map<float, pair<Branch, Node *>> remove(tuple<float, Branch, float> cut_point);
+    
+    map<float, pair<Branch, Node *>> remove(map<float, Branch> removed_branches);
     
     map<float, pair<Branch, Node *>> remove_leaf(int index);
     

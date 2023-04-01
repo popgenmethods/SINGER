@@ -187,9 +187,11 @@ void Parsimony_pruner::check_reduction(map<float, pair<Branch, Node *>> joining_
     }
 }
 
-void Parsimony_pruner::print_reduction_size() {
+void Parsimony_pruner::write_reduction_size(string filename) {
+    ofstream file;
+    file.open(filename);
     for (auto x : reductions) {
-        cout << x.first << " : " << x.second.size() << endl;
+        file << x.first << " " << x.second.size() << "\n";
     }
 }
 
@@ -206,16 +208,19 @@ void Parsimony_pruner::build_match_map(ARG &a, map<float, Node *> base_nodes) {
         state = n->get_state(m);
         lb = -1;
         for (Branch b : mb_it->second) {
+            if (b.upper_node->time < n->time) {
+                continue; // don't search if the mutation is absolutely below the query node
+            }
             if (b.lower_node->get_state(m) == state) {
-                lb = max(lb, b.lower_node->time);
+                lb = max(lb, max(b.lower_node->time, n->time));
             } else if (b.upper_node->index == -1) {
                 lb = max(lb, 0.0f);
             } else {
                 lb = max(lb, max_time - b.lower_node->time);
             }
         }
-        if (lb >= 0) {
-            match_map[m] = lb;
+        if (lb >= 0) { // when negative, no mutation is legal, thus no match was found
+            match_map[m] = lb - n->time;
         }
         mb_it++;
     }

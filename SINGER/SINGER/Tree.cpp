@@ -24,6 +24,7 @@ void Tree::insert_branch(Branch b) {
     assert(b.upper_node != nullptr and b.lower_node != nullptr);
     assert(branches.count(b) == 0);
     branches.insert(b);
+    parents[b.lower_node] = b.upper_node;
 }
 
 void Tree::delete_branch(Branch b) {
@@ -50,31 +51,23 @@ void Tree::backward_update(Recombination &r) {
     }
 }
 
-float Tree::num_descendants(Node *n) {
-    if (n->time == 0) {
-        return 1;
+Node *Tree::find_sibling(Node *n) {
+    Node *p = parents[n];
+    Branch b = Branch(n, p);
+    set<Branch>::iterator branch_it = branches.find(b);
+    branch_it++;
+    if ((*branch_it).upper_node != p) {
+        branch_it--;
+        branch_it--;
     }
-    Node *leaf = (*branches.begin()).lower_node;
-    Branch query_branch = Branch(leaf, n);
-    set<Branch>::iterator branch_it = branches.upper_bound(query_branch);
-    branch_it--;
-    Node *child_1 = (*branch_it).lower_node;
-    branch_it--;
-    Node *child_2 = (*branch_it).lower_node;
-    return num_descendants(child_1) + num_descendants(child_2);
+    Node *s = (*branch_it).lower_node;
+    return s;
 }
 
 Branch Tree::find_split_branch(Branch removed_branch) {
-    Branch split_upper = Branch();
-    Branch split_lower = Branch();
-    for (Branch b : branches) {
-        if (b.lower_node == removed_branch.upper_node) {
-            split_upper = b;
-        } else if (b != removed_branch and b.upper_node == removed_branch.upper_node) {
-            split_lower = b;
-        }
-    }
-    return Branch(split_lower.lower_node, split_upper.upper_node);
+    Node *p = parents[removed_branch.upper_node];
+    Node *c = find_sibling(removed_branch.lower_node);
+    return Branch(c, p);
 }
 
 pair<Branch, float> Tree::sample_cut_point() {

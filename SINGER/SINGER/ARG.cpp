@@ -7,6 +7,8 @@
 
 #include "ARG.hpp"
 
+ARG::ARG() {}
+
 ARG::ARG(float N, float l) {
     root->set_index(-1);
     Ne = N;
@@ -26,9 +28,9 @@ ARG::~ARG() {
 
 void ARG::discretize(float s) {
     map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(0);
-    float curr_pos = -0.1;
+    float curr_pos = 0;
     while (curr_pos < sequence_length) {
-        coordinates.push_back(curr_pos);
+        coordinates.push_back(max(curr_pos - 0.1f, 0.0f));
         if (recomb_it->first < curr_pos + s) {
             curr_pos = recomb_it->first;
             recomb_it++;
@@ -40,7 +42,7 @@ void ARG::discretize(float s) {
     bin_num = (int) coordinates.size() - 1;
 }
 
-void ARG::init_arg(Node *n) {
+void ARG::build_singleton_arg(Node *n) {
     Branch branch = Branch(n, root);
     Recombination r = Recombination({}, {branch});
     r.set_pos(0.0);
@@ -145,6 +147,10 @@ map<float, pair<Branch, Node *>> ARG::remove(tuple<float, Branch, float> cut_poi
     joining_points.insert({end_pos, joining_points.rbegin()->second});
     remap_mutations(joining_points, base_nodes);
     return joining_points;
+}
+
+map<float, pair<Branch, Node *>> ARG::remove(map<float, Branch> removed_branches) {
+    return {};
 }
 
 map<float, pair<Branch, Node *>> ARG::remove_leaf(int index) {
