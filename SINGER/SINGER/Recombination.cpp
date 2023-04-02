@@ -113,6 +113,24 @@ void Recombination::remove(Branch prev_removed_branch, Branch next_removed_branc
     find_recomb_info();
 }
 
+void Recombination::remove(Branch prev_removed_branch, Branch next_removed_branch, Branch prev_split_branch, Branch next_split_branch) {
+    add_deleted_branch(prev_split_branch);
+    add_deleted_branch(next_removed_branch);
+    add_deleted_branch(Branch(next_split_branch.lower_node, next_removed_branch.upper_node));
+    add_deleted_branch(Branch(next_removed_branch.upper_node, next_split_branch.upper_node));
+    add_inserted_branch(next_split_branch);
+    add_inserted_branch(prev_removed_branch);
+    add_inserted_branch(Branch(prev_split_branch.lower_node, prev_removed_branch.upper_node));
+    add_inserted_branch(Branch(prev_removed_branch.upper_node, prev_split_branch.upper_node));
+    simplify_branches();
+    if (source_branch == Branch(prev_split_branch.lower_node, prev_removed_branch.upper_node) or source_branch == Branch(prev_removed_branch.upper_node, prev_split_branch.upper_node)) { // when the previous source branch was destroyed
+        source_branch = prev_split_branch;
+    }
+    find_nodes();
+    find_target_branch();
+    find_recomb_info();
+}
+
 void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Branch prev_joining_branch, Branch next_joining_branch, Node *cut_node) {
     add_deleted_branch(prev_added_branch);
     add_deleted_branch(next_joining_branch);
@@ -179,6 +197,22 @@ void Recombination::break_end(Branch prev_removed_branch, Branch prev_split_bran
     add_inserted_branch(Branch(prev_removed_branch.upper_node, prev_split_branch.upper_node));
     add_deleted_branch(prev_split_branch);
     add_deleted_branch(Branch(prev_removed_branch.lower_node, cut_node));
+    simplify_branches();
+}
+
+void Recombination::break_front(Branch next_removed_branch, Branch next_split_branch) {
+    add_deleted_branch(next_removed_branch);
+    add_deleted_branch(Branch(next_split_branch.lower_node, next_removed_branch.upper_node));
+    add_deleted_branch(Branch(next_removed_branch.upper_node, next_split_branch.upper_node));
+    add_inserted_branch(next_split_branch);
+    simplify_branches();
+}
+
+void Recombination::break_end(Branch prev_removed_branch, Branch prev_split_branch) {
+    add_inserted_branch(prev_removed_branch);
+    add_inserted_branch(Branch(prev_split_branch.lower_node, prev_removed_branch.upper_node));
+    add_inserted_branch(Branch(prev_removed_branch.upper_node, prev_split_branch.upper_node));
+    add_deleted_branch(prev_split_branch);
     simplify_branches();
 }
 
@@ -300,6 +334,9 @@ void Recombination::find_target_branch() {
 }
 
 void Recombination::find_recomb_info() {
+    if (pos == 0 or pos == INT_MAX) { // no need to process the pseudo terminal recombinations
+        return;
+    }
     Node *l = nullptr;
     Node *u = nullptr;
     // find merging branch by looking for deleted node in deleted branches

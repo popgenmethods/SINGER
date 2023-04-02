@@ -25,20 +25,19 @@ void test_read_arg() {
 void test_pruner() {
     srand(23491256);
     ARG a = ARG(2e4, 1e6);
-    a.read("/Users/yun_deng/Desktop/SINGER/arg_files/continuous_ts_10_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/continuous_ts_10_branches.txt");
+    a.read("/Users/yun_deng/Desktop/SINGER/arg_files/continuous_ts_100_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/continuous_ts_100_branches.txt");
     a.discretize(10);
     a.smc_sample_recombinations();
     for (Node *n : a.sample_nodes) {
         int index = n->index;
-        string mutation_file = "/Users/yun_deng/Desktop/SINGER/arg_files/continuous_sample_10_" + to_string(index) + ".txt";
+        string mutation_file = "/Users/yun_deng/Desktop/SINGER/arg_files/continuous_sample_100_" + to_string(index) + ".txt";
         n->read_mutation(mutation_file);
         a.add_sample(n);
     }
     a.impute_nodes(0, 1e6);
     a.map_mutations(0, 1e6);
-    map<float, pair<Branch, Node *>> joining_points = a.remove_leaf(9);
+    a.remove_leaf(99);
     Parsimony_pruner parsimony_pruner = Parsimony_pruner();
-    parsimony_pruner.prune_arg(a, a.base_nodes);
-    // parsimony_pruner.check_reduction(joining_points);
+    parsimony_pruner.prune_arg(a);
     parsimony_pruner.write_reduction_size("/Users/yun_deng/Desktop/SINGER/arg_files/reduction_size_10.txt");
 }

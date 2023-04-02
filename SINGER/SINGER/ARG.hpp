@@ -32,7 +32,8 @@ public:
     vector<float> coordinates = {};
     set<Node *, compare_node> sample_nodes = {};
     set<Node *, compare_node> node_set = {};
-    map<float, Node*> base_nodes = {};
+    map<float, Branch> joining_branches = {};
+    map<float, Branch> removed_branches = {};
     
     ARG();
     
@@ -54,9 +55,11 @@ public:
     
     map<float, pair<Branch, Node *>> remove(tuple<float, Branch, float> cut_point);
     
-    map<float, pair<Branch, Node *>> remove(map<float, Branch> removed_branches);
+    void remove(map<float, Branch> seed_branches);
     
-    map<float, pair<Branch, Node *>> remove_leaf(int index);
+    // void<float, pair<Branch, Node *>> remove_leaf(int index);
+    
+    void remove_leaf(int index);
     
     void add(map<float, pair<Branch, Node*>> joining_points);
     
@@ -84,7 +87,7 @@ public:
     
     void map_mutations(float x, float y);
     
-    void remap_mutations(map<float, pair<Branch, Node *>> prev_joining_points, map<float, Node *> base_nodes);
+    void remap_mutations();
     
     void map_mutation(Tree tree, float x);
     
@@ -94,7 +97,7 @@ public:
     
     void check_mapping();
     
-    void clear_base_nodes();
+    void clear_remove_info();
     
     float smc_prior_likelihood(float r);
     

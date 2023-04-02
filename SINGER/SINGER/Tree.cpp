@@ -64,7 +64,7 @@ Node *Tree::find_sibling(Node *n) {
     return s;
 }
 
-Branch Tree::find_split_branch(Branch removed_branch) {
+Branch Tree::find_joining_branch(Branch removed_branch) {
     Node *p = parents[removed_branch.upper_node];
     Node *c = find_sibling(removed_branch.lower_node);
     return Branch(c, p);

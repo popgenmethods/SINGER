@@ -56,9 +56,9 @@ void ARG::add_sample(Node *n) {
     for (float x : mutations) {
         mutation_sites.insert(x);
     }
-    base_nodes.clear();
-    base_nodes[0] = n;
-    base_nodes[sequence_length] = n;
+    removed_branches.clear();
+    removed_branches[0] = Branch(n, root);
+    removed_branches[sequence_length] = Branch(n, root);
 }
 
 void ARG::add_node(Node *n) {
@@ -106,20 +106,20 @@ map<float, pair<Branch, Node *>> ARG::remove(tuple<float, Branch, float> cut_poi
     Tree backward_tree = forward_tree;
     map<float, Recombination>::iterator f_it = recombinations.upper_bound(pos);
     map<float, Recombination>::iterator b_it = recombinations.upper_bound(pos);
-    Branch prev_split_branch;
-    Branch next_split_branch;
+    Branch prev_joining_branch;
+    Branch next_joining_branch;
     Branch prev_removed_branch = center_branch;
     Branch next_removed_branch = center_branch;
     pair<Branch, Node *> joining_point = {};
     while (next_removed_branch != Branch()) {
         Recombination &r = f_it->second;
-        prev_split_branch = forward_tree.find_split_branch(prev_removed_branch);
+        prev_joining_branch = forward_tree.find_joining_branch(prev_removed_branch);
         forward_tree.forward_update(r);
         next_removed_branch = r.trace_forward(t, prev_removed_branch);
-        next_split_branch = forward_tree.find_split_branch(next_removed_branch);
-        joining_point = {next_split_branch, next_removed_branch.upper_node};
-        r.remove(prev_removed_branch, next_removed_branch, prev_split_branch, next_split_branch, cut_node);
-        base_nodes.insert({min(r.pos, sequence_length), next_removed_branch.lower_node});
+        next_joining_branch = forward_tree.find_joining_branch(next_removed_branch);
+        joining_point = {next_joining_branch, next_removed_branch.upper_node};
+        r.remove(prev_removed_branch, next_removed_branch, prev_joining_branch, next_joining_branch, cut_node);
+        removed_branches[min(r.pos, sequence_length)] = next_removed_branch;
         joining_points.insert({min(r.pos, sequence_length), joining_point});
         f_it++;
         prev_removed_branch = next_removed_branch;
@@ -129,30 +129,57 @@ map<float, pair<Branch, Node *>> ARG::remove(tuple<float, Branch, float> cut_poi
     while (prev_removed_branch != Branch()) {
         b_it--;
         Recombination &r = b_it->second;
-        base_nodes.insert({r.pos, prev_removed_branch.lower_node});
-        next_split_branch = backward_tree.find_split_branch(next_removed_branch);
-        joining_point = {next_split_branch, next_removed_branch.upper_node};
+        removed_branches[r.pos] = prev_removed_branch;
+        next_joining_branch = backward_tree.find_joining_branch(next_removed_branch);
+        joining_point = {next_joining_branch, next_removed_branch.upper_node};
         joining_points.insert({r.pos, joining_point});
         backward_tree.backward_update(r);
         prev_removed_branch = r.trace_backward(t, next_removed_branch);
-        prev_split_branch = backward_tree.find_split_branch(prev_removed_branch);
-        r.remove(prev_removed_branch, next_removed_branch, prev_split_branch, next_split_branch, cut_node);
+        prev_joining_branch = backward_tree.find_joining_branch(prev_removed_branch);
+        r.remove(prev_removed_branch, next_removed_branch, prev_joining_branch, next_joining_branch, cut_node);
         next_removed_branch = prev_removed_branch;
     }
     remove_empty_recombinations();
-    // int start_pos = base_nodes.begin()->first;
-    int end_pos = base_nodes.rbegin()->first;
+    // int start_pos = removed_nodes.begin()->first;
+    float end_pos = removed_branches.rbegin()->first;
     // impute_nodes(start_pos, end_pos);
     joining_points.erase(end_pos);
     joining_points.insert({end_pos, joining_points.rbegin()->second});
-    remap_mutations(joining_points, base_nodes);
+    remap_mutations();
     return joining_points;
 }
 
-map<float, pair<Branch, Node *>> ARG::remove(map<float, Branch> removed_branches) {
-    return {};
+void ARG::remove(map<float, Branch> seed_branches) {
+    // insights here: the coordinates of removed branches is the same as recombinations
+    float start = removed_branches.begin()->first;
+    float end = removed_branches.rbegin()->first;
+    Tree tree = Tree();
+    map<float, Recombination>::iterator recomb_it = recombinations.lower_bound(start);
+    map<float, Branch>::iterator seed_it = seed_branches.begin();
+    Branch prev_removed_branch = Branch();
+    Branch next_removed_branch = Branch();
+    Branch prev_joining_branch = Branch();
+    Branch next_joining_branch = Branch();
+    while (recomb_it->first < end) {
+        next_removed_branch = seed_it->second;
+        seed_it++;
+        Recombination &r = recomb_it->second;
+        tree.forward_update(r);
+        next_joining_branch = tree.find_joining_branch(next_removed_branch);
+        recomb_it++;
+        r.remove(prev_removed_branch, next_removed_branch, prev_joining_branch, next_joining_branch);
+        removed_branches[r.pos] = next_removed_branch;
+        joining_branches[r.pos] = next_joining_branch;
+        prev_removed_branch = next_removed_branch;
+        prev_joining_branch = next_joining_branch;
+    }
+    removed_branches[end] = next_removed_branch;
+    joining_branches[end] = next_joining_branch;
+    remove_empty_recombinations();
+    remap_mutations();
 }
 
+/*
 map<float, pair<Branch, Node *>> ARG::remove_leaf(int index) {
     Tree tree = get_tree_at(0);
     float pos = 0;
@@ -166,18 +193,42 @@ map<float, pair<Branch, Node *>> ARG::remove_leaf(int index) {
     tuple<float, Branch, float> cut_point = {pos, branch, time};
     return remove(cut_point);
 }
+ */
 
+void ARG::remove_leaf(int index) {
+    Node *s = nullptr;
+    for (Node *n : sample_nodes) {
+        if (n->index == index) {
+            s = n;
+        }
+    }
+    Tree tree = Tree();
+    map<float, Recombination>::iterator recomb_it = recombinations.begin();
+    Branch removed_branch = Branch();
+    Node *joining_node = nullptr;
+    map<float, Branch> removed_branches = {};
+    while (recomb_it->first < sequence_length) {
+        Recombination r = recomb_it->second;
+        tree.forward_update(r);
+        recomb_it++;
+        joining_node = tree.parents[s];
+        removed_branch = Branch(s, joining_node);
+        removed_branches[r.pos] = removed_branch;
+    }
+    remove(removed_branches);
+}
 
+/*
 void ARG::add(map<float, pair<Branch, Node*>> joining_points) {
     for (auto x : joining_points) {
         add_node(x.second.second);
     }
-    float start_pos = base_nodes.begin()->first;
-    float end_pos = base_nodes.rbegin()->first;
-    map<float, Node*>::iterator base_it = base_nodes.begin();
+    float start_pos = removed_branches.begin()->first;
+    float end_pos = removed_branches.rbegin()->first;
+    map<float, Branch>::iterator remove_it = removed_branches.begin();
     map<float, pair<Branch, Node*>>::iterator join_it = joining_points.begin();
     map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(start_pos);
-    Node *base_node = base_nodes.begin()->second;
+    Node *base_node = removed_branch.begin()->second.lower_node;
     Node *init_node = joining_points.begin()->second.second;
     Node *next_joining_node = nullptr;
     Branch prev_joining_branch = Branch();
@@ -218,6 +269,9 @@ void ARG::add(map<float, pair<Branch, Node*>> joining_points) {
     remove_empty_recombinations();
     impute_nodes(start_pos, end_pos);
 }
+ */
+
+void ARG::add(map<float, pair<Branch, Node *>> joining_points) {}
 
 void ARG::smc_sample_recombinations() {
     RSP_smc rsp = RSP_smc();
@@ -313,29 +367,27 @@ void ARG::map_mutations(float x, float y) {
     }
 }
 
-void ARG::remap_mutations(map<float, pair<Branch, Node *>> prev_joining_points, map<float, Node *> base_nodes) {
-    float x = prev_joining_points.begin()->first;
-    float y = prev_joining_points.rbegin()->first;
+void ARG::remap_mutations() {
+    float x = joining_branches.begin()->first;
+    float y = joining_branches.rbegin()->first;
     map<float, set<Branch>>::iterator mut_it = mutation_branches.lower_bound(x);
-    map<float, pair<Branch, Node *>>::iterator join_it = prev_joining_points.begin();
-    map<float, Node *>::iterator base_it = base_nodes.begin();
-    Node *base_node = nullptr;
-    Branch joining_branch = Branch();
+    map<float, Branch>::iterator join_it = joining_branches.begin();
+    map<float, Branch>::iterator remove_it = removed_branches.begin();
     Node *joining_node = nullptr;
+    Branch joining_branch = Branch();
     Branch removed_branch = Branch();
     Branch lower_branch = Branch();
     Branch upper_branch = Branch();
     while (mut_it->first < y) {
         while (join_it->first < mut_it->first) {
-            joining_branch = join_it->second.first;
-            joining_node = join_it->second.second;
+            joining_branch = join_it->second;
             join_it++;
         }
-        while (base_it->first < mut_it->first) {
-            base_node = base_it->second;
-            base_it++;
+        while (remove_it->first < mut_it->first) {
+            removed_branch = remove_it->second;
+            joining_node = removed_branch.upper_node;
+            remove_it++;
         }
-        removed_branch = Branch(base_node, joining_node);
         lower_branch = Branch(joining_branch.lower_node, joining_node);
         upper_branch = Branch(joining_node, joining_branch.upper_node);
         if (mut_it->second.count(removed_branch) > 0) {
@@ -406,8 +458,9 @@ void ARG::clear_memory(map<int, pair<Branch, Node *>> joining_points) {
     }
 }
 
-void ARG::clear_base_nodes() {
-    base_nodes.clear();
+void ARG::clear_remove_info() {
+    removed_branches.clear();
+    joining_branches.clear();
 }
  
 float ARG::smc_prior_likelihood(float r) {
@@ -476,8 +529,8 @@ float ARG::smc_likelihood(float r, float m) {
 }
 
 set<int> ARG::get_check_points() {
-    float start_pos = base_nodes.begin()->first;
-    float end_pos = base_nodes.rbegin()->first;
+    float start_pos = removed_branches.begin()->first;
+    float end_pos = removed_branches.rbegin()->first;
     map<float, Recombination>::iterator recomb_it = recombinations.lower_bound(start_pos);
     map<Node *, int> deleted_nodes = {};
     vector<tuple<Node *, int, int>> node_span = {};

@@ -10,14 +10,14 @@
 Parsimony_pruner::Parsimony_pruner() {
 }
 
-void Parsimony_pruner::prune_arg(ARG &a, map<float, Node *> base_nodes) {
-    nodes = base_nodes;
-    start = base_nodes.begin()->first;
-    end = base_nodes.rbegin()->first;
+void Parsimony_pruner::prune_arg(ARG &a) {
+    queries = a.removed_branches;
+    start = a.removed_branches.begin()->first;
+    end = a.removed_branches.rbegin()->first;
     used_seeds = {start, end};
     deleted_branches.insert({end, {}});
     inserted_branches.insert({end, {}});
-    build_match_map(a, base_nodes);
+    build_match_map(a);
     float x = 0;
     while (potential_seeds.size() > 2) {
         x = find_minimum_match();
@@ -96,9 +96,9 @@ void Parsimony_pruner::mutation_backward(Node *n, float m) {
 }
 
 Node *Parsimony_pruner::get_node_at(float x) {
-    map<float, Node *>::iterator node_it = nodes.upper_bound(x);
-    node_it--;
-    return node_it->second;
+    map<float, Branch>::iterator query_it = queries.upper_bound(x);
+    query_it--;
+    return query_it->second.lower_node;
 }
 
 void Parsimony_pruner::recombination_forward(Recombination &r) {
@@ -195,7 +195,7 @@ void Parsimony_pruner::write_reduction_size(string filename) {
     }
 }
 
-void Parsimony_pruner::build_match_map(ARG &a, map<float, Node *> base_nodes) {
+void Parsimony_pruner::build_match_map(ARG &a) {
     float m = 0;
     float inf = INT_MAX;
     float lb = 0;

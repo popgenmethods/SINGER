@@ -21,7 +21,7 @@ public:
     float max_time = 100;
     float start = 0;
     float end = 0;
-    map<float, Node *> nodes = {};
+    map<float, Branch> queries = {};
     set<float> private_mutations = {};
     map<Branch, float> curr_mismatch = {};
     map<float, float> match_map = {};
@@ -36,7 +36,7 @@ public:
 
     Parsimony_pruner();
     
-    void prune_arg(ARG &a, map<float, Node *> base_nodes);
+    void prune_arg(ARG &a);
     
     void start_search(ARG &a, float m);
     
@@ -58,7 +58,7 @@ public:
     
     Node *get_node_at(float x);
     
-    void build_match_map(ARG &a, map<float, Node *> base_nodes);
+    void build_match_map(ARG &a);
     
     float find_minimum_match();
     

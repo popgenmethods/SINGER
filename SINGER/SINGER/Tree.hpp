@@ -35,7 +35,7 @@ public:
     
     Node *find_sibling(Node *n);
     
-    Branch find_split_branch(Branch removed_branch);
+    Branch find_joining_branch(Branch removed_branch);
     
     pair<Branch, float> sample_cut_point();
     

@@ -52,11 +52,17 @@ public:
     
     void remove(Branch prev_removed_branch, Branch next_removed_branch, Branch prev_split_branch, Branch next_split_branch, Node *cut_node);
     
+    void remove(Branch prev_removed_branch, Branch next_removed_branch, Branch prev_split_branch, Branch next_split_branch);
+    
     void add(Branch prev_added_branch, Branch next_added_branch, Branch prev_joining_branch, Branch next_joining_branch, Node *cut_node);
     
     void break_front(Branch next_removed_branch, Branch next_split_branch, Node *cut_node);
     
     void break_end(Branch next_removed_branch, Branch next_split_branch, Node *cut_node);
+    
+    void break_front(Branch next_removed_branch, Branch next_split_branch);
+    
+    void break_end(Branch next_removed_branch, Branch next_split_branch);
     
     void fix_front(Branch next_added_branch, Branch next_joining_branch, Node *cut_node);
     
