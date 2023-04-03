@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include "Tree.hpp"
 #include "Interval.hpp"
-// #include "Binary_emission.hpp"
+#include "Emission.hpp"
 
 class BSP_smc {
     
@@ -29,8 +29,7 @@ public:
     vector<float> recomb_sums = {}; // length: number of blocks - 1
     vector<float> weight_sums = {}; // length: number of blocks
     vector<Interval *> curr_intervals = {};
-    // Fitch_emission eh;
-    // Binary_emission eh;
+    unique_ptr<Emission> eh;
     
     set<float> coalescence_times = {};
     map<float, int> coalescence_rates = {};
@@ -56,7 +55,7 @@ public:
     
     void null_emit(float theta, Node *base_node);
     
-    void mut_emit(float bin_size, float theta, vector<float> mutations, Node *base_node);
+    void mut_emit(float theta, float mut_pos, Node *base_node);
     
     map<float, Branch> sample_joining_branches();
     
@@ -64,9 +63,13 @@ public:
     
     void transfer_helper(Interval_info interval_info, Interval *i, float w);
     
+    void add_new_branches(Recombination r);
+    
     void fill_interval_info();
     
     void sanity_check(Recombination r);
+    
+    void generate_intervals(Recombination r);
     
     float get_prop(float lb, float ub);
     
