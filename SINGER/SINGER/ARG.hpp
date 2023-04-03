@@ -53,15 +53,13 @@ public:
     
     Tree get_tree_at(float x);
     
-    map<float, pair<Branch, Node *>> remove(tuple<float, Branch, float> cut_point);
+    void remove(tuple<float, Branch, float> cut_point);
     
     void remove(map<float, Branch> seed_branches);
     
-    // void<float, pair<Branch, Node *>> remove_leaf(int index);
-    
     void remove_leaf(int index);
     
-    void add(map<float, pair<Branch, Node*>> joining_points);
+    void add(map<float, Branch> new_joining_branches, map<float, Branch> added_branches);
     
     void smc_sample_recombinations();
     
