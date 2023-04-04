@@ -23,7 +23,7 @@ void BSP_smc::set_coordinates(vector<float> c) {
 
 void BSP_smc::start(set<Branch> branches, float t) {
     cut_time = t;
-    curr_pos = 0;
+    curr_index = 0;
     float lb;
     float ub;
     float p;
@@ -40,12 +40,12 @@ void BSP_smc::start(set<Branch> branches, float t) {
             lb = max(b.lower_node->time, cut_time);
             ub = b.upper_node->time;
             p = coalescence_probs.at(ub) - coalescence_probs.at(lb);
-            new_interval = new Interval(b, lb, ub, curr_pos, p);
+            new_interval = new Interval(b, lb, ub, curr_index, p);
             curr_intervals.push_back(new_interval);
         }
     }
     fill_interval_info();
-    state_spaces.insert({curr_pos, curr_intervals});
+    state_spaces.insert({curr_index, curr_intervals});
 }
 
 void BSP_smc::set_cutoff(float x) {
@@ -57,7 +57,7 @@ void BSP_smc::set_check_points(set<float> p) {
 }
 
 void BSP_smc::forward(float rho) {
-    curr_pos += 1;
+    curr_index += 1;
     rhos.push_back(rho);
     float w;
     float p;
@@ -89,7 +89,7 @@ void BSP_smc::forward(float rho) {
 void BSP_smc::transfer(Recombination r) {
     rhos.push_back(0);
     recomb_sums.push_back(0);
-    curr_pos += 1;
+    curr_index += 1;
     sanity_check(r);
     vector<Interval *> intervals = curr_intervals;
     curr_intervals.clear();
@@ -100,7 +100,7 @@ void BSP_smc::transfer(Recombination r) {
     calculate_coalescence_stats();
     // add_new_branches(r);
     // get_new_intervals(r);
-    state_spaces.insert({curr_pos, curr_intervals});
+    state_spaces.insert({curr_index, curr_intervals});
 }
 
 void BSP_smc::null_emit(float theta, Node *base_node) {
@@ -140,7 +140,7 @@ map<float, Branch> BSP_smc::sample_joining_branches() {
         b = interval->branch;
         pos = coordinates[x];
         joining_branches[pos] = b;
-        if (x == interval->start_pos) {
+        if (pos == interval->start_pos) {
             x -= 1;
             interval = interval->sample_source();
             b = interval->branch;
@@ -225,11 +225,11 @@ void BSP_smc::generate_intervals(Recombination r) {
         p = accumulate(source_weights.begin(), source_weights.end(), 0.0);
         assert(!isnan(p));
         if (lb == max(cut_time, b.lower_node->time) and ub == b.upper_node->time) { // full intervals
-            new_interval = new Interval(b, lb, ub, curr_pos, p);
+            new_interval = new Interval(b, lb, ub, curr_index, p);
             new_interval->set_source(source_intervals, source_weights);
             curr_intervals.push_back(new_interval);
         } else if (p >= cutoff) { // partial intervals
-            new_interval = new Interval(b, lb, ub, curr_pos, p);
+            new_interval = new Interval(b, lb, ub, curr_index, p);
             new_interval->set_source(source_intervals, source_weights);
             curr_intervals.push_back(new_interval);
         }
@@ -247,7 +247,7 @@ float BSP_smc::get_prop(float lb, float ub) {
 }
 
 float BSP_smc::get_overwrite_prob(Recombination r, float lb, float ub) {
-    if (check_points.count(curr_pos) > 0) {
+    if (check_points.count(curr_index) > 0) {
         return 0.0;
     }
     float join_time = r.inserted_node->time;

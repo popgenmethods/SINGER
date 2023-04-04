@@ -22,25 +22,21 @@ public:
     int end_pos = 0;
     float gap = 0;
     int min_num = 1;
-    Node *root = nullptr;
+    float epsilon = 1e-3;
     set<int> check_points = {};
-    map<int, Branch> joining_branches = {};
-    map<int, Interval *> joining_intervals = {};
     unique_ptr<Emission> eh;
     
     TSP_smc();
     
     ~TSP_smc();
     
-    void clear_memory();
+    void set_coordinates(vector<float> c);
     
     void set_gap(float q);
     
     void set_emission(Emission e);
     
     void set_check_points(set<int> p);
-    
-    void set_root(Node *n);
     
     void start(Branch branch, float t);
     
@@ -58,23 +54,19 @@ public:
     
     void null_emit(float theta, Node *base_node);
     
-    void general_emit(float bin_size, float theta, vector<float> mutations, Node *base_node);
+    void mut_emit(float theta, float mut_pos, Node *base_node);
     
-    int get_update_length();
+    map<float, Node *> sample_joining_points();
     
-    map<int, pair<Branch, Node*>> sample_joining_points();
-    
-private:
+// private:
 
-    int curr_pos = 0;
+    int curr_index = 0;
     map<int, vector<Interval *>>  state_spaces = {{INT_MAX, {}}};
+    vector<float> coordinates = {};
     vector<float> rhos = {}; // length: number of blocks - 1
     vector<float> thetas = {}; // length: number of blocks
-    float prev_rho = -1; // cache to save some computations;
-    Node *prev_node = nullptr; // cache to save some computations;
-    float prev_theta = -1; // cache to save some computations;
+    float prev_rho = -1; // cache to save some computations
     vector<Interval *> curr_intervals = {};
-    vector<float> null_emit_probs = {};
     vector<float> lower_sums = {};
     vector<float> upper_sums = {};
     vector<float> diagonals = {};
@@ -93,21 +85,15 @@ private:
     
     float psmc_prob(float rho, float s, float t1, float t2);
     
-    float get_gamma_quantile(float p);
+    float get_exp_quantile(float p);
     
-    float get_gamma_cdf(float x);
-    
-    float get_quantile(float p);
-    
-    vector<float> generate_points(float lb, float ub);
+    vector<float> generate_grid(float lb, float ub);
     
     float random();
     
     float get_prop(float lb1, float ub1, float lb2, float ub2);
     
     void set_quantities();
-    
-    void compute_null_emit_probs(float theta, Node *node);
     
     void compute_diagonals(float rho);
     
@@ -139,7 +125,7 @@ private:
     
     float sample_time(float lb, float ub);
     
-    pair<Branch, Node *> sample_joining_node(Interval *interval);
+    Node * sample_joining_node(Interval *interval);
     
 };
 

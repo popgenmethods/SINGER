@@ -17,14 +17,12 @@ class BSP_smc {
     
 public:
     
-    float start_pos = 0.0;
-    float start_pos = 0.0;
     float cut_time = 0.0;
     vector<float> coordinates = {};
     vector<float> rhos = {};
     set<float> check_points = {};
     
-    int curr_pos = 0;
+    int curr_index = 0;
     float cutoff = 0;
     map<int, vector<Interval *>>  state_spaces = {{INT_MAX, {}}};
     vector<float> recomb_sums = {}; // length: number of blocks - 1
