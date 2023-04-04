@@ -83,6 +83,8 @@ public:
     
     void impute_nodes(float x, float y);
     
+    void impute(map<float, Branch> new_joining_branches, map<float, Branch> added_branches);
+    
     void map_mutations(float x, float y);
     
     void remap_mutations();

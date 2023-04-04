@@ -17,13 +17,14 @@ class BSP_smc {
     
 public:
     
-    float cut_time = 0.0;
     float start_pos = 0.0;
-    float end_pos = 0.0;
+    float start_pos = 0.0;
+    float cut_time = 0.0;
+    vector<float> coordinates = {};
     vector<float> rhos = {};
     set<float> check_points = {};
     
-    int curr_pos;
+    int curr_pos = 0;
     float cutoff = 0;
     map<int, vector<Interval *>>  state_spaces = {{INT_MAX, {}}};
     vector<float> recomb_sums = {}; // length: number of blocks - 1
@@ -43,7 +44,9 @@ public:
     
     ~BSP_smc();
     
-    void start(set<Branch>, float x, float t);
+    void set_coordinates(vector<float> c);
+    
+    void start(set<Branch>, float t);
     
     void set_cutoff(float x);
     
@@ -99,7 +102,7 @@ public:
     
     vector<Interval *> get_state_space(int x);
     
-    Interval *sample_terminal_interval(int x);
+    Interval *sample_curr_interval(int x);
     
     Interval *sample_prev_interval(int x);
     

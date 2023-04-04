@@ -307,6 +307,35 @@ void ARG::impute_nodes(float x, float y) {
     return;
 }
 
+void ARG::impute(map<float, Branch> new_joining_branches, map<float, Branch> added_branches) {
+    float start = added_branches.begin()->first;
+    float end = added_branches.rbegin()->first;
+    set<float>::iterator mut_it = mutation_sites.lower_bound(start);
+    map<float, Branch>::iterator join_it = new_joining_branches.begin();
+    map<float, Branch>::iterator add_it = added_branches.begin();
+    float m = 0, sl = 0, su = 0, s0 = 0, sm = 0;
+    Branch joining_branch = Branch();
+    Branch added_branch = Branch();
+    while (*mut_it < end) {
+        m = *mut_it;
+        while (join_it->first < m) {
+            join_it++;
+            add_it++;
+        }
+        joining_branch = join_it->second;
+        added_branch = add_it->second;
+        sl = joining_branch.lower_node->get_state(m);
+        su = joining_branch.upper_node->get_state(m);
+        s0 = added_branch.lower_node->get_state(m);
+        if (sl + su + s0 > 1) {
+            sm = 1;
+        } else {
+            sm = 0;
+        }
+        added_branch.upper_node->write_state(m, sm);
+    }
+}
+
 void ARG::map_mutations(float x, float y) {
     Tree tree = get_tree_at(x);
     map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(x);

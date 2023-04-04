@@ -17,11 +17,13 @@ BSP_smc::~BSP_smc() {
     }
 }
 
-void BSP_smc::start(set<Branch> branches, float x, float t) {
+void BSP_smc::set_coordinates(vector<float> c) {
+    coordinates = c;
+}
+
+void BSP_smc::start(set<Branch> branches, float t) {
     cut_time = t;
-    start_pos = x;
-    end_pos = x;
-    curr_pos = x;
+    curr_pos = 0;
     float lb;
     float ub;
     float p;
@@ -56,7 +58,6 @@ void BSP_smc::set_check_points(set<float> p) {
 
 void BSP_smc::forward(float rho) {
     curr_pos += 1;
-    end_pos += 1;
     rhos.push_back(rho);
     float w;
     float p;
@@ -89,7 +90,6 @@ void BSP_smc::transfer(Recombination r) {
     rhos.push_back(0);
     recomb_sums.push_back(0);
     curr_pos += 1;
-    end_pos += 1;
     sanity_check(r);
     vector<Interval *> intervals = curr_intervals;
     curr_intervals.clear();
@@ -131,16 +131,16 @@ void BSP_smc::mut_emit(float theta, float mut_pos, Node *base_node) {
 
 map<float, Branch> BSP_smc::sample_joining_branches() {
     map<float, Branch> joining_branches = {};
-    int x = end_pos;
-    Interval *interval = sample_terminal_interval(x);
+    int x = (int) coordinates.size() - 1;
+    float pos = coordinates.back();
+    Interval *interval = sample_curr_interval(x);
     Branch b;
-    while (x >= start_pos) {
+    while (x > 0) {
         x = trace_back_helper(interval, x);
         b = interval->branch;
-        joining_branches.insert({x, b});
-        if (x == start_pos) {
-            break;
-        } else if (x == interval->start_pos) {
+        pos = coordinates[x];
+        joining_branches[pos] = b;
+        if (x == interval->start_pos) {
             x -= 1;
             interval = interval->sample_source();
             b = interval->branch;
@@ -259,6 +259,43 @@ float BSP_smc::get_overwrite_prob(Recombination r, float lb, float ub) {
     float overwrite_prob = p2/(p1 + p2);
     assert(!isnan(overwrite_prob));
     return overwrite_prob;
+}
+
+void BSP_smc::update_coalescence_times(Recombination r) {
+    float prev_time = r.deleted_node->time;
+    float next_time = r.inserted_node->time;
+    if (prev_time >= cut_time) {
+        coalescence_times.erase(prev_time);
+    }
+    if (next_time >= cut_time) {
+        coalescence_times.insert(next_time);
+    }
+}
+
+void BSP_smc::calculate_coalescence_stats() {
+    coalescence_probs.clear();
+    coalescence_quantiles.clear();
+    coalescence_rates.clear();
+    vector<float> sorted_coalescence_times = vector<float>(coalescence_times.begin(), coalescence_times.end());
+    int n = (int) sorted_coalescence_times.size();
+    int k = n - 1;
+    float prev_prob = 1.0;
+    float next_prob = 1.0;
+    float interval_prob = 0.0;
+    float cum_prob = 0.0;
+    coalescence_probs.insert({cut_time, 0});
+    coalescence_quantiles.insert({0, cut_time});
+    coalescence_rates.insert({cut_time, k});
+    for (int i = 1; i < n; i++) {
+        next_prob = prev_prob*exp(-k*(sorted_coalescence_times[i] - sorted_coalescence_times[i-1]));
+        interval_prob = (prev_prob - next_prob)/k;
+        cum_prob += interval_prob;
+        coalescence_probs[sorted_coalescence_times[i]] = cum_prob;
+        coalescence_quantiles[cum_prob] = sorted_coalescence_times[i];
+        k -= 1;
+        coalescence_rates[sorted_coalescence_times[i]] = k;
+        prev_prob = next_prob;
+    }
 }
 
 float BSP_smc::get_prob(float x) {
@@ -498,8 +535,8 @@ Interval *BSP_smc::sample_curr_interval(int x) {
 
 Interval *BSP_smc::sample_prev_interval(int x) {
     vector<Interval *> intervals = get_state_space(x);
-    float rho = rhos[x - start_pos];
-    float recomb_sum = recomb_sums[x - start_pos];
+    float rho = rhos[x];
+    float recomb_sum = recomb_sums[x];
     float q = random();
     float w = recomb_sum*q;
     for (Interval *i : intervals) {
@@ -529,11 +566,10 @@ int BSP_smc::trace_back_helper(Interval *i, int x) {
     float shrinkage;
     float non_recomb;
     while (x > i->start_pos) {
-        recomb_sum = recomb_sums[x - start_pos - 1];
-        weight_sum = weight_sums[x - start_pos];
-        non_recomb = i->get_prob_at(x - 1)*(1 - i->get_recomb_prob(rhos[x - start_pos - 1], cut_time));
-        w = i->weight*i->get_recomb_prob(rhos[x - start_pos - 1], cut_time);
-        // w = i->weight*(i->time - cut_time);
+        recomb_sum = recomb_sums[x - 1];
+        weight_sum = weight_sums[x];
+        non_recomb = i->get_prob_at(x - 1)*(1 - i->get_recomb_prob(rhos[x - 1], cut_time));
+        w = i->weight*i->get_recomb_prob(rhos[x - 1], cut_time);
         if (non_recomb == 0) {
             shrinkage = 0;
         } else {
