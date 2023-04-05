@@ -42,6 +42,31 @@ void ARG::discretize(float s) {
     bin_num = (int) coordinates.size() - 1;
 }
 
+int ARG::get_index(float x) {
+    int left = 0;
+    int right = (int) coordinates.size() - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (coordinates[mid] == x) {
+            return mid;
+        }
+        if (coordinates[mid] < x) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+    return -1;
+}
+
+void ARG::compute_rhos_thetas(float r, float m) {
+    int n = (int) coordinates.size() - 1;
+    for (int i = 0; i < n; i++) {
+        rhos.push_back(r*(coordinates[i+1] - coordinates[i]));
+        thetas.push_back(m*(coordinates[i+1] - coordinates[i]));
+    }
+}
+
 void ARG::build_singleton_arg(Node *n) {
     Branch branch = Branch(n, root);
     Recombination r = Recombination({}, {branch});
@@ -432,12 +457,12 @@ void ARG::check_mapping() {
     }
 }
 
-void ARG::clear_memory(map<int, pair<Branch, Node *>> joining_points) {
+void ARG::clear_memory(map<float, Branch> added_branches) {
     Node *node = nullptr;
-    for (auto x : joining_points) {
-        if (x.second.second != node) {
-            node = x.second.second;
-            if (node != root and node_set.count(node) == 0) {
+    for (auto x : added_branches) {
+        if (x.second.upper_node != node) {
+            node = x.second.upper_node;
+            if (node_set.count(node) == 0) {
                 delete node;
             }
         }
@@ -514,15 +539,15 @@ float ARG::smc_likelihood(float r, float m) {
     return smc_prior_likelihood(r) + data_likelihood(m);
 }
 
-set<int> ARG::get_check_points() {
+set<float> ARG::get_check_points() {
     float start_pos = removed_branches.begin()->first;
     float end_pos = removed_branches.rbegin()->first;
     map<float, Recombination>::iterator recomb_it = recombinations.lower_bound(start_pos);
-    map<Node *, int> deleted_nodes = {};
-    vector<tuple<Node *, int, int>> node_span = {};
+    map<Node *, float> deleted_nodes = {};
+    vector<tuple<Node *, float, float>> node_span = {};
     while (recomb_it->first <= end_pos) {
         Recombination r = recomb_it->second;
-        deleted_nodes.insert({r.deleted_node, r.pos});
+        deleted_nodes[r.deleted_node] = r.pos;
         Node *inserted_node = r.inserted_node;
         if (deleted_nodes.count(inserted_node) > 0 and inserted_node != root) {
             node_span.push_back({inserted_node, deleted_nodes.at(inserted_node), r.pos});
@@ -531,9 +556,9 @@ set<int> ARG::get_check_points() {
         recomb_it++;
     }
     Node *n;
-    int x;
-    int y;
-    set<int> check_points = {};
+    float x;
+    float y;
+    set<float> check_points = {};
     for (auto ns : node_span) {
         tie(n, x, y) = ns;
         if (!check_disjoint_nodes(x, y)) {

@@ -52,6 +52,10 @@ void BSP_smc::set_cutoff(float x) {
     cutoff = x;
 }
 
+void BSP_smc::set_emission(shared_ptr<Emission> e) {
+    eh = e;
+}
+
 void BSP_smc::set_check_points(set<float> p) {
     check_points = p;
 }
@@ -98,16 +102,16 @@ void BSP_smc::transfer(Recombination r) {
     }
     update_coalescence_times(r);
     calculate_coalescence_stats();
-    // add_new_branches(r);
-    // get_new_intervals(r);
+    add_new_branches(r);
+    generate_intervals(r);
     state_spaces.insert({curr_index, curr_intervals});
 }
 
-void BSP_smc::null_emit(float theta, Node *base_node) {
+void BSP_smc::null_emit(float theta, Node *query_node) {
     float ws = 0.0f;
     float emit_prob = 1;
     for (Interval *i : curr_intervals) {
-        emit_prob = eh->null_emit(i->branch, i->time, theta, base_node);
+        emit_prob = eh->null_emit(i->branch, i->time, theta, query_node);
         i->multiply(emit_prob);
         ws += i->get_prob();
     }
@@ -116,11 +120,11 @@ void BSP_smc::null_emit(float theta, Node *base_node) {
     }
 }
 
-void BSP_smc::mut_emit(float theta, float mut_pos, Node *base_node) {
+void BSP_smc::mut_emit(float theta, float mut_pos, Node *query_node) {
     float emit_prob = 1;
     float ws = 0.0f;
     for (Interval *i : curr_intervals) {
-        emit_prob = eh->mut_emit(i->branch, i->time, theta, mut_pos, base_node);
+        emit_prob = eh->mut_emit(i->branch, i->time, theta, mut_pos, query_node);
         i->multiply(emit_prob);
         ws += i->get_prob();
     }

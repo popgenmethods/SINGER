@@ -121,9 +121,9 @@ void RSP_smc::sample_recombination(Recombination &r, float cut_time, Tree tree) 
     }
     if (source_candidates.size() == 1) {
         r.source_branch = source_candidates[0];
-        r.start_time = sample_start_time(r.source_branch, 50, r.inserted_node->time, cut_time);
+        r.start_time = sample_start_time(r.source_branch, 20, r.inserted_node->time, cut_time);
     } else if (source_candidates.size() == 2) {
-        pair<Branch, float> breakpoint = sample_start_time(source_candidates[0], source_candidates[1], 100, r.inserted_node->time, cut_time);
+        pair<Branch, float> breakpoint = sample_start_time(source_candidates[0], source_candidates[1], 40, r.inserted_node->time, cut_time);
         r.source_branch = breakpoint.first;
         r.start_time = breakpoint.second;
     } else {

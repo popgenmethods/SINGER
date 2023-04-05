@@ -30,6 +30,8 @@ public:
     int bin_num = 0;
     float sequence_length = 0;
     vector<float> coordinates = {};
+    vector<float> rhos = {};
+    vector<float> thetas = {};
     set<Node *, compare_node> sample_nodes = {};
     set<Node *, compare_node> node_set = {};
     map<float, Branch> joining_branches = {};
@@ -42,6 +44,10 @@ public:
     ~ARG();
     
     void discretize(float s);
+    
+    int get_index(float x);
+    
+    void compute_rhos_thetas(float r, float m);
     
     void build_singleton_arg(Node *n);
     
@@ -93,7 +99,7 @@ public:
     
     void clear_memory();
     
-    void clear_memory(map<int, pair<Branch, Node *>> joining_points);
+    void clear_memory(map<float, Branch> added_branches);
     
     void check_mapping();
     
@@ -109,7 +115,7 @@ public:
     
     // float smcprime_likelihood();
     
-    set<int> get_check_points();
+    set<float> get_check_points();
     
     bool check_disjoint_nodes(float x, float y);
     

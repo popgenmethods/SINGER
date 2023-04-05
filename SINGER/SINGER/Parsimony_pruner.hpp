@@ -13,7 +13,7 @@
 #include "Pruner.hpp"
 #include "ARG.hpp"
 
-class Parsimony_pruner {
+class Parsimony_pruner : public Pruner {
     
 public:
     

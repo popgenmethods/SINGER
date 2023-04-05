@@ -28,7 +28,7 @@ public:
     vector<float> recomb_sums = {}; // length: number of blocks - 1
     vector<float> weight_sums = {}; // length: number of blocks
     vector<Interval *> curr_intervals = {};
-    unique_ptr<Emission> eh;
+    shared_ptr<Emission> eh;
     
     set<float> coalescence_times = {};
     map<float, int> coalescence_rates = {};
@@ -48,15 +48,19 @@ public:
     
     void set_cutoff(float x);
     
+    void set_emission(shared_ptr<Emission> e);
+    
     void set_check_points(set<float> p);
     
     void forward(float rho); // forward pass when there is no recombination (without emission). Don't forget to update recomb_sums and weight_sums.
     
     void transfer(Recombination r); // forward pass when there is a recombination (without emission), and add a transition object. Don't forget to update active intervals, recomb_sums and weight_sums.
     
-    void null_emit(float theta, Node *base_node);
+    void null_emit(float theta, Node *query_node);
     
-    void mut_emit(float theta, float mut_pos, Node *base_node);
+    void mut_emit(float bin_size, float theta, set<float> mut_set, Node *query_node);
+    
+    void mut_emit(float theta, float mut_pos, Node *query_node);
     
     map<float, Branch> sample_joining_branches();
     

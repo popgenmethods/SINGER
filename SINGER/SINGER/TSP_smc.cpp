@@ -26,11 +26,11 @@ void TSP_smc::set_gap(float q) {
     gap = q;
 }
 
-void TSP_smc::set_emission(Emission e) {
-    eh = make_unique<Emission>(e);
+void TSP_smc::set_emission(shared_ptr<Emission> e) {
+    eh = e;
 }
 
-void TSP_smc::set_check_points(set<int> p) {
+void TSP_smc::set_check_points(set<float> p) {
     check_points = p;
 }
 
@@ -38,9 +38,9 @@ void TSP_smc::start(Branch branch, float t) {
     cut_time = t;
     curr_index = 0;
     if (branch == Branch()) {
-        base_time = cut_time;
+        query_time = cut_time;
     } else {
-        base_time = max(cut_time, branch.lower_node->time);
+        query_time = max(cut_time, branch.lower_node->time);
     }
     generate_intervals(branch, branch.lower_node->time, branch.upper_node->time);
     for (Interval *i : curr_intervals) {
@@ -58,9 +58,9 @@ void TSP_smc::transfer(Recombination &r, Branch prev_branch, Branch next_branch)
     prev_rho = -1;
     sanity_check(r);
     if (next_branch == Branch()) {
-        base_time = cut_time;
+        query_time = cut_time;
     } else {
-        base_time = max(cut_time, next_branch.lower_node->time);
+        query_time = max(cut_time, next_branch.lower_node->time);
     }
     if (next_branch == Branch()) {
         ;
@@ -117,7 +117,7 @@ void TSP_smc::recombine(Branch prev_branch, Branch next_branch) {
     rhos.push_back(0);
     prev_rho = -1;
     curr_index += 1;
-    base_time = max(cut_time, next_branch.lower_node->time);
+    query_time = max(cut_time, next_branch.lower_node->time);
     generate_intervals(next_branch, next_branch.lower_node->time, next_branch.upper_node->time);
     state_spaces[curr_index] = curr_intervals;
     set_quantities();
@@ -161,11 +161,11 @@ void TSP_smc::forward(float rho) {
     }
 }
 
-void TSP_smc::null_emit(float theta, Node *base_node) {
+void TSP_smc::null_emit(float theta, Node *query_node) {
     float ws = 0.0;
     float emit_prob = 0.0;
     for (Interval *i : curr_intervals) {
-        emit_prob = eh->null_emit(i->branch, i->time, theta, base_node);
+        emit_prob = eh->null_emit(i->branch, i->time, theta, query_node);
         i->multiply(emit_prob);
         ws += i->get_prob();
     }
@@ -181,11 +181,11 @@ void TSP_smc::null_emit(float theta, Node *base_node) {
     }
 }
 
-void TSP_smc::mut_emit(float theta, float mut_pos, Node *base_node) {
+void TSP_smc::mut_emit(float theta, float mut_pos, Node *query_node) {
     float ws = 0.0f;
     float emit_prob = 0.0;
     for (Interval *i : curr_intervals) {
-        emit_prob = eh->mut_emit(i->branch, i->time, theta, mut_pos, base_node);
+        emit_prob = eh->mut_emit(i->branch, i->time, theta, mut_pos, query_node);
         i->multiply(emit_prob);
         ws += i->get_prob();
     }
@@ -201,17 +201,17 @@ void TSP_smc::mut_emit(float theta, float mut_pos, Node *base_node) {
     }
 }
 
-map<float, Node *> TSP_smc::sample_joining_points() {
-    map<float, Node *> joining_points = {};
+map<float, Node *> TSP_smc::sample_joining_nodes() {
+    map<float, Node *> joining_nodes = {};
     int x = (int) coordinates.size() - 1;
     float pos = coordinates.back();
     Interval *interval = sample_curr_interval(x);
     Node *n = sample_joining_node(interval);
-    joining_points[pos] = n;
+    joining_nodes[pos] = n;
     while (x > 0) {
         x = trace_back_helper(interval, x);
         pos = coordinates[x];
-        joining_points[pos] = n;
+        joining_nodes[pos] = n;
         if (pos == interval->start_pos) {
             x -= 1;
             if (interval->source_intervals.size() > 0) {
@@ -226,7 +226,7 @@ map<float, Node *> TSP_smc::sample_joining_points() {
             n = sample_joining_node(interval);
         }
     }
-    return joining_points;
+    return joining_nodes;
 }
 
 // private methods:
@@ -282,10 +282,10 @@ float TSP_smc::psmc_cdf(float rho, float s, float t) {
     float l;
     float pre_factor;
     if (t <= s) {
-        l = 2*t - base_time - cut_time;
-        // l = 2*s - base_time - cut_time;
+        l = 2*t - query_time - cut_time;
+        // l = 2*s - query_time - cut_time;
     } else {
-        l = 2*s - base_time - cut_time;
+        l = 2*s - query_time - cut_time;
     }
     if (l == 0) {
         pre_factor = rho;
@@ -294,13 +294,13 @@ float TSP_smc::psmc_cdf(float rho, float s, float t) {
     }
     float integral;
     float cdf;
-    if (t == cut_time and t == base_time) {
+    if (t == cut_time and t == query_time) {
         return 0;
     } else if (t <= s) {
-        integral = 2*t + exp(-t)*(exp(cut_time) + exp(base_time)) - cut_time - base_time - 2;
+        integral = 2*t + exp(-t)*(exp(cut_time) + exp(query_time)) - cut_time - query_time - 2;
         // assert(integral >= 0);
     } else {
-        integral = 2*s + exp(cut_time - t) + exp(base_time - t) - 2*exp(s-t) - cut_time - base_time;
+        integral = 2*s + exp(cut_time - t) + exp(query_time - t) - 2*exp(s-t) - cut_time - query_time;
         // assert(integral >= 0);
     }
     cdf = pre_factor*integral;
@@ -324,10 +324,10 @@ float TSP_smc::standard_recomb_cdf(float rho, float s, float t) {
 float TSP_smc::psmc_prob(float rho, float s, float t1, float t2) {
     assert(s != numeric_limits<float>::infinity());
     assert(t1 <= t2);
-    assert(t1 >= base_time and s >= base_time);
+    assert(t1 >= query_time and s >= query_time);
     float prob;
     float base;
-    float l = 2*s - base_time - cut_time;
+    float l = 2*s - query_time - cut_time;
     if (t1 == s and t2 == s) {
         base = exp(-rho*l);
     } else if (t1 < s and t2 > s) {
@@ -592,7 +592,7 @@ Interval *TSP_smc::sample_curr_interval(int x) {
 
 Interval *TSP_smc::sample_prev_interval(Interval *interval, int x) {
     vector<Interval *> intervals = get_state_space(x);
-    base_time = intervals.front()->lb;
+    query_time = intervals.front()->lb;
     float ws = 0;
     float rho = rhos[x-start_pos];
     for (Interval *i : intervals) {
@@ -650,7 +650,7 @@ int TSP_smc::trace_back_helper(Interval *interval, int x) {
     float shrinkage;
     float rho;
     vector<Interval *> intervals = get_state_space(x);
-    base_time = intervals.front()->lb;
+    query_time = intervals.front()->lb;
     while (p > q and x > y) {
         non_recomb_prob = 0;
         recomb_prob = 0;

@@ -23,8 +23,8 @@ public:
     float gap = 0;
     int min_num = 1;
     float epsilon = 1e-3;
-    set<int> check_points = {};
-    unique_ptr<Emission> eh;
+    set<float> check_points = {};
+    shared_ptr<Emission> eh;
     
     TSP_smc();
     
@@ -34,9 +34,9 @@ public:
     
     void set_gap(float q);
     
-    void set_emission(Emission e);
+    void set_emission(shared_ptr<Emission> e);
     
-    void set_check_points(set<int> p);
+    void set_check_points(set<float> p);
     
     void start(Branch branch, float t);
     
@@ -52,11 +52,13 @@ public:
     
     void forward(float rho);
     
-    void null_emit(float theta, Node *base_node);
+    void null_emit(float theta, Node *query_node);
     
-    void mut_emit(float theta, float mut_pos, Node *base_node);
+    void mut_emit(float theta, float mut_pos, Node *query_node);
     
-    map<float, Node *> sample_joining_points();
+    void mut_emit(float bin_size, float theta, set<float> mut_set, Node *query_node);
+    
+    map<float, Node *> sample_joining_nodes();
     
 // private:
 
