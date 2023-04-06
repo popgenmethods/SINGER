@@ -17,9 +17,7 @@ class TSP_smc {
 public:
     
     float cut_time = 0;
-    float base_time = 0;
-    int start_pos = 0;
-    int end_pos = 0;
+    float query_time = 0;
     float gap = 0;
     int min_num = 1;
     float epsilon = 1e-3;

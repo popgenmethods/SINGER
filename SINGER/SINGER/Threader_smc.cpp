@@ -80,7 +80,7 @@ string Threader_smc::get_time() {
 void Threader_smc::set_check_points(ARG &a) {
     set<float> check_points = a.get_check_points();
     bsp.set_check_points(check_points);
-    tsp.set_check_points(check_points);
+    // tsp.set_check_points(check_points);
 }
 
 void Threader_smc::run_BSP(ARG &a) {
@@ -120,6 +120,7 @@ void Threader_smc::run_BSP(ARG &a) {
     }
 }
 
+/*
 void Threader_smc::run_TSP(ARG &a) {
     new_joining_branches = bsp.sample_joining_branches();
     int start_index = a.get_index(start);
@@ -184,6 +185,11 @@ void Threader_smc::sample_joining_points(ARG &a) {
         added_branches[add_it->first] = Branch(query_node, added_node);
     }
 }
+ */
+
+void Threader_smc::run_TSP(ARG &a) {}
+
+void Threader_smc::sample_joining_points(ARG &a) {}
 
 float Threader_smc::random() {
     return (float) rand()/RAND_MAX;

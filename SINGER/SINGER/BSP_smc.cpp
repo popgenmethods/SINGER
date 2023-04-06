@@ -120,6 +120,8 @@ void BSP_smc::null_emit(float theta, Node *query_node) {
     }
 }
 
+void BSP_smc::mut_emit(float bin_size, float theta, set<float> mut_set, Node *query_node) {}
+
 void BSP_smc::mut_emit(float theta, float mut_pos, Node *query_node) {
     float emit_prob = 1;
     float ws = 0.0f;
@@ -365,7 +367,7 @@ void BSP_smc::process_source_interval(Recombination r, Interval *prev_interval) 
     float p;
     float w1;
     float w2;
-    float point_time = r.source_branch.upper_node->get_time();
+    float point_time = r.source_branch.upper_node->time;
     float break_time = r.start_time;
     float lb;
     float ub;
@@ -416,7 +418,7 @@ void BSP_smc::process_target_interval(Recombination r, Interval *prev_interval) 
     float w0;
     float w1;
     float w2;
-    float join_time = r.inserted_node->get_time();
+    float join_time = r.inserted_node->time;
     float lb;
     float ub;
     Branch next_branch;

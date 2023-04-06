@@ -28,8 +28,6 @@ public:
     
     Node(float t);
     
-    float get_time();
-    
     void set_index(int index);
     
     void print();
