@@ -18,7 +18,6 @@ class BSP_smc {
 public:
     
     float cut_time = 0.0;
-    vector<float> coordinates = {};
     vector<float> rhos = {};
     set<float> check_points = {};
     
@@ -42,8 +41,6 @@ public:
     
     ~BSP_smc();
     
-    void set_coordinates(vector<float> c);
-    
     void start(set<Branch>, float t);
     
     void set_cutoff(float x);
@@ -58,11 +55,9 @@ public:
     
     void null_emit(float theta, Node *query_node);
     
-    void mut_emit(float bin_size, float theta, set<float> mut_set, Node *query_node);
+    void mut_emit(float theta, float bin_size, set<float> mut_set, Node *query_node);
     
-    void mut_emit(float theta, float mut_pos, Node *query_node);
-    
-    map<float, Branch> sample_joining_branches();
+    map<float, Branch> sample_joining_branches(int start_index, vector<float> &coordinates);
     
     // private methods:
     

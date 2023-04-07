@@ -9,12 +9,12 @@
 #define Test_hpp
 
 #include <stdio.h>
-#include "ARG.hpp"
-#include "Mutation_matcher.hpp"
-#include "Parsimony_pruner.hpp"
+#include "Sampler.hpp"
 
 void test_read_arg();
 
 void test_pruner();
+
+void test_iterative_start();
 
 #endif /* Test_hpp */

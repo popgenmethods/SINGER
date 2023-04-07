@@ -103,10 +103,6 @@ void TSP_smc::transfer(Recombination &r, Branch prev_branch, Branch next_branch)
         generate_intervals(next_branch, lb, ub);
     }
     state_spaces[curr_index] = curr_intervals;
-    for (Interval *i : curr_intervals) {
-        assert(i->lb >= cut_time);
-        assert(i->time >= i->lb and i->time <= i->ub);
-    }
     set_quantities();
 }
 
@@ -133,10 +129,6 @@ void TSP_smc::recombine(Branch prev_branch, Branch next_branch) {
             }
             curr_intervals[j]->add_prob(new_prob);
         }
-    }
-    for (Interval *i : curr_intervals) {
-        assert(i->lb >= cut_time);
-        assert(i->time >= i->lb and i->time <= i->ub);
     }
 }
 
@@ -248,11 +240,11 @@ void TSP_smc::null_emit(float theta, Node *query_node) {
     }
 }
 
-void TSP_smc::mut_emit(float theta, float mut_pos, Node *query_node) {
+void TSP_smc::mut_emit(float theta, float bin_size, set<float> mut_set, Node *query_node) {
     float ws = 0.0f;
     float emit_prob = 0.0;
     for (Interval *i : curr_intervals) {
-        emit_prob = eh->mut_emit(i->branch, i->time, theta, mut_pos, query_node);
+        emit_prob = eh->mut_emit(i->branch, i->time, theta, bin_size, mut_set, query_node);
         i->multiply(emit_prob);
         ws += i->get_prob();
     }
@@ -266,6 +258,34 @@ void TSP_smc::mut_emit(float theta, float mut_pos, Node *query_node) {
             i->update_prob(p);
         }
     }
+}
+
+map<float, Node *> TSP_smc::sample_joining_nodes(int start_index, vector<float> &coordinates) {
+    map<float, Node *> joining_nodes = {};
+    int x = curr_index;
+    float pos = coordinates[x + start_index];
+    Interval *interval = sample_curr_interval(x);
+    Node *n = sample_joining_node(interval);
+    joining_nodes[pos] = n;
+    while (x > 0) {
+        x = trace_back_helper(interval, x);
+        pos = coordinates[x];
+        joining_nodes[pos] = n;
+        if (pos == interval->start_pos) {
+            x -= 1;
+            if (interval->source_intervals.size() > 0) {
+                interval = interval->sample_source();
+            } else {
+                interval = sample_recomb_interval(interval, x);
+                n = sample_joining_node(interval);
+            }
+        } else {
+            x -= 1;
+            interval = sample_prev_interval(interval, x);
+            n = sample_joining_node(interval);
+        }
+    }
+    return joining_nodes;
 }
 
 float TSP_smc::recomb_prob(float s, float t1, float t2) {
@@ -533,6 +553,116 @@ int TSP_smc::get_prev_breakpoint(int x) {
     return state_it->first;
 }
 
+Interval *TSP_smc::sample_curr_interval(int x) {
+    vector<Interval *> intervals = get_state_space(x);
+    if (intervals.size() == 0) {
+        return nullptr;
+    }
+    float ws = 0;
+    for (Interval *i : intervals) {
+        ws += i->get_prob_at(x);
+    }
+    float q = random();
+    float w = ws*q;
+    for (Interval *i : intervals) {
+        w -= i->get_prob_at(x);
+        if (w <= 0) {
+            return i;
+        }
+    }
+    cerr << "sampling failed" << endl;
+    exit(1);
+}
+
+Interval *TSP_smc::sample_prev_interval(Interval *interval, int x) {
+    vector<Interval *> intervals = get_state_space(x);
+    query_time = intervals.front()->lb;
+    float ws = 0;
+    float rho = rhos[x];
+    for (Interval *i : intervals) {
+        if (i != interval) {
+            ws += psmc_prob(rho, i->time, interval->lb, interval->ub)*i->get_prob_at(x);
+        }
+    }
+    float q = random();
+    float w = ws*q;
+    for (Interval *i : intervals) {
+        if (i != interval) {
+            w -= psmc_prob(rho, i->time, interval->lb, interval->ub)*i->get_prob_at(x);
+            if (w <= 0) {
+                return i;
+            }
+        }
+    }
+    cerr << "sampling failed" << endl;
+    exit(1);
+}
+
+Interval *TSP_smc::sample_recomb_interval(Interval *interval, int x) {
+    if (interval->lb == interval->ub) {
+        return sample_curr_interval(x);
+    }
+    vector<Interval *> intervals = get_state_space(x);
+    if (intervals.size() == 0) {
+        return nullptr;
+    }
+    float ws = 0;
+    for (Interval *i : intervals) {
+        ws += max(epsilon, recomb_prob(i->time, interval->lb, interval->ub))*i->get_prob_at(x);
+    }
+    float q = random();
+    float w = ws*q;
+    for (Interval *i : intervals) {
+        w -= max(epsilon, recomb_prob(i->time, interval->lb, interval->ub))*i->get_prob_at(x);
+        if (w <= 0) {
+            return i;
+        }
+    }
+    cerr << "sampling failed" << endl;
+    exit(1);
+}
+
+int TSP_smc::trace_back_helper(Interval *interval, int x) {
+    int y = get_prev_breakpoint(x);
+    if (interval == nullptr) {
+        return y;
+    }
+    float recomb_prob = 0;
+    float non_recomb_prob = 0;
+    float q = random();
+    float p = 1;
+    float shrinkage;
+    float rho;
+    vector<Interval *> intervals = get_state_space(x);
+    query_time = intervals.front()->lb;
+    while (p > q and x > y) {
+        non_recomb_prob = 0;
+        recomb_prob = 0;
+        for (Interval *i : intervals) {
+            rho = rhos[x-1];
+            if (i == interval) {
+                non_recomb_prob = psmc_prob(rho, i->time, interval->lb, interval->ub)*i->get_prob_at(x-1);
+                assert(!isnan(non_recomb_prob));
+            } else {
+                recomb_prob += psmc_prob(rho, i->time, interval->lb, interval->ub)*i->get_prob_at(x-1);
+            }
+        }
+        if (non_recomb_prob == 0) {
+            shrinkage = 0;
+        } else {
+            shrinkage = non_recomb_prob/(non_recomb_prob + recomb_prob);
+        }
+        assert(!isnan(shrinkage));
+        p *= shrinkage;
+        if (p <= q) {
+            return x;
+        }
+        x -= 1;
+    }
+    assert(interval->get_prob_at(y) > 0);
+    return x;
+}
+
 void TSP_smc::set_interval_constraint(Recombination &r) {
     for (Interval *i : curr_intervals) {
         if (i->ub < r.start_time) {
@@ -591,4 +721,41 @@ Interval *TSP_smc::search_point_interval(Recombination r) {
         }
     }
     return candidate_point_intervals[0];
+}
+
+float TSP_smc::sample_time(float lb, float ub) {
+    assert(lb <= ub);
+    if (lb == ub) {
+        return lb;
+    }
+    float delta = exp(-lb) - exp(-ub);
+    float q;
+    float p;
+    float t = 0;
+    if (lb > 5 and ub == numeric_limits<float>::infinity()) {
+        t = lb + random()*log(2);
+    }
+    while (t <= lb or t >= ub) {
+        q = random();
+        p = 1 - exp(-lb) + q*delta;
+        t = -log(1 - p);
+    }
+    assert(t != numeric_limits<float>::infinity());
+    assert(lb == ub or (t > lb and t < ub));
+    assert(t != 0);
+    return t;
+}
+
+Node *TSP_smc::sample_joining_node(Interval *interval) {
+    Node *n = nullptr;
+    float t;
+    if (interval->node != nullptr) {
+        n = interval->node;
+        interval->node = nullptr;
+    } else {
+        t = sample_time(interval->lb, interval->ub);
+        n = new Node(t);
+    }
+    assert(n != nullptr);
+    return n;
 }

@@ -55,14 +55,30 @@ void Sampler::set_num_samples(int n) {
     num_samples = n;
 }
 
+Node *Sampler::build_node(int index, float time) {
+    Node *n = new Node(time);
+    n->index = index;
+    string mutation_file = input_prefix + "_" + to_string(index) + ".txt";
+    n->read_mutation(mutation_file);
+    return n;
+}
+
 void Sampler::build_singleton_arg() {
     float bin_size = rho_unit/recomb_rate;
     bin_size = min(bin_size, 1000.0f);
-    Node *n = new Node(0.0);
-    n->set_index(0);
-    string mutation_file = input_prefix + "_0.txt";
-    n->read_mutation(mutation_file);
+    Node *n = build_node(0, 0.0);
     arg = ARG(Ne, sequence_length);
     arg.discretize(bin_size);
     arg.build_singleton_arg(n);
+}
+
+void Sampler::iterative_start() {
+    build_singleton_arg();
+    for (int i = 0; i < num_samples; i++) {
+        random_seed = rand();
+        srand(random_seed);
+        Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
+        Node *n = build_node(i, 0.0);
+        threader.thread(arg, n);
+    }
 }

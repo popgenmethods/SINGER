@@ -9,6 +9,7 @@
 #define Threader_hpp
 
 #include <stdio.h>
+#include <memory>
 #include "ARG.hpp"
 
 class Threader {

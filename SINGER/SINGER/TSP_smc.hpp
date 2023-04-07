@@ -52,11 +52,9 @@ public:
     
     void null_emit(float theta, Node *query_node);
     
-    void mut_emit(float theta, float mut_pos, Node *query_node);
+    void mut_emit(float theta, float bin_size, set<float> mut_set, Node *query_node);
     
-    void mut_emit(float bin_size, float theta, set<float> mut_set, Node *query_node);
-    
-    map<float, Node *> sample_joining_nodes();
+    map<float, Node *> sample_joining_nodes(int start_index, vector<float> &coordinates);
     
 // private:
 

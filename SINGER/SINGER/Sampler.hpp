@@ -12,7 +12,10 @@
 #include <chrono>
 #include <sstream>
 #include "ARG.hpp"
-#include "Threader.hpp"
+#include "Parsimony_pruner.hpp"
+#include "Threader_smc.hpp"
+#include "Binary_emission.hpp"
+#include "Emission.hpp"
 
 class Sampler {
     
@@ -22,7 +25,6 @@ public:
     float Ne = 1;
     float mut_rate = 0;
     float recomb_rate = 0;
-    // Binary_emission eh = Binary_emission();
     string input_prefix = "";
     string output_prefix = "";
     string log_prefix = "";
@@ -32,6 +34,7 @@ public:
     double bsp_c;
     double tsp_q;
     int random_seed = 0;
+    shared_ptr<Emission> eh = make_shared<Binary_emission>();
     
     Sampler(float pop_size, float r, float m);
     
@@ -51,7 +54,14 @@ public:
     
     void set_num_samples(int n);
     
+    Node *build_node(int index, float time);
+    
     void build_singleton_arg();
+    
+    void iterative_start();
+    
+    void sample(int num_iters, int spacing);
+    
 };
 
 #endif /* Sampler_hpp */

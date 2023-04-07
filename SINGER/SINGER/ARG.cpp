@@ -253,6 +253,8 @@ void ARG::add(map<float, Branch> new_joining_branches, map<float, Branch> added_
     }
     remove_empty_recombinations();
     impute_nodes(start, end);
+    removed_branches.clear();
+    joining_branches.clear();
 }
 
 void ARG::smc_sample_recombinations() {

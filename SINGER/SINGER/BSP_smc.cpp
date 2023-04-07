@@ -17,10 +17,6 @@ BSP_smc::~BSP_smc() {
     }
 }
 
-void BSP_smc::set_coordinates(vector<float> c) {
-    coordinates = c;
-}
-
 void BSP_smc::start(set<Branch> branches, float t) {
     cut_time = t;
     curr_index = 0;
@@ -45,7 +41,7 @@ void BSP_smc::start(set<Branch> branches, float t) {
         }
     }
     fill_interval_info();
-    state_spaces.insert({curr_index, curr_intervals});
+    state_spaces[curr_index] = curr_intervals;
 }
 
 void BSP_smc::set_cutoff(float x) {
@@ -104,7 +100,7 @@ void BSP_smc::transfer(Recombination r) {
     calculate_coalescence_stats();
     add_new_branches(r);
     generate_intervals(r);
-    state_spaces.insert({curr_index, curr_intervals});
+    state_spaces[curr_index] = curr_intervals;
 }
 
 void BSP_smc::null_emit(float theta, Node *query_node) {
@@ -120,13 +116,11 @@ void BSP_smc::null_emit(float theta, Node *query_node) {
     }
 }
 
-void BSP_smc::mut_emit(float bin_size, float theta, set<float> mut_set, Node *query_node) {}
-
-void BSP_smc::mut_emit(float theta, float mut_pos, Node *query_node) {
+void BSP_smc::mut_emit(float theta, float bin_size, set<float> mut_set, Node *query_node) {
     float emit_prob = 1;
     float ws = 0.0f;
     for (Interval *i : curr_intervals) {
-        emit_prob = eh->mut_emit(i->branch, i->time, theta, mut_pos, query_node);
+        emit_prob = eh->mut_emit(i->branch, i->time, theta, bin_size, mut_set, query_node);
         i->multiply(emit_prob);
         ws += i->get_prob();
     }
@@ -135,16 +129,16 @@ void BSP_smc::mut_emit(float theta, float mut_pos, Node *query_node) {
     }
 }
 
-map<float, Branch> BSP_smc::sample_joining_branches() {
+map<float, Branch> BSP_smc::sample_joining_branches(int start_index, vector<float> &coordinates) {
     map<float, Branch> joining_branches = {};
-    int x = (int) coordinates.size() - 1;
-    float pos = coordinates.back();
+    int x = curr_index;
+    float pos = coordinates[x + start_index];
     Interval *interval = sample_curr_interval(x);
     Branch b;
     while (x > 0) {
         x = trace_back_helper(interval, x);
         b = interval->branch;
-        pos = coordinates[x];
+        pos = coordinates[x + start_index];
         joining_branches[pos] = b;
         if (pos == interval->start_pos) {
             x -= 1;
@@ -156,7 +150,6 @@ map<float, Branch> BSP_smc::sample_joining_branches() {
             b = interval->branch;
         }
     }
-    joining_branches.insert({INT_MAX, joining_branches.rbegin()->second});
     return joining_branches;
 }
 

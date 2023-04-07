@@ -77,14 +77,20 @@ string Threader_smc::get_time() {
     return oss.str();
 }
 
+void Threader_smc::get_terminals(ARG &a) {
+    start = a.removed_branches.begin()->first;
+    end = a.removed_branches.end()->first;
+    start_index = a.get_index(start);
+    end_index = a.get_index(end);
+}
+
 void Threader_smc::set_check_points(ARG &a) {
     set<float> check_points = a.get_check_points();
     bsp.set_check_points(check_points);
-    // tsp.set_check_points(check_points);
+    tsp.set_check_points(check_points);
 }
 
 void Threader_smc::run_BSP(ARG &a) {
-    int start_index = a.get_index(start);
     Tree start_tree = a.get_tree_at(start);
     bsp.set_cutoff(cutoff);
     bsp.set_emission(eh);
@@ -94,7 +100,7 @@ void Threader_smc::run_BSP(ARG &a) {
     map<float, Branch>::iterator query_it = a.removed_branches.begin();
     vector<float> mutations;
     Node *query_node = nullptr;
-    for (int i = start_index; a.coordinates[i] < end; i++) {
+    for (int i = start_index; i < end_index - 1; i++) {
         if (a.coordinates[i] == query_it->first) {
             query_node = query_it->second.lower_node;
             query_it++;
@@ -120,9 +126,8 @@ void Threader_smc::run_BSP(ARG &a) {
     }
 }
 
-/*
 void Threader_smc::run_TSP(ARG &a) {
-    new_joining_branches = bsp.sample_joining_branches();
+    new_joining_branches = bsp.sample_joining_branches(start_index, a.coordinates);
     int start_index = a.get_index(start);
     Branch start_branch = new_joining_branches.begin()->second;
     tsp.set_gap(gap);
@@ -170,7 +175,7 @@ void Threader_smc::run_TSP(ARG &a) {
 }
 
 void Threader_smc::sample_joining_points(ARG &a) {
-    map<float, Node *> added_nodes = tsp.sample_joining_nodes();
+    map<float, Node *> added_nodes = tsp.sample_joining_nodes(start_index, a.coordinates);
     map<float, Branch>::iterator query_it = a.removed_branches.begin();
     map<float, Node *>::iterator add_it = added_nodes.begin();
     Node *query_node = nullptr;
@@ -185,11 +190,6 @@ void Threader_smc::sample_joining_points(ARG &a) {
         added_branches[add_it->first] = Branch(query_node, added_node);
     }
 }
- */
-
-void Threader_smc::run_TSP(ARG &a) {}
-
-void Threader_smc::sample_joining_points(ARG &a) {}
 
 float Threader_smc::random() {
     return (float) rand()/RAND_MAX;

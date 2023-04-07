@@ -13,7 +13,7 @@
 #include <sstream>
 #include "ARG.hpp"
 #include "BSP_smc.hpp"
-// #include "TSP_smc.hpp"
+#include "TSP_smc.hpp"
 
 class Threader_smc {
     
@@ -36,8 +36,10 @@ public:
     float cut_time = 0;
     float start = 0;
     float end = 0;
+    int start_index = 0;
+    int end_index = 0;
     BSP_smc bsp = BSP_smc();
-    // TSP_smc tsp = TSP_smc();
+    TSP_smc tsp = TSP_smc();
     float gap;
     float cutoff;
     shared_ptr<Emission> eh;
@@ -46,6 +48,8 @@ public:
     map<float, Branch> added_branches = {};
     
     string get_time();
+    
+    void get_terminals(ARG &a);
     
     void set_check_points(ARG &a);
     

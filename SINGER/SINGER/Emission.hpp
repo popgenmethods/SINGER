@@ -15,9 +15,8 @@ class Emission {
     
 public:
     
-    virtual ~Emission() = default;
-    virtual float null_emit(Branch branch, float time, float theta, Node *node) const = 0;
-    virtual float mut_emit(Branch branch, float time, float theta, float mut_pos, Node *node) const = 0;
+    virtual float null_emit(Branch branch, float time, float theta, Node *node) = 0;
+    virtual float mut_emit(Branch branch, float time, float theta, float bin_size, set<float> mut_set, Node *node) = 0;
     
 };
 

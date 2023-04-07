@@ -41,3 +41,15 @@ void test_pruner() {
     parsimony_pruner.prune_arg(a);
     parsimony_pruner.write_reduction_size("/Users/yun_deng/Desktop/SINGER/arg_files/reduction_size_10.txt");
 }
+
+void test_iterative_start() {
+    srand(93723823);
+    Sampler sampler = Sampler(2e4, 2e-9, 2e-8);
+    sampler.set_precision(0.01, 0.05);
+    sampler.set_num_samples(2);
+    sampler.set_sequence_length(1e7);
+    sampler.set_input_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_hap0");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_sample0");
+    sampler.set_log_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/check");
+    sampler.iterative_start();
+}
