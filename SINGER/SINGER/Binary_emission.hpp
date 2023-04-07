@@ -26,11 +26,11 @@ public:
     
     float mut_emit(Branch branch, float time, float theta, float bin_size, set<float> mut_set, Node *node) override;
     
-    float poisson_prob(float theta, float bin_size, float ll, float lu, float l0, float sl, float su, float s0);
+    float calculate_prob(float theta, float bin_size, float ll, float lu, float l0, int sl, int su, int s0);
     
-    float poisson_prob(float theta, float bin_size, int s);
+    float calculate_prob(float theta, float bin_size, int s);
     
-    vector<int> get_diff(float sl, float su, float s0);
+    vector<int> get_diff(set<float> mut_set, Branch branch, Node *node);
     
     
     
