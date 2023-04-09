@@ -263,15 +263,17 @@ void TSP_smc::mut_emit(float theta, float bin_size, set<float> mut_set, Node *qu
 map<float, Node *> TSP_smc::sample_joining_nodes(int start_index, vector<float> &coordinates) {
     map<float, Node *> joining_nodes = {};
     int x = curr_index;
-    float pos = coordinates[x + start_index];
+    float pos = coordinates[x + start_index + 1];
     Interval *interval = sample_curr_interval(x);
     Node *n = sample_joining_node(interval);
     joining_nodes[pos] = n;
-    while (x > 0) {
+    while (x >= 0) {
         x = trace_back_helper(interval, x);
         pos = coordinates[x];
         joining_nodes[pos] = n;
-        if (pos == interval->start_pos) {
+        if (x == 0) {
+            break;
+        } if (pos == interval->start_pos) {
             x -= 1;
             if (interval->source_intervals.size() > 0) {
                 interval = interval->sample_source();

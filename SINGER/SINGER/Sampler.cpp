@@ -65,16 +65,16 @@ Node *Sampler::build_node(int index, float time) {
 
 void Sampler::build_singleton_arg() {
     float bin_size = rho_unit/recomb_rate;
-    bin_size = min(bin_size, 1000.0f);
     Node *n = build_node(0, 0.0);
     arg = ARG(Ne, sequence_length);
     arg.discretize(bin_size);
     arg.build_singleton_arg(n);
+    arg.compute_rhos_thetas(recomb_rate, mut_rate);
 }
 
 void Sampler::iterative_start() {
     build_singleton_arg();
-    for (int i = 0; i < num_samples; i++) {
+    for (int i = 1; i < num_samples; i++) {
         random_seed = rand();
         srand(random_seed);
         Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);

@@ -18,9 +18,8 @@ Threader_smc::~Threader_smc() {
 
 void Threader_smc::thread(ARG &a, Node *n) {
     cut_time = 0.0;
-    start = a.joining_branches.begin()->first;
-    end = a.joining_branches.rbegin()->first;
     a.add_sample(n);
+    get_boundary(a);
     run_BSP(a);
     run_TSP(a);
     sample_joining_points(a);
@@ -30,8 +29,7 @@ void Threader_smc::thread(ARG &a, Node *n) {
 void Threader_smc::internal_rethread(ARG &prev_arg, tuple<int, Branch, float> cut_point) {
     ARG next_arg = prev_arg;
     cut_time = get<2>(cut_point);
-    start = next_arg.joining_branches.begin()->first;
-    end = next_arg.joining_branches.rbegin()->first;
+    get_boundary(next_arg);
     next_arg.remove(cut_point);
     set_check_points(next_arg);
     run_BSP(next_arg);
@@ -53,8 +51,7 @@ void Threader_smc::internal_rethread(ARG &prev_arg, tuple<int, Branch, float> cu
 
 void Threader_smc::terminal_rethread(ARG &a, tuple<int, Branch, float> cut_point) {
     cut_time = get<2>(cut_point);
-    start = a.joining_branches.begin()->first;
-    end = a.joining_branches.rbegin()->first;
+    get_boundary(a);
     a.remove(cut_point);
     set_check_points(a);
     run_BSP(a);
@@ -77,9 +74,9 @@ string Threader_smc::get_time() {
     return oss.str();
 }
 
-void Threader_smc::get_terminals(ARG &a) {
+void Threader_smc::get_boundary(ARG &a) {
     start = a.removed_branches.begin()->first;
-    end = a.removed_branches.end()->first;
+    end = a.removed_branches.rbegin()->first;
     start_index = a.get_index(start);
     end_index = a.get_index(end);
 }
@@ -99,8 +96,9 @@ void Threader_smc::run_BSP(ARG &a) {
     set<float>::iterator mut_it = a.mutation_sites.lower_bound(start);
     map<float, Branch>::iterator query_it = a.removed_branches.begin();
     vector<float> mutations;
+    set<float> mut_set = {};
     Node *query_node = nullptr;
-    for (int i = start_index; i < end_index - 1; i++) {
+    for (int i = start_index; i < end_index; i++) {
         if (a.coordinates[i] == query_it->first) {
             query_node = query_it->second.lower_node;
             query_it++;
@@ -112,13 +110,12 @@ void Threader_smc::run_BSP(ARG &a) {
         } else if (a.coordinates[i] != start) {
             bsp.forward(a.rhos[i]);
         }
-        set<float> mut_set = {};
+        mut_set = {};
         while (*mut_it < a.coordinates[i+1]) {
             mut_set.insert(*mut_it);
             mut_it++;
         }
         if (mut_set.size() > 0) {
-            mut_it++;
             bsp.mut_emit(a.coordinates[i+1] - a.coordinates[i], a.thetas[i], mut_set, query_node);
         } else {
             bsp.null_emit(a.thetas[i], query_node);
@@ -128,7 +125,6 @@ void Threader_smc::run_BSP(ARG &a) {
 
 void Threader_smc::run_TSP(ARG &a) {
     new_joining_branches = bsp.sample_joining_branches(start_index, a.coordinates);
-    int start_index = a.get_index(start);
     Branch start_branch = new_joining_branches.begin()->second;
     tsp.set_gap(gap);
     tsp.set_emission(eh);
@@ -140,7 +136,7 @@ void Threader_smc::run_TSP(ARG &a) {
     Branch prev_branch = start_branch;
     Branch next_branch = start_branch;
     Node *query_node = nullptr;
-    for (int i = start_index; a.coordinates[i] < end; i++) {
+    for (int i = start_index; i < end_index; i++) {
         if (a.coordinates[i] == query_it->first) {
             query_node = query_it->second.lower_node;
             query_it++;
@@ -167,7 +163,7 @@ void Threader_smc::run_TSP(ARG &a) {
             mut_it++;
         }
         if (mut_set.size() > 0) {
-            tsp.mut_emit(a.coordinates[i+1] - a.coordinates[i], a.thetas[i], mut_set, query_node);
+            tsp.mut_emit(a.thetas[i], a.coordinates[i+1] - a.coordinates[i], mut_set, query_node);
         } else {
             tsp.null_emit(a.thetas[i], query_node);
         }
@@ -178,16 +174,17 @@ void Threader_smc::sample_joining_points(ARG &a) {
     map<float, Node *> added_nodes = tsp.sample_joining_nodes(start_index, a.coordinates);
     map<float, Branch>::iterator query_it = a.removed_branches.begin();
     map<float, Node *>::iterator add_it = added_nodes.begin();
+    map<float, Node *>::iterator end_it = added_nodes.end();
     Node *query_node = nullptr;
     Node *added_node = nullptr;
-    while (add_it->first < end) {
+    while (add_it != end_it) {
         added_node = add_it->second;
         if (query_it->first == add_it->first) {
             query_node = query_it->second.lower_node;
             query_it++;
         }
-        add_it++;
         added_branches[add_it->first] = Branch(query_node, added_node);
+        add_it++;
     }
 }
 

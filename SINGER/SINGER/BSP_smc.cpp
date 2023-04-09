@@ -132,15 +132,18 @@ void BSP_smc::mut_emit(float theta, float bin_size, set<float> mut_set, Node *qu
 map<float, Branch> BSP_smc::sample_joining_branches(int start_index, vector<float> &coordinates) {
     map<float, Branch> joining_branches = {};
     int x = curr_index;
-    float pos = coordinates[x + start_index];
+    float pos = coordinates[x + start_index + 1];
     Interval *interval = sample_curr_interval(x);
-    Branch b;
-    while (x > 0) {
+    Branch b = interval->branch;
+    joining_branches[pos] = b;
+    while (x >= 0) {
         x = trace_back_helper(interval, x);
         b = interval->branch;
         pos = coordinates[x + start_index];
         joining_branches[pos] = b;
-        if (pos == interval->start_pos) {
+        if (x == 0) {
+            break;
+        } else if (pos == interval->start_pos) {
             x -= 1;
             interval = interval->sample_source();
             b = interval->branch;
@@ -150,6 +153,7 @@ map<float, Branch> BSP_smc::sample_joining_branches(int start_index, vector<floa
             b = interval->branch;
         }
     }
+    simplify(joining_branches);
     return joining_branches;
 }
 
@@ -510,6 +514,21 @@ vector<Interval *> BSP_smc::get_state_space(int x) {
     return state_it->second;
 }
 
+void BSP_smc::simplify(map<float, Branch> &joining_branches) {
+    auto it = joining_branches.begin();
+    auto end_it = joining_branches.end();
+    Branch prev_value = it->second;
+    while (it != end_it) {
+        auto next_it = next(it);
+        if (next_it != prev(end_it) && next_it->second == prev_value) {
+            joining_branches.erase(next_it);
+        } else {
+            prev_value = it->second;
+            it = next_it;
+        }
+    }
+}
+
 Interval *BSP_smc::sample_curr_interval(int x) {
     vector<Interval *> intervals = get_state_space(x);
     if (intervals.size() == 0) {
@@ -549,10 +568,6 @@ Interval *BSP_smc::sample_prev_interval(int x) {
 }
 
 int BSP_smc::trace_back_helper(Interval *i, int x) {
-    if (i == nullptr) {
-        x = get_prev_breakpoint(x);
-        return x;
-    }
     assert(i->start_pos <= x);
     if (!i->full_branch(cut_time)) {
         return i->start_pos;

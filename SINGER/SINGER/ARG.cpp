@@ -30,7 +30,8 @@ void ARG::discretize(float s) {
     map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(0);
     float curr_pos = 0;
     while (curr_pos < sequence_length) {
-        coordinates.push_back(max(curr_pos - 0.1f, 0.0f));
+        // coordinates.push_back(max(curr_pos - 0.1f, 0.0f));
+        coordinates.push_back(curr_pos);
         if (recomb_it->first < curr_pos + s) {
             curr_pos = recomb_it->first;
             recomb_it++;
@@ -68,10 +69,11 @@ void ARG::compute_rhos_thetas(float r, float m) {
 }
 
 void ARG::build_singleton_arg(Node *n) {
+    add_sample(n);
     Branch branch = Branch(n, root);
     Recombination r = Recombination({}, {branch});
     r.set_pos(0.0);
-    recombinations.insert({0, r});
+    recombinations[0] = r;
 }
 
 void ARG::add_sample(Node *n) {
@@ -232,9 +234,9 @@ void ARG::add(map<float, Branch> new_joining_branches, map<float, Branch> added_
     Branch next_joining_branch = Branch();
     Branch prev_added_branch = Branch();
     Branch next_added_branch = Branch();
-    while (join_it->first < end) {
+    while (add_it->first < end) {
         if (recomb_it->first == join_it->first) {
-            Recombination r = recomb_it->second;
+            Recombination &r = recomb_it->second;
             recomb_it++;
             next_joining_branch = join_it->second;
             join_it++;
@@ -244,15 +246,17 @@ void ARG::add(map<float, Branch> new_joining_branches, map<float, Branch> added_
             prev_joining_branch = next_joining_branch;
             prev_added_branch = next_added_branch;
         } else {
-            next_joining_branch = join_it->second;
-            join_it++;
+            if (join_it->first == add_it->first) {
+                next_joining_branch = join_it->second;
+                join_it++;
+            }
             next_added_branch = add_it->second;
             add_it++;
             new_recombination(add_it->first, prev_added_branch, prev_joining_branch, next_added_branch, next_joining_branch);
         }
     }
     remove_empty_recombinations();
-    impute_nodes(start, end);
+    impute(new_joining_branches, added_branches);
     removed_branches.clear();
     joining_branches.clear();
 }
@@ -360,6 +364,7 @@ void ARG::impute(map<float, Branch> new_joining_branches, map<float, Branch> add
             sm = 0;
         }
         added_branch.upper_node->write_state(m, sm);
+        mut_it++;
     }
 }
 
@@ -602,7 +607,7 @@ void ARG::new_recombination(float pos, Branch prev_added_branch, Branch prev_joi
     inserted_branches.insert(prev_joining_branch);
     Recombination r = Recombination(deleted_branches, inserted_branches);
     r.set_pos(pos);
-    recombinations.insert({pos, r});
+    recombinations[pos] = r;
     return;
 }
 
@@ -665,7 +670,7 @@ void ARG::write_branches(string filename) {
             pos = x.first;
             Recombination r = x.second;
             for (Branch b : r.inserted_branches) {
-                branch_map.insert({b, pos});
+                branch_map[b] = pos;
             }
             for (Branch b : r.deleted_branches) {
                 assert((node_set.count(b.lower_node) > 0 and node_set.count(b.upper_node) > 0) or b.upper_node == root);
@@ -750,14 +755,14 @@ void ARG::read_branches(string filename) {
         child_node = nodes[int(c)];
         b = Branch(child_node, parent_node);
         if (deleted_branches.count(right) > 0) {
-            deleted_branches.at(right).insert(b);
+            deleted_branches[right].insert(b);
         } else {
-            deleted_branches.insert({right, {b}});
+            deleted_branches[right] = {b};
         }
         if (inserted_branches.count(left) > 0) {
-            inserted_branches.at(left).insert(b);
+            inserted_branches[left].insert(b);
         } else {
-            inserted_branches.insert({left, {b}});
+            inserted_branches[left] = {b};
         }
     }
     deleted_branches.erase(sequence_length);
@@ -795,8 +800,8 @@ void ARG::read_recombs(string filename) {
             un = nodes[n2];
         }
         b = Branch(nodes[n1], nodes[n2]);
-        source_branches.insert({pos, b});
-        start_times.insert({pos, t});
+        source_branches[pos] = b;
+        start_times[pos] = t;
     }
     for (auto &x : recombinations) {
         pos = x.first;

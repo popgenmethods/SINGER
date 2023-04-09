@@ -99,6 +99,8 @@ public:
     
     vector<Interval *> get_state_space(int x);
     
+    void simplify(map<float, Branch> &joining_branches);
+    
     Interval *sample_curr_interval(int x);
     
     Interval *sample_prev_interval(int x);

@@ -49,7 +49,7 @@ public:
     
     string get_time();
     
-    void get_terminals(ARG &a);
+    void get_boundary(ARG &a);
     
     void set_check_points(ARG &a);
     

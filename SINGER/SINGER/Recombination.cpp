@@ -145,7 +145,10 @@ void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Bran
         add_inserted_branch(Branch(prev_added_branch.lower_node, cut_node));
     }
     simplify_branches();
-    assert(deleted_branches.size() == inserted_branches.size() or pos == 0);
+    if (pos == 0) {
+        return;
+    }
+    assert(deleted_branches.size() == inserted_branches.size());
     find_nodes();
     // when joining the source branch, depending on whether it joins above the start time or below, determine the new source branch
     if (prev_joining_branch == source_branch) {
@@ -163,7 +166,7 @@ void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Bran
     }
     assert(start_time < inserted_node->time);
     assert(merging_branch != Branch());
-    assert(deleted_branches.size() == 3 or deleted_branches.size() == 4 or pos == 0);
+    assert(deleted_branches.size() == 3 or deleted_branches.size() == 4);
 }
 
 Branch Recombination::next_added_branch(Branch prev_joining_branch, Branch prev_added_branch, Node *base_node) {
