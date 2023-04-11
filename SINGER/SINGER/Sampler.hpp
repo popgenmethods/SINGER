@@ -21,7 +21,7 @@ class Sampler {
     
 public:
     
-    float rho_unit = 4e-3;
+    float rho_unit = 4e-4;
     float Ne = 1;
     float mut_rate = 0;
     float recomb_rate = 0;

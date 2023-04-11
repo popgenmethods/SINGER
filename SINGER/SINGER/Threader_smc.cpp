@@ -117,6 +117,7 @@ void Threader_smc::run_BSP(ARG &a) {
             mut_it++;
         }
         if (mut_set.size() > 0) {
+            // bsp.null_emit(a.thetas[i], query_node);
             bsp.mut_emit(a.thetas[i], a.coordinates[i+1] - a.coordinates[i], mut_set, query_node);
         } else {
             bsp.null_emit(a.thetas[i], query_node);
@@ -138,6 +139,7 @@ void Threader_smc::run_TSP(ARG &a) {
     Branch prev_branch = start_branch;
     Branch next_branch = start_branch;
     Node *query_node = nullptr;
+    set<float> mut_set = {};
     cout << get_time() << endl;
     for (int i = start_index; i < end_index; i++) {
         if (a.coordinates[i] == query_it->first) {
@@ -160,7 +162,7 @@ void Threader_smc::run_TSP(ARG &a) {
             float rho = a.rhos[i];
             tsp.forward(rho);
         }
-        set<float> mut_set = {};
+        mut_set = {};
         while (*mut_it < a.coordinates[i+1]) {
             mut_set.insert(*mut_it);
             mut_it++;
