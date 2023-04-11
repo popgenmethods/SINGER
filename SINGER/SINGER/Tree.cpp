@@ -171,6 +171,40 @@ float Tree::log_exp(float lambda, float x) {
     return -lambda*x + log(lambda);
 }
 
+int Tree::depth(Node *n) {
+    int depth = 0;
+    while (!isinf(n->time)) {
+        depth += 1;
+        n = parents[n];
+    }
+    return depth;
+}
+
+Node *Tree::LCA(Node *n1, Node *n2) {
+    set<Node *> ancestors = {};
+    while (!isinf(n1->time)) {
+        ancestors.insert(n1);
+        n1 = parents[n1];
+    }
+    while (!isinf(n2->time)) {
+        if (ancestors.count(n2) > 0) {
+            return n2;
+        }
+        n2 = parents[n2];
+    }
+    return n1;
+}
+
+int Tree::distance(Node *n1, Node *n2) {
+    if (n1 == n2) {
+        return 0;
+    }
+    Node *lca = LCA(n1, n2);
+    int depth1 = depth(n1) - depth(lca);
+    int depth2 = depth(n2) - depth(lca);
+    return depth1 + depth2;
+}
+
 float Tree::random() {
     float p = (float) rand()/RAND_MAX;
     p = min(p, 0.999f);

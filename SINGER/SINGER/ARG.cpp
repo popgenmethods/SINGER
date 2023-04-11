@@ -251,8 +251,10 @@ void ARG::add(map<float, Branch> new_joining_branches, map<float, Branch> added_
                 join_it++;
             }
             next_added_branch = add_it->second;
-            add_it++;
             new_recombination(add_it->first, prev_added_branch, prev_joining_branch, next_added_branch, next_joining_branch);
+            add_it++;
+            prev_joining_branch = next_joining_branch;
+            prev_added_branch = next_added_branch;
         }
     }
     remove_empty_recombinations();
@@ -347,24 +349,26 @@ void ARG::impute(map<float, Branch> new_joining_branches, map<float, Branch> add
     float m = 0, sl = 0, su = 0, s0 = 0, sm = 0;
     Branch joining_branch = Branch();
     Branch added_branch = Branch();
-    while (*mut_it < end) {
-        m = *mut_it;
-        while (join_it->first < m) {
-            join_it++;
-            add_it++;
-        }
-        joining_branch = join_it->second;
+    while (add_it->first < end) {
         added_branch = add_it->second;
-        sl = joining_branch.lower_node->get_state(m);
-        su = joining_branch.upper_node->get_state(m);
-        s0 = added_branch.lower_node->get_state(m);
-        if (sl + su + s0 > 1) {
-            sm = 1;
-        } else {
-            sm = 0;
+        if (join_it->first == add_it->first) {
+            joining_branch = join_it->second;
+            join_it++;
         }
-        added_branch.upper_node->write_state(m, sm);
-        mut_it++;
+        add_it++;
+        while (*mut_it < add_it->first) {
+            m = *mut_it;
+            sl = joining_branch.lower_node->get_state(m);
+            su = joining_branch.upper_node->get_state(m);
+            s0 = added_branch.lower_node->get_state(m);
+            if (sl + su + s0 > 1) {
+                sm = 1;
+            } else {
+                sm = 0;
+            }
+            added_branch.upper_node->write_state(m, sm);
+            mut_it++;
+        }
     }
 }
 

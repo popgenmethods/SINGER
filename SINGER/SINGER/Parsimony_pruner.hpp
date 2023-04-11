@@ -50,7 +50,7 @@ public:
     
     void recombination_backward(Recombination &r);
     
-    void check_reduction(map<float, pair<Branch, Node *>> joining_points);
+    void write_reduction_distance(ARG &a, string filename);
     
     void write_reduction_size(string filename);
 

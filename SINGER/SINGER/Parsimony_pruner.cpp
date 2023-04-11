@@ -167,22 +167,37 @@ void Parsimony_pruner::recombination_backward(Recombination &r) {
     update_mismatch();
 }
 
-void Parsimony_pruner::check_reduction(map<float, pair<Branch, Node *>> joining_points) {
-      float start = joining_points.begin()->first;
-    float end = joining_points.rbegin()->first;
-    map<float, pair<Branch, Node *>>::iterator join_it = joining_points.begin();
+void Parsimony_pruner::write_reduction_distance(ARG &a, string filename) {
+    float start = a.removed_branches.begin()->first;
+    float end = a.removed_branches.rbegin()->first;
+    map<float, Branch>::iterator join_it = a.joining_branches.begin();
     map<float, set<Branch>>::iterator reduced_it = reductions.begin();
+    map<float, Recombination>::iterator recomb_it = a.recombinations.lower_bound(start);
     Branch joining_branch = Branch();
+    Tree tree = Tree();
     float x = start;
     set<Branch> reduced_set = reduced_it->second;
+    ofstream file;
+    file.open(filename);
     while (join_it->first < end) {
         x = join_it->first;
-        joining_branch = join_it->second.first;
-        while (reduced_it->first < x) {
+        joining_branch = join_it->second;
+        while (reduced_it->first <= x) {
             reduced_set = reduced_it->second;
             reduced_it++;
         }
-        cout << "Position " << join_it->first << " includes truth: " << reduced_set.count(joining_branch) << endl;
+        while (recomb_it->first <= x) {
+            Recombination r = recomb_it->second;
+            tree.forward_update(r);
+            recomb_it++;
+        }
+        int min_distance = INT_MAX;
+        int distance = INT_MAX;
+        for (Branch b : reduced_set) {
+            distance = tree.distance(joining_branch.lower_node, b.lower_node);
+            min_distance = min(min_distance, distance);
+        }
+        file << join_it->first << " " << min_distance << "\n";
         join_it++;
     }
 }
@@ -323,6 +338,7 @@ void Parsimony_pruner::write_reductions(ARG &a) {
             reductions[a.coordinates[i]] = reduced_set;
         }
     }
+    reductions[a.sequence_length] = {};
 }
 
 void Parsimony_pruner::extend_forward(ARG &a, float x) {

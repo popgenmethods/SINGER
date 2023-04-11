@@ -49,11 +49,17 @@ public:
     
     float transition_likelihood(Recombination& r);
     
-private:
+// private:
     
     float tree_length = 0.0f;
     
     float log_exp(float lambda, float x);
+    
+    int depth(Node *n);
+    
+    Node *LCA(Node *n1, Node *n2);
+    
+    int distance(Node *n1, Node *n2);
     
     float random();
     

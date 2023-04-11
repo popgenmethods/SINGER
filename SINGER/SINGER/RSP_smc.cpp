@@ -173,5 +173,7 @@ void RSP_smc::get_coalescence_rate(Tree tree, Recombination r, float cut_time) {
 
 float RSP_smc::random() {
     float p = (float) rand()/RAND_MAX;
-    return min(0.999f, p);
+    p = min(0.99f, p);
+    p = max(0.01f, p);
+    return p;
 }

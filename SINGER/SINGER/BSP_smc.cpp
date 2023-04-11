@@ -124,6 +124,7 @@ void BSP_smc::mut_emit(float theta, float bin_size, set<float> mut_set, Node *qu
         i->multiply(emit_prob);
         ws += i->get_prob();
     }
+    assert(ws > 0 and !isinf(ws));
     for (Interval *i : curr_intervals) {
         i->rescale(ws);
     }
@@ -143,7 +144,7 @@ map<float, Branch> BSP_smc::sample_joining_branches(int start_index, vector<floa
         joining_branches[pos] = b;
         if (x == 0) {
             break;
-        } else if (pos == interval->start_pos) {
+        } else if (x == interval->start_pos) {
             x -= 1;
             interval = interval->sample_source();
             b = interval->branch;
@@ -531,9 +532,6 @@ void BSP_smc::simplify(map<float, Branch> &joining_branches) {
 
 Interval *BSP_smc::sample_curr_interval(int x) {
     vector<Interval *> intervals = get_state_space(x);
-    if (intervals.size() == 0) {
-        return nullptr;
-    }
     float ws = 0;
     for (Interval *i : intervals) {
         ws += i->get_prob_at(x);

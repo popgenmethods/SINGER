@@ -27,6 +27,7 @@ void Interval::add_prob(float p) {
 }
 
 float Interval::get_prob() {
+    assert(!isnan(probs.back()));
     return probs.back();
 }
 

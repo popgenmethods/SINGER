@@ -17,7 +17,7 @@ class TSP_smc {
 public:
     
     float cut_time = 0;
-    float query_time = 0;
+    float lower_bound = 0;
     float gap = 0;
     int min_num = 1;
     float epsilon = 1e-3;
@@ -35,6 +35,8 @@ public:
     void set_emission(shared_ptr<Emission> e);
     
     void set_check_points(set<float> p);
+    
+    void reserve_memory(int length);
     
     void start(Branch branch, float t);
     
@@ -59,17 +61,27 @@ public:
 // private:
 
     int curr_index = 0;
+    Branch curr_branch = Branch();
     map<int, vector<Interval *>>  state_spaces = {{INT_MAX, {}}};
     vector<float> coordinates = {};
     vector<float> rhos = {}; // length: number of blocks - 1
     vector<float> thetas = {}; // length: number of blocks
-    float prev_rho = -1; // cache to save some computations
     vector<Interval *> curr_intervals = {};
     vector<float> lower_sums = {};
     vector<float> upper_sums = {};
     vector<float> diagonals = {};
     vector<float> lower_diagonals = {};
     vector<float> upper_diagonals = {};
+    
+    float prev_rho = -1;
+    float prev_theta = -1;
+    Node *prev_node = nullptr;
+    
+    vector<float> temp = {};
+    vector<float> null_emit_probs = {};
+    vector<float> mut_emit_probs = {};
+    vector<float> trace_back_weights = {};
+    vector<vector<float>> forward_probs = {};
     
     float recomb_cdf(float s, float t);
     
@@ -91,7 +103,11 @@ public:
     
     float get_prop(float lb1, float ub1, float lb2, float ub2);
     
-    void set_quantities();
+    void set_dimensions();
+    
+    void compute_null_emit_probs(float theta, Node *query_node);
+    
+    void compute_mut_emit_probs(float theta, float bin_size, set<float> mut_set, Node *query_node);
     
     void compute_diagonals(float rho);
     
