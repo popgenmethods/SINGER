@@ -54,7 +54,7 @@ public:
     
     void null_emit(float theta, Node *query_node);
     
-    void mut_emit(float theta, float bin_size, set<float> mut_set, Node *query_node);
+    void mut_emit(float theta, float bin_size, set<float> &mut_set, Node *query_node);
     
     map<float, Node *> sample_joining_nodes(int start_index, vector<float> &coordinates);
     
@@ -70,6 +70,7 @@ public:
     vector<float> lower_sums = {};
     vector<float> upper_sums = {};
     vector<float> diagonals = {};
+    vector<float> factors = {};
     vector<float> lower_diagonals = {};
     vector<float> upper_diagonals = {};
     
@@ -109,7 +110,7 @@ public:
     
     void compute_null_emit_probs(float theta, Node *query_node);
     
-    void compute_mut_emit_probs(float theta, float bin_size, set<float> mut_set, Node *query_node);
+    void compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node *query_node);
     
     void compute_diagonals(float rho);
     
@@ -120,6 +121,8 @@ public:
     void compute_lower_sums();
     
     void compute_upper_sums();
+    
+    void compute_factors();
     
     void compute_trace_track_probs(float rho, Interval *interval, vector<Interval *> &intervals);
     

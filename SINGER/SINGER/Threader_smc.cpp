@@ -21,7 +21,9 @@ void Threader_smc::thread(ARG &a, Node *n) {
     a.add_sample(n);
     get_boundary(a);
     run_BSP(a);
+    cout << get_time() << endl;
     run_TSP(a);
+    cout << get_time() << endl;
     // sample_joining_points(a);
     // a.add(new_joining_branches, added_branches);
     // a.smc_sample_recombinations();
@@ -117,7 +119,6 @@ void Threader_smc::run_BSP(ARG &a) {
             mut_it++;
         }
         if (mut_set.size() > 0) {
-            // bsp.null_emit(a.thetas[i], query_node);
             bsp.mut_emit(a.thetas[i], a.coordinates[i+1] - a.coordinates[i], mut_set, query_node);
         } else {
             bsp.null_emit(a.thetas[i], query_node);
@@ -140,7 +141,6 @@ void Threader_smc::run_TSP(ARG &a) {
     Branch next_branch = start_branch;
     Node *query_node = nullptr;
     set<float> mut_set = {};
-    cout << get_time() << endl;
     for (int i = start_index; i < end_index; i++) {
         if (a.coordinates[i] == query_it->first) {
             query_node = query_it->second.lower_node;
@@ -173,7 +173,6 @@ void Threader_smc::run_TSP(ARG &a) {
             tsp.null_emit(a.thetas[i], query_node);
         }
     }
-    cout << get_time() << endl;
 }
 
 void Threader_smc::sample_joining_points(ARG &a) {

@@ -46,6 +46,7 @@ void TSP_smc::start(Branch branch, float t) {
     lower_bound = max(cut_time, branch.lower_node->time);
     generate_intervals(branch, branch.lower_node->time, branch.upper_node->time);
     set_dimensions();
+    compute_factors();
     vector<float> temp = vector<float>(dim);
     for (int i = 0; i < curr_intervals.size(); i++) {
         temp[i] = exp(-curr_intervals[i]->lb) - exp(-curr_intervals[i]->ub);
@@ -216,20 +217,21 @@ void TSP_smc::null_emit(float theta, Node *query_node) {
         forward_probs[curr_index][i] *= null_emit_probs[i];
         ws += forward_probs[curr_index][i];
     }
+    // float ws = accumulate(forward_probs[curr_index].begin(), forward_probs[curr_index].end(), 0.0);
     for (int i = 0; i < diagonals.size(); i++) {
         forward_probs[curr_index][i] /= ws;
     }
 }
 
-void TSP_smc::mut_emit(float theta, float bin_size, set<float> mut_set, Node *query_node) {
+void TSP_smc::mut_emit(float theta, float bin_size, set<float> &mut_set, Node *query_node) {
     compute_mut_emit_probs(theta, bin_size, mut_set, query_node);
-    transform(forward_probs[curr_index].begin(), forward_probs[curr_index].end(), mut_emit_probs.begin(), forward_probs[curr_index].begin(), multiplies<float>());
-    float ws = accumulate(forward_probs[curr_index].begin(), forward_probs[curr_index].end(), 0);
-    if (ws > 0) {
-        transform(forward_probs[curr_index].begin(), forward_probs[curr_index].end(), forward_probs[curr_index].begin(), [ws](double val) {return val/ws;});
-    } else {
-        float p = 1.0/curr_intervals.size();
-        fill(forward_probs[curr_index].begin(), forward_probs[curr_index].end(), p);
+    float ws = 0;
+    for (int i = 0; i < diagonals.size(); i++) {
+        forward_probs[curr_index][i] *= mut_emit_probs[i];
+        ws += forward_probs[curr_index][i];
+    }
+    for (int i = 0; i < diagonals.size(); i++) {
+        forward_probs[curr_index][i] /= ws;
     }
 }
 
@@ -340,7 +342,6 @@ float TSP_smc::psmc_prob(float rho, float s, float t1, float t2) {
 }
 
 void TSP_smc::generate_intervals(Branch next_branch, float lb, float ub) {
-    assert(lb >= next_branch.lower_node->time and ub <= next_branch.upper_node->time);
     lb = max(cut_time, lb);
     ub = max(cut_time, ub);
     if (lb == ub) {
@@ -364,7 +365,6 @@ void TSP_smc::generate_intervals(Branch next_branch, float lb, float ub) {
         new_interval->fill_time();
         curr_intervals.push_back(new_interval);
     }
-    // forward_probs[curr_index] = vector<float>(curr_intervals.size());
 }
 
 void TSP_smc::transfer_intervals(Recombination &r, Branch prev_branch, Branch next_branch) {
@@ -389,7 +389,6 @@ void TSP_smc::transfer_intervals(Recombination &r, Branch prev_branch, Branch ne
         }
         if (lb == ub or ub - lb > 1e-6) {
             float w = get_prop(lb, ub, i->lb, i->ub);
-            assert(!isnan(w) and w >= 0);
             p = w*i->get_prob();
             Interval *new_interval = new Interval(next_branch, lb, ub, curr_index, p);
             new_interval->set_source({i}, {1});
@@ -411,6 +410,7 @@ void TSP_smc::set_dimensions() {
     upper_sums = vector<float>(dim);
     null_emit_probs = vector<float>(dim);
     mut_emit_probs = vector<float>(dim);
+    factors = vector<float>(dim);
 }
 
 float TSP_smc::random() {
@@ -425,11 +425,8 @@ float TSP_smc::get_prop(float lb1, float ub1, float lb2, float ub2) {
     } else {
         float p1 = exp(-lb1) - exp(-ub1);
         float p2 = exp(-lb2) - exp(-ub2);
-        assert(!isnan(p1));
-        assert(p2 != 0);
         p = p1/p2;
     }
-    assert(p>=0 and p<=1);
     return p;
 }
 
@@ -437,13 +434,13 @@ void TSP_smc::compute_null_emit_probs(float theta, Node *query_node) {
     if (theta == prev_theta and query_node == prev_node) {
         return;
     }
-    for (int i = 0; i < null_emit_probs.size(); i++) {
+    for (int i = 0; i < dim; i++) {
         null_emit_probs[i] = eh->null_emit(curr_branch, curr_intervals[i]->time, theta, query_node);
     }
 }
 
-void TSP_smc::compute_mut_emit_probs(float theta, float bin_size, set<float> mut_set, Node *query_node) {
-    for (int i = 0; i < mut_emit_probs.size(); i++) {
+void TSP_smc::compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node *query_node) {
+    for (int i = 0; i < dim; i++) {
         mut_emit_probs[i] = eh->mut_emit(curr_branch, curr_intervals[i]->time, theta, bin_size, mut_set, query_node);
     }
 }
@@ -458,7 +455,7 @@ void TSP_smc::compute_diagonals(float rho) {
     float ub = curr_intervals.back()->ub;
     Interval *curr_interval = nullptr;
     float diag = 0;
-    for (int i = 0; i < diagonals.size(); i++) {
+    for (int i = 0; i < dim; i++) {
         curr_interval = curr_intervals[i];
         t = curr_interval->time;
         base = psmc_prob(rho, curr_interval->time, lb, ub);
@@ -473,11 +470,10 @@ void TSP_smc::compute_lower_diagonals(float rho) {
     }
     float t;
     float base;
-    int n = (int) lower_diagonals.size();
-    lower_diagonals[n-1] = 0;
+    lower_diagonals[dim-1] = 0;
     float lb = max(cut_time, curr_intervals.front()->lb);
     float ub = curr_intervals.back()->ub;
-    for (int i = 0; i < lower_diagonals.size() - 1; i++) {
+    for (int i = 0; i < dim - 1; i++) {
         t = curr_intervals[i+1]->time;
         base = psmc_prob(rho, t, lb, ub);
         lower_diagonals[i] = psmc_prob(rho, t, curr_intervals[i]->lb, curr_intervals[i]->ub)/base;
@@ -493,7 +489,7 @@ void TSP_smc::compute_upper_diagonals(float rho) {
     float ub = curr_intervals.back()->ub;
     float t;
     float base;
-    for (int i = 1; i < upper_diagonals.size(); i++) {
+    for (int i = 1; i < dim; i++) {
         t = curr_intervals[i-1]->time;
         base = psmc_prob(rho, t, lb, ub);
         upper_diagonals[i] = psmc_prob(rho, t, curr_intervals[i]->lb, curr_intervals[i]->ub)/base;
@@ -501,23 +497,23 @@ void TSP_smc::compute_upper_diagonals(float rho) {
 }
 
 void TSP_smc::compute_lower_sums() {
-    lower_sums[0] = 0;
-    float factor;
-    for (int i = 1; i < curr_intervals.size(); i++) {
-        if (lower_sums[i-1] == 0) {
-            lower_sums[i] = upper_diagonals[i]*curr_intervals[i-1]->get_prob();
-        } else {
-            factor = (exp(-curr_intervals[i]->lb) - exp(-curr_intervals[i]->ub))/(exp(-curr_intervals[i-1]->lb) - exp(-curr_intervals[i-1]->ub));
-            lower_sums[i] = upper_diagonals[i]*curr_intervals[i-1]->get_prob() + factor*lower_sums[i-1];
-        }
+    for (int i = 0; i < dim; i++) {
+        lower_sums[i] = upper_diagonals[i]*forward_probs[curr_index][i-1] + factors[i]*lower_sums[i-1];
     }
 }
 
 void TSP_smc::compute_upper_sums() {
-    int n = (int) curr_intervals.size();
-    upper_sums[n-1] = 0;
-    for (int i = n-2; i >=0 ; i--) {
-        upper_sums[i] = upper_sums[i+1] + curr_intervals[i+1]->get_prob();
+    partial_sum(forward_probs[curr_index].rbegin() + 1, forward_probs[curr_index].rend(), upper_sums.rbegin());
+}
+
+void TSP_smc::compute_factors() {
+    factors[0] = 0;
+    for (int i = 1; i < dim; i++) {
+        if (curr_intervals[i-1]->lb == curr_intervals[i-1]->ub) {
+            factors[i] = 0;
+        } else {
+            factors[i] = (exp(-curr_intervals[i]->lb) - exp(-curr_intervals[i]->ub))/(exp(-curr_intervals[i-1]->lb) - exp(-curr_intervals[i-1]->ub));
+        }
     }
 }
 
@@ -525,7 +521,7 @@ void TSP_smc::compute_trace_track_probs(float rho, Interval *interval, vector<In
     if (rho == prev_rho) {
         return;
     }
-    for (int i = 0; i < intervals.size(); i++) {
+    for (int i = 0; i < dim; i++) {
         
     }
 }
@@ -552,9 +548,6 @@ int TSP_smc::get_prev_breakpoint(int x) {
 
 Interval *TSP_smc::sample_curr_interval(int x) {
     vector<Interval *> intervals = get_state_space(x);
-    if (intervals.size() == 0) {
-        return nullptr;
-    }
     float ws = 0;
     for (Interval *i : intervals) {
         ws += i->get_prob_at(x);
