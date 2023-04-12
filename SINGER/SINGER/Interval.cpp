@@ -7,38 +7,12 @@
 
 #include "Interval.hpp"
 
-Interval::Interval(Branch b, float tl, float tu, float init_pos, float init_prob) {
+Interval::Interval(Branch b, float tl, float tu, float init_pos) {
     branch = b;
     lb = tl;
     ub = tu;
     assert(lb <= ub);
     start_pos = init_pos;
-    probs.push_back(init_prob);
-}
-
-void Interval::new_prob(float p) {
-    assert(!isnan(p));
-    probs.push_back(p);
-}
-
-void Interval::add_prob(float p) {
-    assert(!isnan(p));
-    probs.back() = probs.back() + p;
-}
-
-float Interval::get_prob() {
-    assert(!isnan(probs.back()));
-    return probs.back();
-}
-
-float Interval::get_prob_at(int x) {
-    float p = probs[x - start_pos];
-    assert(p >= 0 and p <= 1);
-    return probs[x - start_pos];
-}
-
-void Interval::update_prob(float p) {
-    probs.back() = p;
 }
 
 void Interval::assign_weight(float w) {
@@ -49,13 +23,6 @@ void Interval::assign_time(float t) {
     assert(t >= lb and t <= ub);
     assert(t != numeric_limits<float>::infinity());
     time = t;
-}
-
-float Interval::get_recomb_prob(float rho, float base_time) {
-    float p = 1 - exp(-rho*(time - base_time));
-    assert(p >= 0 and p <= 1);
-    assert(!isnan(p));
-    return p;
 }
 
 void Interval::fill_time() {
@@ -77,21 +44,7 @@ void Interval::fill_time() {
     assert(time >= lb and time <= ub);
 }
 
-void Interval::rescale(float a) {
-    if (a == 0 and probs.back() == 0) {
-        probs.back() = 1;
-        return;
-    }
-    assert(a != 0 or probs.back() == 0);
-    probs.back() = probs.back()/a;
-}
-
-void Interval::multiply(float a) {
-    assert(!isnan(a));
-    probs.back() = probs.back()*a;
-}
-
-bool Interval::full_branch(float t) {
+bool Interval::full(float t) {
     assert(lb >= t);
     if (lb == t) {
         return ub == branch.upper_node->time;
@@ -115,14 +68,10 @@ Interval* Interval::sample_source() {
         return nullptr;
     }
     if (source_intervals.size() == 1) {
-        // cout << "sample the only source interval" << endl;
-        // cout << " " << endl;
         return source_intervals.front();
     }
     float weight_sum = accumulate(source_weights.begin(), source_weights.end(), 0.0);
     float p = (float) rand()/RAND_MAX;
-    // cout << "sample source interval with p = " << p << endl;
-    // cout << " " << endl;
     weight_sum *= p;
     for (int i = 0; i < source_intervals.size(); i++) {
         weight_sum -= source_weights[i];

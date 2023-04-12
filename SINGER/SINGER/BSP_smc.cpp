@@ -25,6 +25,7 @@ void BSP_smc::start(set<Branch> branches, float t) {
     float p;
     Interval *new_interval = nullptr;
     coalescence_times = {cut_time};
+    vector<float> temp = {};
     for (Branch b : branches) {
         if (b.upper_node->time > cut_time) {
             coalescence_times.insert(b.upper_node->time);
@@ -36,7 +37,7 @@ void BSP_smc::start(set<Branch> branches, float t) {
             lb = max(b.lower_node->time, cut_time);
             ub = b.upper_node->time;
             p = coalescence_probs.at(ub) - coalescence_probs.at(lb);
-            new_interval = new Interval(b, lb, ub, curr_index, p);
+            new_interval = new Interval(b, lb, ub, curr_index);
             curr_intervals.push_back(new_interval);
         }
     }
@@ -64,23 +65,7 @@ void BSP_smc::forward(float rho) {
     float recomb_prob;
     float recomb_sum = 0.0;
     float weight_sum = 0.0;
-    for (Interval *i : curr_intervals) {
-        recomb_prob = i->get_recomb_prob(rho, cut_time);
-        p = i->get_prob()*recomb_prob;
-        recomb_sum += p;
-        p = i->get_prob() - p;
-        i->new_prob(p);
-        if (i->full_branch(cut_time)) {
-            weight_sum += recomb_prob*i->weight;
-        }
-    }
-    for (Interval *i : curr_intervals) {
-        if (i->full_branch(cut_time)) {
-            w = i->weight*i->get_recomb_prob(rho, cut_time);
-            p = w*recomb_sum/weight_sum;
-            i->add_prob(p);
-        }
-    }
+    
     recomb_sums.push_back(recomb_sum);
     weight_sums.push_back(weight_sum);
 }
@@ -103,31 +88,17 @@ void BSP_smc::transfer(Recombination r) {
     state_spaces[curr_index] = curr_intervals;
 }
 
+float BSP_smc::recomb_prob(float rho, float t) {
+    float p = rho*(t - cut_time)*exp(-rho*(t - cut_time));
+    return p;
+}
+
 void BSP_smc::null_emit(float theta, Node *query_node) {
-    float ws = 0.0f;
-    float emit_prob = 1;
-    for (Interval *i : curr_intervals) {
-        emit_prob = eh->null_emit(i->branch, i->time, theta, query_node);
-        i->multiply(emit_prob);
-        ws += i->get_prob();
-    }
-    for (Interval *i : curr_intervals) {
-        i->rescale(ws);
-    }
+    
 }
 
 void BSP_smc::mut_emit(float theta, float bin_size, set<float> mut_set, Node *query_node) {
-    float emit_prob = 1;
-    float ws = 0.0f;
-    for (Interval *i : curr_intervals) {
-        emit_prob = eh->mut_emit(i->branch, i->time, theta, bin_size, mut_set, query_node);
-        i->multiply(emit_prob);
-        ws += i->get_prob();
-    }
-    assert(ws > 0 and !isinf(ws));
-    for (Interval *i : curr_intervals) {
-        i->rescale(ws);
-    }
+    
 }
 
 map<float, Branch> BSP_smc::sample_joining_branches(int start_index, vector<float> &coordinates) {
@@ -159,6 +130,53 @@ map<float, Branch> BSP_smc::sample_joining_branches(int start_index, vector<floa
 }
 
 // private methods:
+
+void BSP_smc::set_dimensions() {
+    dim = (int) curr_intervals.size();
+    recomb_probs.resize(dim);
+    recomb_weights.resize(dim);
+    null_emit_probs.resize(dim);
+    mut_emit_probs.resize(dim);
+}
+
+void BSP_smc::compute_recomb_probs(float rho) {
+    if (prev_rho == rho) {
+        return;
+    }
+    for (int i = 0; i < dim; i++) {
+        recomb_prob(rho, curr_intervals[i]->time);
+    }
+}
+
+void BSP_smc::compute_recomb_weights(float rho) {
+    if (prev_rho == rho) {
+        return;
+    }
+    for (int i = 0; i < dim; i++) {
+        if (curr_intervals[i]->full(cut_time)) {
+            recomb_weights[i] = recomb_probs[i]*curr_intervals[i]->weight;
+        }
+    }
+    float ws = accumulate(recomb_weights.begin(), recomb_weights.end(), 0);
+    for (int i = 0; i < dim; i++) {
+        recomb_weights[i] /= ws;
+    }
+}
+
+void BSP_smc::compute_null_emit_prob(float theta, Node *query_node) {
+    if (theta == prev_theta and query_node == prev_node) {
+        return;
+    }
+    for (int i = 0; i < dim; i++) {
+        null_emit_probs[i] = eh->null_emit(curr_intervals[i]->branch, curr_intervals[i]->time, theta, query_node);
+    }
+}
+
+void BSP_smc::compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node *query_node) {
+    for (int i = 0; i < dim; i++) {
+        mut_emit_probs[i] = eh->mut_emit(curr_intervals[i]->branch, curr_intervals[i]->time, theta, bin_size, mut_set, query_node);
+    }
+}
 
 void BSP_smc::transfer_helper(Interval_info interval_info, Interval *i, float w) {
     assert(!isnan(w));
@@ -205,11 +223,7 @@ void BSP_smc::fill_interval_info() {
 }
 
 void BSP_smc::sanity_check(Recombination r) {
-    for (Interval *i : curr_intervals) {
-        if (i->lb == i->ub and i->lb == r.inserted_node->time and i->branch != r.target_branch) {
-            i->update_prob(0.0);
-        }
-    }
+    
 }
 
 void BSP_smc::generate_intervals(Recombination r) {
@@ -229,13 +243,15 @@ void BSP_smc::generate_intervals(Recombination r) {
         p = accumulate(source_weights.begin(), source_weights.end(), 0.0);
         assert(!isnan(p));
         if (lb == max(cut_time, b.lower_node->time) and ub == b.upper_node->time) { // full intervals
-            new_interval = new Interval(b, lb, ub, curr_index, p);
+            new_interval = new Interval(b, lb, ub, curr_index);
+            
             new_interval->set_source(source_intervals, source_weights);
             curr_intervals.push_back(new_interval);
         } else if (p >= cutoff) { // partial intervals
-            new_interval = new Interval(b, lb, ub, curr_index, p);
+            new_interval = new Interval(b, lb, ub, curr_index);
             new_interval->set_source(source_intervals, source_weights);
             curr_intervals.push_back(new_interval);
+            
         }
     }
     fill_interval_info();
@@ -375,18 +391,18 @@ void BSP_smc::process_source_interval(Recombination r, Interval *prev_interval) 
         lb = prev_interval->lb;
         ub = prev_interval->ub;
         next_branch = r.recombined_branch;
-        p = prev_interval->get_prob();
+        p = 0;
         ii = Interval_info(next_branch, lb, ub);
         transfer_helper(ii, prev_interval, p);
     } else if (prev_interval->lb >= break_time) {
         lb = point_time;
         ub = point_time;
         next_branch = r.merging_branch;
-        p = prev_interval->get_prob();
+        p = 0;
         ii = Interval_info(next_branch, lb, ub);
         transfer_helper(ii, prev_interval, p);
     } else {
-        p = prev_interval->get_prob();
+        p = 0;
         w1 = get_prop(prev_interval->lb, break_time);
         w2 = get_prop(break_time, prev_interval->ub);
         if (w1 == 0 and w2 == 0) {
@@ -399,13 +415,13 @@ void BSP_smc::process_source_interval(Recombination r, Interval *prev_interval) 
         lb = prev_interval->lb;
         ub = break_time;
         next_branch = r.recombined_branch;
-        p = prev_interval->get_prob();
+        p = 0;
         ii = Interval_info(next_branch, lb, ub);
         transfer_helper(ii, prev_interval, w1*p);
         lb = point_time;
         ub = point_time;
         next_branch = r.merging_branch;
-        p = prev_interval->get_prob();
+        p = 0;
         ii = Interval_info(next_branch, lb, ub);
         transfer_helper(ii, prev_interval, w2*p);
     }
@@ -425,25 +441,25 @@ void BSP_smc::process_target_interval(Recombination r, Interval *prev_interval) 
         lb = max(cut_time, r.start_time);
         ub = r.recombined_branch.upper_node->time;
         next_branch = r.recombined_branch;
-        p = prev_interval->get_prob();
+        p = 0;
         ii = Interval_info(next_branch, lb, ub);
         transfer_helper(ii, prev_interval, p);
     } else if (prev_interval->lb >= join_time) {
         lb = prev_interval->lb;
         ub = prev_interval->ub;
         next_branch = r.upper_transfer_branch;
-        p = prev_interval->get_prob();
+        p = 0;
         ii = Interval_info(next_branch, lb, ub);
         transfer_helper(ii, prev_interval, p);
     } else if (prev_interval->ub <= join_time) {
         lb = prev_interval->lb;
         ub = prev_interval->ub;
         next_branch = r.lower_transfer_branch;
-        p = prev_interval->get_prob();
+        p = 0;
         ii = Interval_info(next_branch, lb, ub);
         transfer_helper(ii, prev_interval, p);
     } else {
-        p = prev_interval->get_prob();
+        p = 0;
         w0 = get_overwrite_prob(r, prev_interval->lb, prev_interval->ub);
         w1 = get_prop(prev_interval->lb, join_time);
         w2 = get_prop(join_time, prev_interval->ub);
@@ -486,14 +502,14 @@ void BSP_smc::process_other_interval(Recombination r, Interval *prev_interval) {
         lb = prev_interval->lb;
         ub = prev_interval->ub;
         next_branch = r.merging_branch;
-        p = prev_interval->get_prob();
+        p = 0;
         ii = Interval_info(next_branch, lb, ub);
         transfer_helper(ii, prev_interval, p);
     } else {
         lb = prev_interval->lb;
         ub = prev_interval->ub;
         next_branch = prev_branch;
-        p = prev_interval->get_prob();
+        p = 0;
         ii = Interval_info(next_branch, lb, ub);
         transfer_helper(ii, prev_interval, p);
     }
@@ -532,42 +548,20 @@ void BSP_smc::simplify(map<float, Branch> &joining_branches) {
 
 Interval *BSP_smc::sample_curr_interval(int x) {
     vector<Interval *> intervals = get_state_space(x);
-    float ws = 0;
-    for (Interval *i : intervals) {
-        ws += i->get_prob_at(x);
-    }
-    assert(ws != 0);
-    float q = random();
-    float w = ws*q;
-    for (Interval *i : intervals) {
-        w -= i->get_prob_at(x);
-        if (w < 0) {
-            return i;
-        }
-    }
+    
     cerr << "sampling failed" << endl;
     exit(1);
 }
 
 Interval *BSP_smc::sample_prev_interval(int x) {
     vector<Interval *> intervals = get_state_space(x);
-    float rho = rhos[x];
-    float recomb_sum = recomb_sums[x];
-    float q = random();
-    float w = recomb_sum*q;
-    for (Interval *i : intervals) {
-        w -= i->get_recomb_prob(rho, cut_time)*i->get_prob_at(x);
-        if (w <= 0) {
-            return i;
-        }
-    }
+    
     cerr << "sampling failed" << endl;
     exit(1);
 }
 
 int BSP_smc::trace_back_helper(Interval *i, int x) {
-    assert(i->start_pos <= x);
-    if (!i->full_branch(cut_time)) {
+    if (!i->full(cut_time)) {
         return i->start_pos;
     }
     float p = random();
@@ -577,22 +571,6 @@ int BSP_smc::trace_back_helper(Interval *i, int x) {
     float recomb_sum;
     float shrinkage;
     float non_recomb;
-    while (x > i->start_pos) {
-        recomb_sum = recomb_sums[x - 1];
-        weight_sum = weight_sums[x];
-        non_recomb = i->get_prob_at(x - 1)*(1 - i->get_recomb_prob(rhos[x - 1], cut_time));
-        w = i->weight*i->get_recomb_prob(rhos[x - 1], cut_time);
-        if (non_recomb == 0) {
-            shrinkage = 0;
-        } else {
-            shrinkage = non_recomb/(non_recomb + w*recomb_sum/weight_sum);
-        }
-        assert(!isnan(shrinkage));
-        q *= shrinkage;
-        if (p > q) {
-            return x;
-        }
-        x -= 1;
-    }
+    
     return i->start_pos;
 }

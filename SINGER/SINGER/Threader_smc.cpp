@@ -20,13 +20,17 @@ void Threader_smc::thread(ARG &a, Node *n) {
     cut_time = 0.0;
     a.add_sample(n);
     get_boundary(a);
+    cout << get_time() << endl;
     run_BSP(a);
     cout << get_time() << endl;
     run_TSP(a);
     cout << get_time() << endl;
-    // sample_joining_points(a);
-    // a.add(new_joining_branches, added_branches);
-    // a.smc_sample_recombinations();
+    sample_joining_points(a);
+    cout << get_time() << endl;
+    a.add(new_joining_branches, added_branches);
+    cout << get_time() << endl;
+    a.smc_sample_recombinations();
+    cout << a.recombinations.size() << endl;
 }
 
 void Threader_smc::internal_rethread(ARG &prev_arg, tuple<int, Branch, float> cut_point) {
@@ -162,7 +166,7 @@ void Threader_smc::run_TSP(ARG &a) {
             float rho = a.rhos[i];
             tsp.forward(rho);
         }
-        mut_set = {};
+        mut_set.clear();
         while (*mut_it < a.coordinates[i+1]) {
             mut_set.insert(*mut_it);
             mut_it++;

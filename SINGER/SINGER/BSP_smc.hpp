@@ -37,6 +37,19 @@ public:
     map<Interval_info, vector<float>> transfer_weights = {};
     map<Interval_info, vector<Interval *>> transfer_intervals = {};
     
+    float prev_rho = -1;
+    float prev_theta = -1;
+    Node *prev_node = nullptr;
+    
+    int dim = 0;
+    vector<float> recomb_probs = {};
+    vector<float> recomb_weights = {};
+    vector<float> null_emit_probs = {};
+    vector<float> mut_emit_probs = {};
+    int sample_index = -1;
+    vector<float> trace_back_probs = {};
+    vector<vector<float>> forward_probs = {};
+    
     BSP_smc();
     
     ~BSP_smc();
@@ -53,6 +66,8 @@ public:
     
     void transfer(Recombination r); // forward pass when there is a recombination (without emission), and add a transition object. Don't forget to update active intervals, recomb_sums and weight_sums.
     
+    float recomb_prob(float rho, float t);
+    
     void null_emit(float theta, Node *query_node);
     
     void mut_emit(float theta, float bin_size, set<float> mut_set, Node *query_node);
@@ -60,6 +75,16 @@ public:
     map<float, Branch> sample_joining_branches(int start_index, vector<float> &coordinates);
     
     // private methods:
+    
+    void set_dimensions();
+    
+    void compute_recomb_probs(float rho);
+    
+    void compute_recomb_weights(float rho);
+    
+    void compute_null_emit_prob(float theta, Node *query_node);
+    
+    void compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node *query_node);
     
     void transfer_helper(Interval_info interval_info, Interval *i, float w);
     

@@ -17,10 +17,6 @@ using namespace std;
 
 class Interval {
     
-private:
-    
-    vector<float> probs;
-    
 public:
     
     Branch branch;
@@ -34,33 +30,15 @@ public:
     Node *node = nullptr;
     float reduction = 1.0;
     
-    Interval(Branch b, float tl, float tu, float init_pos, float init_prob);
-    
-    void new_prob(float p);
-    
-    void add_prob(float p);
-    
-    float get_prob();
-    
-    float get_prob_at(int x);
-    
-    void update_prob(float p);
+    Interval(Branch b, float tl, float tu, float init_pos);
     
     void assign_weight(float w);
     
     void assign_time(float t);
     
-    int last_pos();
-    
-    float get_recomb_prob(float rho, float base_time);
-    
     void fill_time();
     
-    void rescale(float a);
-    
-    void multiply(float a);
-    
-    bool full_branch(float t);
+    bool full(float t);
 
     void set_source(vector<Interval *> intervals, vector<float> weights);
     

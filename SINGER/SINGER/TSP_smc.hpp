@@ -82,7 +82,6 @@ public:
     vector<float> null_emit_probs = {};
     vector<float> mut_emit_probs = {};
     int sample_index = -1;
-    float sample_state_prob = -1;
     vector<float> trace_back_probs = {};
     vector<vector<float>> forward_probs = {};
     
@@ -124,7 +123,7 @@ public:
     
     void compute_factors();
     
-    void compute_trace_track_probs(float rho, Interval *interval, vector<Interval *> &intervals);
+    void compute_trace_back_probs(float rho, Interval *interval, vector<Interval *> &intervals);
     
     void sanity_check(Recombination r);
     
