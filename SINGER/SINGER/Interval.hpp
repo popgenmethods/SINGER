@@ -19,16 +19,16 @@ class Interval {
     
 public:
     
-    Branch branch;
+    Branch branch = Branch();
     float lb = 0;
     float ub = 0;
     float weight = 0.0;
     float time = 0.0;
     float start_pos = 0;
-    vector<float> source_weights = {};
-    vector<Interval *> source_intervals = {};
     Node *node = nullptr;
     float reduction = 1.0;
+    
+    Interval();
     
     Interval(Branch b, float tl, float tu, float init_pos);
     
@@ -40,41 +40,11 @@ public:
     
     bool full(float t);
 
-    void set_source(vector<Interval *> intervals, vector<float> weights);
+    bool operator<(const Interval &other) const;
     
-    void set_node(Node *n);
+    bool operator==(const Interval &other) const;
     
-    Interval *sample_source();
+    bool operator!=(const Interval &other) const;
 };
-
-struct compare_interval {
-    
-    bool operator()(const Interval *i1, const Interval *i2) const {
-        if (i1->branch != i2->branch) {
-            return i1->branch < i2->branch;
-        }
-        return i1->time < i2->time;
-    }
-};
-
-class Interval_info {
-    
-public:
-    
-    Branch branch;
-    float lb;
-    float ub;
-    
-    Interval_info();
-    
-    Interval_info(Branch b, float tl, float tu);
-    
-};
-
-bool operator==(const Interval_info& i1, const Interval_info& i2);
-
-bool operator!=(const Interval_info& i1, const Interval_info& i2);
-
-bool operator<(const Interval_info& i1, const Interval_info& i2);
 
 #endif /* Interval_hpp */

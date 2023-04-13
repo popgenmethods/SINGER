@@ -99,7 +99,7 @@ pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density
     return {source_branch, start_time};
 }
 
-void RSP_smc::sample_recombination(Recombination &r, float cut_time, Tree tree) {
+void RSP_smc::sample_recombination(Recombination &r, float cut_time, Tree &tree) {
     if (r.pos == 0) {
         return;
     }
@@ -155,7 +155,7 @@ float RSP_smc::recomb_pdf(float s, float t) {
     return pdf;
 }
 
-void RSP_smc::get_coalescence_rate(Tree tree, Recombination r, float cut_time) {
+void RSP_smc::get_coalescence_rate(Tree &tree, Recombination &r, float cut_time) {
     coalescence_rates.clear();
     vector<float> coalescence_times = {cut_time};
     for (Branch b : tree.branches) {

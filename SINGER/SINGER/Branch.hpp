@@ -23,12 +23,12 @@ public:
     Branch(Node *l, Node *u);
     
     float length();
+    
+    bool operator<(const Branch &other) const;
+    
+    bool operator==(const Branch &other) const;
+    
+    bool operator!=(const Branch &other) const;
 };
-
-bool operator==(const Branch& b, const Branch& c);
-
-bool operator!=(const Branch& b, const Branch& c);
-
-bool operator<(const Branch& b, const Branch& c);
 
 #endif /* Branch_hpp */

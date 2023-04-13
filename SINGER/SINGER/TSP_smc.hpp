@@ -44,7 +44,7 @@ public:
     
     void set_point_constraint(Recombination &r);
     
-    Interval *search_point_interval(Recombination r);
+    int search_point_interval(Recombination r);
     
     void transfer(Recombination &r, Branch prev_branch, Branch next_branch);
     
@@ -62,11 +62,14 @@ public:
 
     int curr_index = 0;
     Branch curr_branch = Branch();
-    map<int, vector<Interval *>>  state_spaces = {{INT_MAX, {}}};
+    vector<Interval> curr_intervals = {};
+    map<int, vector<Interval>>  state_spaces = {{INT_MAX, {}}};
+    map<int, map<int, int>> source_index = {};
+    
     vector<float> coordinates = {};
     vector<float> rhos = {}; // length: number of blocks - 1
     vector<float> thetas = {}; // length: number of blocks
-    vector<Interval *> curr_intervals = {};
+    
     vector<float> lower_sums = {};
     vector<float> upper_sums = {};
     vector<float> diagonals = {};
@@ -124,7 +127,7 @@ public:
     
     void compute_factors();
     
-    void compute_trace_back_probs(float rho, Interval *interval, vector<Interval *> &intervals);
+    void compute_trace_back_probs(float rho, Interval interval, vector<Interval> &intervals);
     
     void sanity_check(Recombination r);
     
@@ -132,21 +135,23 @@ public:
     
     void generate_intervals(Branch next_branch, float lb, float ub);
     
-    vector<Interval *> get_state_space(int x);
+    vector<Interval> get_state_space(int x);
     
     int get_prev_breakpoint(int x);
     
-    Interval *sample_curr_interval(int x);
+    Interval sample_curr_interval(int x);
     
-    Interval *sample_prev_interval(Interval *interval, int x);
+    Interval sample_prev_interval(Interval interval, int x);
     
-    Interval *sample_recomb_interval(Interval *interval, int x);
+    Interval sample_source_interval(Interval interval, int x);
     
-    int trace_back_helper(Interval *interval, int x);
+    Interval sample_recomb_interval(Interval interval, int x);
+    
+    int trace_back_helper(Interval interval, int x);
     
     float sample_time(float lb, float ub);
     
-    Node * sample_joining_node(Interval *interval);
+    Node *sample_joining_node(Interval interval);
     
 };
 

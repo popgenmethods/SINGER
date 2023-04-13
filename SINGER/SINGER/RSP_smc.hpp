@@ -21,7 +21,7 @@ public:
     
     RSP_smc();
     
-    void sample_recombination(Recombination &r, float cut_time, Tree tree);
+    void sample_recombination(Recombination &r, float cut_time, Tree &tree);
     
 private:
     
@@ -31,7 +31,7 @@ private:
     
     pair<Branch, float> sample_start_time(Branch b1, Branch b2, int density, float join_time, float cut_time);
     
-    void get_coalescence_rate(Tree tree, Recombination r, float cut_time);
+    void get_coalescence_rate(Tree &tree, Recombination &r, float cut_time);
     
     float recomb_pdf(float s, float t);
     

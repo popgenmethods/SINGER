@@ -7,6 +7,8 @@
 
 #include "Interval.hpp"
 
+Interval::Interval() {}
+
 Interval::Interval(Branch b, float tl, float tu, float init_pos) {
     branch = b;
     lb = tl;
@@ -21,7 +23,7 @@ void Interval::assign_weight(float w) {
 
 void Interval::assign_time(float t) {
     assert(t >= lb and t <= ub);
-    assert(t != numeric_limits<float>::infinity());
+    assert(!isinf(time));
     time = t;
 }
 
@@ -40,93 +42,49 @@ void Interval::fill_time() {
             time = -log(1 - q);
         }
     }
-    assert(time != numeric_limits<float>::infinity());
+    assert(!isinf(time));
     assert(time >= lb and time <= ub);
 }
 
 bool Interval::full(float t) {
     assert(lb >= t);
-    if (lb == t) {
-        return ub == branch.upper_node->time;
-    } else {
-        return lb == branch.lower_node->time and ub == branch.upper_node->time;
+    return lb == min(t, branch.lower_node->time) and ub == branch.upper_node->time;
+}
+
+bool Interval::operator<(const Interval &other) const {
+    if (branch != other.branch) {
+        return branch < other.branch;
     }
-}
-
-void Interval::set_source(vector<Interval *> intervals, vector<float> weights) {
-    source_intervals = intervals;
-    source_weights = weights;
-}
-
-void Interval::set_node(Node *n) {
-    assert(n != nullptr);
-    node = n;
-}
-
-Interval* Interval::sample_source() {
-    if (source_intervals.size() == 0) {
-        return nullptr;
+    if (ub != other.ub) {
+        return ub < other.ub;
     }
-    if (source_intervals.size() == 1) {
-        return source_intervals.front();
-    }
-    float weight_sum = accumulate(source_weights.begin(), source_weights.end(), 0.0);
-    float p = (float) rand()/RAND_MAX;
-    weight_sum *= p;
-    for (int i = 0; i < source_intervals.size(); i++) {
-        weight_sum -= source_weights[i];
-        if (weight_sum < 0) {
-            return source_intervals[i];
-        }
-    }
-    cerr << "sample source interval failed!" << endl;
-    exit(1);
+    return lb < other.lb;
 }
 
-Interval_info::Interval_info() {
-}
-
-Interval_info::Interval_info(Branch b, float tl, float tu) {
-    assert(tl <= tu);
-    branch = b;
-    lb = tl;
-    ub = tu;
-}
-
-bool operator==(const Interval_info& i1, const Interval_info& i2) {
-    if (i1.branch != i2.branch) {
+bool Interval::operator==(const Interval &other) const {
+    if (branch != other.branch) {
         return false;
     }
-    if (i1.ub != i2.ub) {
+    if (ub != other.ub) {
         return false;
     }
-    if (i1.lb != i2.lb) {
+    if (lb != other.lb) {
         return false;
     }
     return true;
 }
 
-bool operator!=(const Interval_info& i1, const Interval_info& i2) {
-    if (i1.branch != i2.branch) {
+bool Interval::operator!=(const Interval &other) const {
+    if (branch != other.branch) {
         return true;
     }
-    if (i1.ub != i2.ub) {
+    if (ub != other.ub) {
         return true;
     }
-    if (i1.lb != i2.lb) {
+    if (lb != other.lb) {
         return true;
     }
     return false;
-}
-
-bool operator<(const Interval_info& i1, const Interval_info& i2) {
-    if (i1.branch != i2.branch) {
-        return i1.branch < i2.branch;
-    }
-    if (i1.ub != i2.ub) {
-        return i1.ub < i2.ub;
-    }
-    return i1.lb < i2.lb;
 }
 
 // private methods:

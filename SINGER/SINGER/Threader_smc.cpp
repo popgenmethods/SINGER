@@ -20,16 +20,19 @@ void Threader_smc::thread(ARG &a, Node *n) {
     cut_time = 0.0;
     a.add_sample(n);
     get_boundary(a);
-    cout << get_time() << endl;
+    cout << get_time() << " : begin BSP"<< endl;
     run_BSP(a);
-    cout << get_time() << endl;
+    cout << get_time() << " : begin TSP"<< endl;
     run_TSP(a);
-    cout << get_time() << endl;
+    cout << get_time() << " : begin sampling"<< endl;
+    srand(3829);
     sample_joining_points(a);
-    cout << get_time() << endl;
+    cout << get_time() << " : begin adding"<< endl;
     a.add(new_joining_branches, added_branches);
-    cout << get_time() << endl;
+    srand(19242);
+    cout << get_time() << " : begin sampling recombination" << endl;
     a.smc_sample_recombinations();
+    cout << get_time() << " : finish" << endl;
     cout << a.recombinations.size() << endl;
 }
 
@@ -132,6 +135,7 @@ void Threader_smc::run_BSP(ARG &a) {
 }
 
 void Threader_smc::run_TSP(ARG &a) {
+    srand(795);
     new_joining_branches = bsp.sample_joining_branches(start_index, a.coordinates);
     Branch start_branch = new_joining_branches.begin()->second;
     tsp.reserve_memory(end_index - start_index);
