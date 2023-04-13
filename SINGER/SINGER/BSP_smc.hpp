@@ -42,6 +42,9 @@ public:
     Node *prev_node = nullptr;
     
     int dim = 0;
+    float recomb_sum = 0;
+    float weight_sum = 0;
+    vector<float> temp = {};
     vector<float> recomb_probs = {};
     vector<float> recomb_weights = {};
     vector<float> null_emit_probs = {};
@@ -53,6 +56,8 @@ public:
     BSP_smc();
     
     ~BSP_smc();
+    
+    void reserve_memory(int length);
     
     void start(set<Branch>, float t);
     
@@ -66,11 +71,11 @@ public:
     
     void transfer(Recombination r); // forward pass when there is a recombination (without emission), and add a transition object. Don't forget to update active intervals, recomb_sums and weight_sums.
     
-    float recomb_prob(float rho, float t);
+    float get_recomb_prob(float rho, float t);
     
     void null_emit(float theta, Node *query_node);
     
-    void mut_emit(float theta, float bin_size, set<float> mut_set, Node *query_node);
+    void mut_emit(float theta, float bin_size, set<float> &mut_set, Node *query_node);
     
     map<float, Branch> sample_joining_branches(int start_index, vector<float> &coordinates);
     
@@ -90,7 +95,7 @@ public:
     
     void add_new_branches(Recombination r);
     
-    void fill_interval_info();
+    void compute_interval_info();
     
     void sanity_check(Recombination r);
     
@@ -110,19 +115,19 @@ public:
     
     float get_median(float lb, float ub);
     
-    void process_interval(Recombination r, Interval *prev_interval);
+    void process_interval(Recombination r, int i);
     
-    void process_source_interval(Recombination r, Interval *prev_interval);
+    void process_source_interval(Recombination r, int i);
     
-    void process_target_interval(Recombination r, Interval *prev_interval);
+    void process_target_interval(Recombination r, int i);
     
-    void process_other_interval(Recombination r, Interval *prev_interval);
+    void process_other_interval(Recombination r, int i);
     
     float random();
     
     int get_prev_breakpoint(int x);
     
-    vector<Interval *> get_state_space(int x);
+    vector<Interval *> &get_state_space(int x);
     
     void simplify(map<float, Branch> &joining_branches);
     
@@ -130,7 +135,7 @@ public:
     
     Interval *sample_prev_interval(int x);
     
-    int trace_back_helper(Interval *i, int x);
+    int trace_back_helper(Interval *interval, int x);
     
 };
 

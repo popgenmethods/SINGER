@@ -79,6 +79,7 @@ public:
     Node *prev_node = nullptr;
     
     int dim = 0;
+    vector<float> temp = {};
     vector<float> null_emit_probs = {};
     vector<float> mut_emit_probs = {};
     int sample_index = -1;

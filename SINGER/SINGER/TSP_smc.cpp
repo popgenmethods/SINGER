@@ -56,6 +56,7 @@ void TSP_smc::start(Branch branch, float t) {
 void TSP_smc::transfer(Recombination &r, Branch prev_branch, Branch next_branch) {
     rhos.push_back(0);
     prev_rho = -1;
+    prev_theta = -1;
     prev_node = nullptr;
     curr_index += 1;
     curr_branch = next_branch;
@@ -352,7 +353,7 @@ void TSP_smc::generate_intervals(Branch next_branch, float lb, float ub) {
             Interval *new_interval = new Interval(next_branch, lb, ub, curr_index);
             new_interval->fill_time();
             curr_intervals.push_back(new_interval);
-            forward_probs[curr_index].push_back(0);
+            temp.push_back(0);
             return;
         }
     }
@@ -365,8 +366,10 @@ void TSP_smc::generate_intervals(Branch next_branch, float lb, float ub) {
         Interval *new_interval = new Interval(next_branch, l, u, curr_index);
         new_interval->fill_time();
         curr_intervals.push_back(new_interval);
-        forward_probs[curr_index].push_back(0);
+        temp.push_back(0);
     }
+    forward_probs.push_back(temp);
+    temp.clear();
 }
 
 void TSP_smc::transfer_intervals(Recombination &r, Branch prev_branch, Branch next_branch) {
@@ -618,9 +621,6 @@ Interval *TSP_smc::sample_recomb_interval(Interval *interval, int x) {
 
 int TSP_smc::trace_back_helper(Interval *interval, int x) {
     int y = get_prev_breakpoint(x);
-    if (interval == nullptr) {
-        return y;
-    }
     float non_recomb_prob = 0;
     float all_prob = 0;
     float q = random();
@@ -634,7 +634,7 @@ int TSP_smc::trace_back_helper(Interval *interval, int x) {
         rho = rhos[x-1];
         compute_trace_back_probs(rho, interval, intervals);
         prev_rho = rho;
-        all_prob = inner_product(trace_back_probs.begin(), trace_back_probs.end(), forward_probs[x-1].begin(), 0);
+        all_prob = inner_product(trace_back_probs.begin(), trace_back_probs.end(), forward_probs[x-1].begin(), 0.0);
         non_recomb_prob = trace_back_probs[sample_index]*forward_probs[x-1][sample_index];
         shrinkage = non_recomb_prob/all_prob;
         p *= shrinkage;

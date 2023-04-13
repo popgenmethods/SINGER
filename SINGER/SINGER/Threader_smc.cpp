@@ -96,6 +96,7 @@ void Threader_smc::set_check_points(ARG &a) {
 
 void Threader_smc::run_BSP(ARG &a) {
     Tree start_tree = a.get_tree_at(start);
+    bsp.reserve_memory(end_index - start_index);
     bsp.set_cutoff(cutoff);
     bsp.set_emission(eh);
     bsp.start(start_tree.branches, cut_time);
