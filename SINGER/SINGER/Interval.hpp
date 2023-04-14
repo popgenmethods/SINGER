@@ -27,6 +27,7 @@ public:
     float start_pos = 0;
     Node *node = nullptr;
     float reduction = 1.0;
+    int hmm_index = -1;
     
     Interval();
     

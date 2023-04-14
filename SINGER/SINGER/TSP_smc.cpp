@@ -13,10 +13,6 @@ TSP_smc::TSP_smc() {
 TSP_smc::~TSP_smc() {
 }
 
-void TSP_smc::set_coordinates(vector<float> c) {
-    coordinates = c;
-}
-
 void TSP_smc::set_gap(float q) {
     gap = q;
 }
@@ -25,7 +21,7 @@ void TSP_smc::set_emission(shared_ptr<Emission> e) {
     eh = e;
 }
 
-void TSP_smc::set_check_points(set<float> p) {
+void TSP_smc::set_check_points(set<float> &p) {
     check_points = p;
 }
 
@@ -34,7 +30,7 @@ void TSP_smc::reserve_memory(int length) {
     rhos.reserve(length);
 }
 
-void TSP_smc::start(Branch branch, float t) {
+void TSP_smc::start(Branch &branch, float t) {
     cut_time = t;
     curr_index = 0;
     curr_branch = branch;
@@ -48,7 +44,7 @@ void TSP_smc::start(Branch branch, float t) {
     state_spaces[0] = curr_intervals;
 }
 
-void TSP_smc::transfer(Recombination &r, Branch prev_branch, Branch next_branch) {
+void TSP_smc::transfer(Recombination &r, Branch &prev_branch, Branch &next_branch) {
     rhos.push_back(0);
     prev_rho = -1;
     prev_theta = -1;
@@ -93,7 +89,7 @@ void TSP_smc::transfer(Recombination &r, Branch prev_branch, Branch next_branch)
     set_dimensions();
 }
 
-void TSP_smc::recombine(Branch prev_branch, Branch next_branch) {
+void TSP_smc::recombine(Branch &prev_branch, Branch &next_branch) {
     assert(next_branch != Branch());
     vector<Interval> prev_intervals = curr_intervals;
     curr_intervals.clear();
@@ -245,9 +241,9 @@ map<float, Node *> TSP_smc::sample_joining_nodes(int start_index, vector<float> 
         if (x == 0) {
             break;
         } if (x == interval.start_pos) {
-            if (source_index.count(x) > 0) {
+            if (source_interval.count(interval) > 0) {
                 x -= 1;
-                interval = sample_source_interval(interval, x);
+                interval = sample_source_interval(interval);
             } else {
                 x -= 1;
                 interval = sample_recomb_interval(interval, x);
@@ -338,7 +334,8 @@ float TSP_smc::psmc_prob(float rho, float s, float t1, float t2) {
     return base + gap;
 }
 
-void TSP_smc::generate_intervals(Branch next_branch, float lb, float ub) {
+void TSP_smc::generate_intervals(Branch &next_branch, float lb, float ub) {
+    Interval new_interval = Interval();
     lb = max(cut_time, lb);
     ub = max(cut_time, ub);
     if (lb == ub) {
@@ -346,8 +343,9 @@ void TSP_smc::generate_intervals(Branch next_branch, float lb, float ub) {
             return;
         }
         else {
-            Interval new_interval = Interval(next_branch, lb, ub, curr_index);
+            new_interval = Interval(next_branch, lb, ub, curr_index);
             new_interval.fill_time();
+            new_interval.hmm_index = (int) curr_intervals.size();
             curr_intervals.push_back(new_interval);
             temp.push_back(0);
             return;
@@ -359,8 +357,9 @@ void TSP_smc::generate_intervals(Branch next_branch, float lb, float ub) {
     for (int i = 0; i < points.size() - 1; i++) {
         l = points[i];
         u = points[i+1];
-        Interval new_interval = Interval(next_branch, l, u, curr_index);
+        new_interval = Interval(next_branch, l, u, curr_index);
         new_interval.fill_time();
+        new_interval.hmm_index = (int) curr_intervals.size();
         curr_intervals.push_back(new_interval);
         temp.push_back(0);
     }
@@ -368,7 +367,7 @@ void TSP_smc::generate_intervals(Branch next_branch, float lb, float ub) {
     temp.clear();
 }
 
-void TSP_smc::transfer_intervals(Recombination &r, Branch prev_branch, Branch next_branch) {
+void TSP_smc::transfer_intervals(Recombination &r, Branch &prev_branch, Branch &next_branch) {
     float lb;
     float ub;
     float p;
@@ -397,6 +396,7 @@ void TSP_smc::transfer_intervals(Recombination &r, Branch prev_branch, Branch ne
             new_interval = Interval(next_branch, lb, ub, curr_index);
             new_interval.fill_time();
             new_interval.node = interval.node;
+            new_interval.hmm_index = (int) curr_intervals.size();
             curr_intervals.push_back(new_interval);
             forward_probs[curr_index].push_back(p);
         }
@@ -519,7 +519,7 @@ void TSP_smc::compute_factors() {
     }
 }
 
-void TSP_smc::compute_trace_back_probs(float rho, Interval interval, vector<Interval> &intervals) {
+void TSP_smc::compute_trace_back_probs(float rho, Interval &interval, vector<Interval> &intervals) {
     if (rho == prev_rho) {
         return;
     }
@@ -528,7 +528,7 @@ void TSP_smc::compute_trace_back_probs(float rho, Interval interval, vector<Inte
     }
 }
 
-void TSP_smc::sanity_check(Recombination r) {
+void TSP_smc::sanity_check(Recombination &r) {
     for (int i = 0; i < curr_intervals.size(); i++) {
         if (curr_intervals[i].lb == curr_intervals[i].ub and curr_intervals[i].lb == r.inserted_node->time and curr_intervals[i].branch != r.target_branch) {
             forward_probs[curr_index-1][i] = 0; // curr_index - 1 because the index has already moved forward
@@ -536,7 +536,7 @@ void TSP_smc::sanity_check(Recombination r) {
     }
 }
 
-vector<Interval> TSP_smc::get_state_space(int x) {
+vector<Interval> &TSP_smc::get_state_space(int x) {
     map<int, vector<Interval>>::iterator state_it = state_spaces.upper_bound(x);
     state_it--;
     return state_it->second;
@@ -548,7 +548,7 @@ int TSP_smc::get_prev_breakpoint(int x) {
     return state_it->first;
 }
 
-Interval TSP_smc::sample_curr_interval(int x) {
+Interval &TSP_smc::sample_curr_interval(int x) {
     vector<Interval> intervals = get_state_space(x);
     float ws = accumulate(forward_probs[x].begin(), forward_probs[x].end(), 0.0f);
     float q = random();
@@ -557,14 +557,14 @@ Interval TSP_smc::sample_curr_interval(int x) {
         w -= forward_probs[x][i];
         if (w <= 0) {
             sample_index = i;
-            return intervals[i];
+            return curr_intervals[i];
         }
     }
     cerr << "Sample curr interval failed" << endl;
     exit(1);
 }
 
-Interval TSP_smc::sample_prev_interval(Interval interval, int x) {
+Interval &TSP_smc::sample_prev_interval(Interval &interval, int x) {
     vector<Interval> intervals = get_state_space(x);
     lower_bound = intervals.front().lb;
     float ws = 0;
@@ -582,7 +582,7 @@ Interval TSP_smc::sample_prev_interval(Interval interval, int x) {
             w -= trace_back_probs[i]*forward_probs[x][i];
             if (w <= 0) {
                 sample_index = i;
-                return intervals[i];
+                return curr_intervals[i];
             }
         }
     }
@@ -590,12 +590,13 @@ Interval TSP_smc::sample_prev_interval(Interval interval, int x) {
     exit(1);
 }
 
-Interval TSP_smc::sample_source_interval(Interval interval, int x) {
-    return Interval();
+Interval &TSP_smc::sample_source_interval(Interval &interval) {
+    assert(source_interval.count(interval) > 0);
+    return source_interval[interval];
 }
 
-Interval TSP_smc::sample_recomb_interval(Interval interval, int x) {
-    vector<Interval> intervals = get_state_space(x);
+Interval &TSP_smc::sample_recomb_interval(Interval &interval, int x) {
+    vector<Interval> &intervals = get_state_space(x);
     float ws = 0;
     Interval prev_interval = Interval();
     for (int i = 0; i < intervals.size(); i++) {
@@ -609,14 +610,14 @@ Interval TSP_smc::sample_recomb_interval(Interval interval, int x) {
         w -= max(epsilon, recomb_prob(prev_interval.time, interval.lb, interval.ub))*forward_probs[x][i];
         if (w <= 0) {
             sample_index = i;
-            return prev_interval;
+            return curr_intervals[i];
         }
     }
     cerr << "sampling failed" << endl;
     exit(1);
 }
 
-int TSP_smc::trace_back_helper(Interval interval, int x) {
+int TSP_smc::trace_back_helper(Interval &interval, int x) {
     int y = get_prev_breakpoint(x);
     float non_recomb_prob = 0;
     float all_prob = 0;
@@ -655,50 +656,48 @@ void TSP_smc::set_interval_constraint(Recombination &r) {
 }
 
 void TSP_smc::set_point_constraint(Recombination &r) {
-    int point_index = search_point_interval(r);
-    curr_intervals[point_index].node = r.inserted_node;
-    for (int i = 0; i < curr_intervals.size(); i++) {
-        if (i == point_index) {
-            forward_probs[curr_index-1][i] = 1; // curr_index - 1 because the index has already moved forward
+    Interval point_interval = search_point_interval(r);
+    for (Interval &i : curr_intervals) {
+        if (i == point_interval) {
+            forward_probs[curr_index-1][i.hmm_index] = 1; // curr_index - 1 because the index has already moved forward
+            i.node = r.inserted_node;
         } else {
-            forward_probs[curr_index-1][i] = 0;
+            forward_probs[curr_index-1][i.hmm_index] = 0;
         }
     }
 }
 
-int TSP_smc::search_point_interval(Recombination r) {
-    int pos = curr_index - 1;
+Interval TSP_smc::search_point_interval(Recombination &r) {
     float t = r.inserted_node->time;
-    int point_index = -1;
-    for (int i = 0; i < curr_intervals.size(); i++) {
-        if (curr_intervals[i].ub > t and curr_intervals[i].lb < t) {
-            point_index = i;
+    Interval point_interval = Interval();
+    for (Interval &i : curr_intervals) {
+        if (i.ub > t and i.lb < t) {
+            point_interval = i;
         }
     }
-    for (int i = 0; i < curr_intervals.size(); i++) {
-        if (curr_intervals[i].ub == curr_intervals[i].lb and curr_intervals[i].lb == t) {
-            point_index = i;
+    for (Interval &i : curr_intervals) {
+        if (i.ub == i.lb and i.lb == t) {
+            point_interval = i;
         }
     }
-    if (point_index >= 0) {
-        return point_index;
+    if (point_interval != Interval()) {
+        return point_interval;
     }
-    vector<int> candidate_point_indices  = {};
-    for (int i = 0; i < curr_intervals.size(); i++) {
-        if (curr_intervals[i].lb <= t and curr_intervals[i].ub >= t) {
-            candidate_point_indices.push_back(i);
+    vector<Interval> candidate_point_intervals = {};
+    for (Interval &i : curr_intervals) {
+        if (i.lb <= t and i.ub >= t) {
+            candidate_point_intervals.push_back(i);
         }
     }
-    assert(candidate_point_indices.size() == 2);
-    int test_index = candidate_point_indices[0];
-    while (source_index[pos].count(test_index) > 0) {
-        test_index = source_index[pos][test_index];
-        pos = get_prev_breakpoint(pos);
-        if (state_spaces[pos][test_index].branch.upper_node == r.inserted_node or state_spaces[pos][test_index].branch.lower_node == r.inserted_node) {
-            return candidate_point_indices[1];
+    assert(candidate_point_intervals.size() == 2);
+    Interval test_interval = candidate_point_intervals[0];
+    while (source_interval.count(test_interval) > 0) {
+        test_interval = source_interval[test_interval];
+        if (test_interval.branch.upper_node == r.inserted_node or test_interval.branch.lower_node == r.inserted_node) {
+            return candidate_point_intervals[1];
         }
     }
-    return candidate_point_indices[0];
+    return candidate_point_intervals[0];
 }
 
 float TSP_smc::sample_time(float lb, float ub) {
@@ -724,7 +723,7 @@ float TSP_smc::sample_time(float lb, float ub) {
     return t;
 }
 
-Node *TSP_smc::sample_joining_node(Interval interval) {
+Node *TSP_smc::sample_joining_node(Interval &interval) {
     Node *n = nullptr;
     float t;
     if (interval.node != nullptr) {

@@ -65,7 +65,7 @@ public:
     
     void remove_leaf(int index);
     
-    void add(map<float, Branch> new_joining_branches, map<float, Branch> added_branches);
+    void add(map<float, Branch> &new_joining_branches, map<float, Branch> &added_branches);
     
     void smc_sample_recombinations();
     
@@ -89,7 +89,7 @@ public:
     
     void impute_nodes(float x, float y);
     
-    void impute(map<float, Branch> new_joining_branches, map<float, Branch> added_branches);
+    void impute(map<float, Branch> &new_joining_branches, map<float, Branch> &added_branches);
     
     void map_mutations(float x, float y);
     

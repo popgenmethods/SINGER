@@ -221,7 +221,7 @@ void ARG::remove_leaf(int index) {
     remove(removed_branches);
 }
 
-void ARG::add(map<float, Branch> new_joining_branches, map<float, Branch> added_branches) {
+void ARG::add(map<float, Branch> &new_joining_branches, map<float, Branch> &added_branches) {
     for (auto x : added_branches) {
         add_node(x.second.upper_node);
     }
@@ -340,7 +340,7 @@ void ARG::impute_nodes(float x, float y) {
     return;
 }
 
-void ARG::impute(map<float, Branch> new_joining_branches, map<float, Branch> added_branches) {
+void ARG::impute(map<float, Branch> &new_joining_branches, map<float, Branch> &added_branches) {
     float start = added_branches.begin()->first;
     float end = added_branches.rbegin()->first;
     set<float>::iterator mut_it = mutation_sites.lower_bound(start);

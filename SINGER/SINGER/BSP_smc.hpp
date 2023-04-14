@@ -34,8 +34,10 @@ public:
     map<float, float> coalescence_probs = {};
     map<float, float> coalescence_quantiles = {};
     
-    map<Interval, vector<float>> transfer_weights = {};
-    map<Interval, vector<int>> transfer_intervals = {};
+    map<Interval, vector<Interval>> source_intervals = {};
+    map<Interval, vector<float>> source_weights = {};
+    map<Interval, vector<Interval>> temp_intervals = {};
+    map<Interval, vector<float>> temp_weights = {};
     
     float prev_rho = -1;
     float prev_theta = -1;
@@ -59,17 +61,17 @@ public:
     
     void reserve_memory(int length);
     
-    void start(set<Branch>, float t);
+    void start(set<Branch> &branches, float t);
     
     void set_cutoff(float x);
     
     void set_emission(shared_ptr<Emission> e);
     
-    void set_check_points(set<float> p);
+    void set_check_points(set<float> &p);
     
     void forward(float rho); // forward pass when there is no recombination (without emission). Don't forget to update recomb_sums and weight_sums.
     
-    void transfer(Recombination r); // forward pass when there is a recombination (without emission), and add a transition object. Don't forget to update active intervals, recomb_sums and weight_sums.
+    void transfer(Recombination &r); // forward pass when there is a recombination (without emission), and add a transition object. Don't forget to update active intervals, recomb_sums and weight_sums.
     
     float get_recomb_prob(float rho, float t);
     
@@ -91,21 +93,21 @@ public:
     
     void compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node *query_node);
     
-    void transfer_helper(Interval next_interval, int i, float w);
+    void transfer_helper(Interval &next_interval, Interval &prev_interval, float w);
     
-    void add_new_branches(Recombination r);
+    void add_new_branches(Recombination &r);
     
     void compute_interval_info();
     
-    void sanity_check(Recombination r);
+    void sanity_check(Recombination &r);
     
-    void generate_intervals(Recombination r);
+    void generate_intervals(Recombination &r);
     
     float get_prop(float lb, float ub);
     
-    float get_overwrite_prob(Recombination r, float lb, float ub);
+    float get_overwrite_prob(Recombination &r, float lb, float ub);
     
-    void update_coalescence_times(Recombination r);
+    void update_coalescence_times(Recombination &r);
     
     void calculate_coalescence_stats();
     
@@ -115,13 +117,13 @@ public:
     
     float get_median(float lb, float ub);
     
-    void process_interval(Recombination r, int i);
+    void process_interval(Recombination &r, Interval &prev_interval);
     
-    void process_source_interval(Recombination r, int i);
+    void process_source_interval(Recombination &r, Interval &prev_interval);
     
-    void process_target_interval(Recombination r, int i);
+    void process_target_interval(Recombination &r, Interval &prev_interval);
     
-    void process_other_interval(Recombination r, int i);
+    void process_other_interval(Recombination &r, Interval &prev_interval);
     
     float random();
     
@@ -131,13 +133,13 @@ public:
     
     void simplify(map<float, Branch> &joining_branches);
     
-    Interval sample_curr_interval(int x);
+    Interval &sample_curr_interval(int x);
     
-    Interval sample_prev_interval(int x);
+    Interval &sample_prev_interval(int x);
     
-    Interval sample_source_interval(int x);
+    Interval &sample_source_interval(Interval &interval);
     
-    int trace_back_helper(Interval interval, int x);
+    int trace_back_helper(Interval &interval, int x);
     
 };
 

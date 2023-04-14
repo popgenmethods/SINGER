@@ -52,6 +52,9 @@ bool Interval::full(float t) {
 }
 
 bool Interval::operator<(const Interval &other) const {
+    if (start_pos != other.start_pos) {
+        return start_pos < other.start_pos;
+    }
     if (branch != other.branch) {
         return branch < other.branch;
     }
@@ -62,6 +65,9 @@ bool Interval::operator<(const Interval &other) const {
 }
 
 bool Interval::operator==(const Interval &other) const {
+    if (start_pos != other.start_pos) {
+        return false;
+    }
     if (branch != other.branch) {
         return false;
     }
@@ -75,6 +81,9 @@ bool Interval::operator==(const Interval &other) const {
 }
 
 bool Interval::operator!=(const Interval &other) const {
+    if (start_pos != other.start_pos) {
+        return true;
+    }
     if (branch != other.branch) {
         return true;
     }

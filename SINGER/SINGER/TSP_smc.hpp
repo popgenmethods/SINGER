@@ -28,27 +28,25 @@ public:
     
     ~TSP_smc();
     
-    void set_coordinates(vector<float> c);
-    
     void set_gap(float q);
     
     void set_emission(shared_ptr<Emission> e);
     
-    void set_check_points(set<float> p);
+    void set_check_points(set<float> &p);
     
     void reserve_memory(int length);
     
-    void start(Branch branch, float t);
+    void start(Branch &branch, float t);
     
     void set_interval_constraint(Recombination &r);
     
     void set_point_constraint(Recombination &r);
     
-    int search_point_interval(Recombination r);
+    Interval search_point_interval(Recombination &r);
     
-    void transfer(Recombination &r, Branch prev_branch, Branch next_branch);
+    void transfer(Recombination &r, Branch &prev_branch, Branch &next_branch);
     
-    void recombine(Branch prev_branch, Branch next_branch);
+    void recombine(Branch &prev_branch, Branch &next_branch);
     
     void forward(float rho);
     
@@ -64,9 +62,8 @@ public:
     Branch curr_branch = Branch();
     vector<Interval> curr_intervals = {};
     map<int, vector<Interval>>  state_spaces = {{INT_MAX, {}}};
-    map<int, map<int, int>> source_index = {};
+    map<Interval, Interval> source_interval = {};
     
-    vector<float> coordinates = {};
     vector<float> rhos = {}; // length: number of blocks - 1
     vector<float> thetas = {}; // length: number of blocks
     
@@ -127,31 +124,31 @@ public:
     
     void compute_factors();
     
-    void compute_trace_back_probs(float rho, Interval interval, vector<Interval> &intervals);
+    void compute_trace_back_probs(float rho, Interval &interval, vector<Interval> &intervals);
     
-    void sanity_check(Recombination r);
+    void sanity_check(Recombination &r);
     
-    void transfer_intervals(Recombination &r, Branch prev_branch, Branch next_branch);
+    void transfer_intervals(Recombination &r, Branch &prev_branch, Branch &next_branch);
     
-    void generate_intervals(Branch next_branch, float lb, float ub);
+    void generate_intervals(Branch &next_branch, float lb, float ub);
     
-    vector<Interval> get_state_space(int x);
+    vector<Interval> &get_state_space(int x);
     
     int get_prev_breakpoint(int x);
     
-    Interval sample_curr_interval(int x);
+    Interval &sample_curr_interval(int x);
     
-    Interval sample_prev_interval(Interval interval, int x);
+    Interval &sample_prev_interval(Interval &interval, int x);
     
-    Interval sample_source_interval(Interval interval, int x);
+    Interval &sample_source_interval(Interval &interval);
     
-    Interval sample_recomb_interval(Interval interval, int x);
+    Interval &sample_recomb_interval(Interval &interval, int x);
     
-    int trace_back_helper(Interval interval, int x);
+    int trace_back_helper(Interval &interval, int x);
     
     float sample_time(float lb, float ub);
     
-    Node *sample_joining_node(Interval interval);
+    Node *sample_joining_node(Interval &interval);
     
 };
 
