@@ -115,7 +115,7 @@ void Threader_smc::run_BSP(ARG &a) {
             query_it++;
         }
         if (a.coordinates[i] == recomb_it->first) {
-            Recombination r = recomb_it->second;
+            Recombination &r = recomb_it->second;
             recomb_it++;
             bsp.transfer(r);
         } else if (a.coordinates[i] != start) {
@@ -143,7 +143,7 @@ void Threader_smc::run_TSP(ARG &a) {
     tsp.set_emission(eh);
     tsp.start(start_branch, cut_time);
     map<float, Recombination>::iterator recomb_it = a.recombinations.upper_bound(start);
-    map<float, Branch>::iterator joining_it = new_joining_branches.upper_bound(start);
+    map<float, Branch>::iterator join_it = new_joining_branches.upper_bound(start);
     set<float>::iterator mut_it = a.mutation_sites.lower_bound(start);
     map<float, Branch>::iterator query_it = a.removed_branches.lower_bound(start);
     Branch prev_branch = start_branch;
@@ -155,11 +155,11 @@ void Threader_smc::run_TSP(ARG &a) {
             query_node = query_it->second.lower_node;
             query_it++;
         }
-        if (a.coordinates[i] == joining_it->first) {
-            next_branch = joining_it->second;
-            joining_it++;
+        if (a.coordinates[i] == join_it->first) {
+            next_branch = join_it->second;
+            join_it++;
         }
-        if (i == recomb_it->first) {
+        if (a.coordinates[i] == recomb_it->first) {
             Recombination &r = recomb_it->second;
             recomb_it++;
             tsp.transfer(r, prev_branch, next_branch);

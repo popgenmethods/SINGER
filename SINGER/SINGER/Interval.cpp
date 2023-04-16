@@ -9,7 +9,7 @@
 
 Interval::Interval() {}
 
-Interval::Interval(Branch b, float tl, float tu, float init_pos) {
+Interval::Interval(Branch b, float tl, float tu, int init_pos) {
     branch = b;
     lb = tl;
     ub = tu;
@@ -48,7 +48,7 @@ void Interval::fill_time() {
 
 bool Interval::full(float t) {
     assert(lb >= t);
-    return lb == min(t, branch.lower_node->time) and ub == branch.upper_node->time;
+    return lb == max(t, branch.lower_node->time) and ub == branch.upper_node->time;
 }
 
 bool Interval::operator<(const Interval &other) const {
@@ -94,6 +94,52 @@ bool Interval::operator!=(const Interval &other) const {
         return true;
     }
     return false;
+}
+
+Interval_info::Interval_info() {
+}
+
+Interval_info::Interval_info(Branch b, float tl, float tu) {
+    assert(tl <= tu);
+    branch = b;
+    lb = tl;
+    ub = tu;
+}
+
+bool operator==(const Interval_info& i1, const Interval_info& i2) {
+    if (i1.branch != i2.branch) {
+        return false;
+    }
+    if (i1.ub != i2.ub) {
+        return false;
+    }
+    if (i1.lb != i2.lb) {
+        return false;
+    }
+    return true;
+}
+
+bool operator!=(const Interval_info& i1, const Interval_info& i2) {
+    if (i1.branch != i2.branch) {
+        return true;
+    }
+    if (i1.ub != i2.ub) {
+        return true;
+    }
+    if (i1.lb != i2.lb) {
+        return true;
+    }
+    return false;
+}
+
+bool operator<(const Interval_info& i1, const Interval_info& i2) {
+    if (i1.branch != i2.branch) {
+        return i1.branch < i2.branch;
+    }
+    if (i1.ub != i2.ub) {
+        return i1.ub < i2.ub;
+    }
+    return i1.lb < i2.lb;
 }
 
 // private methods:

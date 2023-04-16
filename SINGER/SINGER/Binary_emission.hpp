@@ -28,14 +28,13 @@ public:
     
     float mut_emit(Branch branch, float time, float theta, float bin_size, set<float> &mut_set, Node *node) override;
     
+    float emit(Branch branch, float time, float theta, float bin_size, vector<float> &emissions, Node *node) override;
+    
     float calculate_prob(float theta, float bin_size, float ll, float lu, float l0, int sl, int su, int s0);
     
     float calculate_prob(float theta, float bin_size, int s);
     
     void get_diff(set<float> &mut_set, Branch branch, Node *node);
-    
-    
-    
 };
 
 #endif /* Binary_emission_hpp */

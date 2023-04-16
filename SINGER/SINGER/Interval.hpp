@@ -24,14 +24,14 @@ public:
     float ub = 0;
     float weight = 0.0;
     float time = 0.0;
-    float start_pos = 0;
+    int start_pos = 0;
     Node *node = nullptr;
     float reduction = 1.0;
     int hmm_index = -1;
     
     Interval();
     
-    Interval(Branch b, float tl, float tu, float init_pos);
+    Interval(Branch b, float tl, float tu, int init_pos);
     
     void assign_weight(float w);
     
@@ -47,5 +47,38 @@ public:
     
     bool operator!=(const Interval &other) const;
 };
+
+struct compare_interval {
+    
+    bool operator()(const Interval *i1, const Interval *i2) const {
+            if (i1->branch != i2->branch) {
+                return i1->branch < i2->branch;
+            }
+            if (i1->ub != i2->ub) {
+                return i1->ub < i2->ub;
+            }
+            return i1->lb < i2->lb;
+    }
+};
+
+class Interval_info {
+    
+public:
+    
+    Branch branch;
+    float lb;
+    float ub;
+    
+    Interval_info();
+    
+    Interval_info(Branch b, float tl, float tu);
+    
+};
+
+bool operator==(const Interval_info& i1, const Interval_info& i2);
+
+bool operator!=(const Interval_info& i1, const Interval_info& i2);
+
+bool operator<(const Interval_info& i1, const Interval_info& i2);
 
 #endif /* Interval_hpp */

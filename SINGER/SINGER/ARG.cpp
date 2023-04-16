@@ -235,11 +235,13 @@ void ARG::add(map<float, Branch> &new_joining_branches, map<float, Branch> &adde
     Branch prev_added_branch = Branch();
     Branch next_added_branch = Branch();
     while (add_it->first < end) {
-        if (recomb_it->first == join_it->first) {
+        if (recomb_it->first == add_it->first) {
             Recombination &r = recomb_it->second;
             recomb_it++;
-            next_joining_branch = join_it->second;
-            join_it++;
+            if (join_it->first == add_it->first) {
+                next_joining_branch = join_it->second;
+                join_it++;
+            }
             next_added_branch = add_it->second;
             add_it++;
             r.add(prev_added_branch, next_added_branch, prev_joining_branch, next_joining_branch, cut_node);

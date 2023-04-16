@@ -13,7 +13,7 @@ Branch::Branch() {
 }
 
 Branch::Branch(Node *l, Node *u) {
-    assert(l == nullptr or u == nullptr or l->time < u->time);
+    assert((l == nullptr and u == nullptr) or l->time < u->time);
     lower_node = l;
     upper_node = u;
 }
@@ -44,8 +44,8 @@ bool Branch::operator==(const Branch &other) const {
 }
 
 bool Branch::operator!=(const Branch &other) const {
-    if (lower_node == other.lower_node or upper_node == other.upper_node) {
-        return false;
+    if (lower_node != other.lower_node or upper_node != other.upper_node) {
+        return true;
     }
-    return true;
+    return false;
 }

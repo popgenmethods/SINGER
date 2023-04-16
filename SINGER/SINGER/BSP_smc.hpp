@@ -9,6 +9,7 @@
 #define BSP_smc_hpp
 
 #include <stdio.h>
+#include <fstream>
 #include "Tree.hpp"
 #include "Interval.hpp"
 #include "Emission.hpp"
@@ -23,10 +24,10 @@ public:
     
     int curr_index = 0;
     float cutoff = 0;
-    map<int, vector<Interval>>  state_spaces = {{INT_MAX, {}}};
+    map<int, vector<Interval *>>  state_spaces = {{INT_MAX, {}}};
     vector<float> recomb_sums = {}; // length: number of blocks - 1
     vector<float> weight_sums = {}; // length: number of blocks
-    vector<Interval> curr_intervals = {};
+    vector<Interval *> curr_intervals = {};
     shared_ptr<Emission> eh;
     
     set<float> coalescence_times = {};
@@ -34,10 +35,10 @@ public:
     map<float, float> coalescence_probs = {};
     map<float, float> coalescence_quantiles = {};
     
-    map<Interval, vector<Interval>> source_intervals = {};
-    map<Interval, vector<float>> source_weights = {};
-    map<Interval, vector<Interval>> temp_intervals = {};
-    map<Interval, vector<float>> temp_weights = {};
+    map<Interval *, vector<Interval *>> source_intervals = {};
+    map<Interval *, vector<float>> source_weights = {};
+    map<Interval_info, vector<Interval *>> temp_intervals = {};
+    map<Interval_info, vector<float>> temp_weights = {};
     
     float prev_rho = -1;
     float prev_theta = -1;
@@ -81,6 +82,8 @@ public:
     
     map<float, Branch> sample_joining_branches(int start_index, vector<float> &coordinates);
     
+    void write_forward_probs(string filename);
+    
     // private methods:
     
     void set_dimensions();
@@ -93,7 +96,7 @@ public:
     
     void compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node *query_node);
     
-    void transfer_helper(Interval &next_interval, Interval &prev_interval, float w);
+    void transfer_helper(Interval_info next_interval, Interval *prev_interval, float w);
     
     void add_new_branches(Recombination &r);
     
@@ -117,29 +120,29 @@ public:
     
     float get_median(float lb, float ub);
     
-    void process_interval(Recombination &r, Interval &prev_interval);
+    void process_interval(Recombination &r, Interval *prev_interval);
     
-    void process_source_interval(Recombination &r, Interval &prev_interval);
+    void process_source_interval(Recombination &r, Interval *prev_interval);
     
-    void process_target_interval(Recombination &r, Interval &prev_interval);
+    void process_target_interval(Recombination &r, Interval *prev_interval);
     
-    void process_other_interval(Recombination &r, Interval &prev_interval);
+    void process_other_interval(Recombination &r, Interval *prev_interval);
     
     float random();
     
     int get_prev_breakpoint(int x);
     
-    vector<Interval> &get_state_space(int x);
+    vector<Interval *> get_state_space(int x);
     
     void simplify(map<float, Branch> &joining_branches);
     
-    Interval &sample_curr_interval(int x);
+    Interval *sample_curr_interval(int x);
     
-    Interval &sample_prev_interval(int x);
+    Interval *sample_prev_interval(int x);
     
-    Interval &sample_source_interval(Interval &interval);
+    Interval *sample_source_interval(Interval *interval);
     
-    int trace_back_helper(Interval &interval, int x);
+    int trace_back_helper(Interval *interval, int x);
     
 };
 

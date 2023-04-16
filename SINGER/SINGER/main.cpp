@@ -12,6 +12,7 @@ int main(int argc, const char * argv[]) {
     // insert code here...
     // test_read_arg();
     // test_pruner();
+    // test_compare_bsp();
     test_iterative_start();
     std::cout << "Hello, World!\n";
     return 0;

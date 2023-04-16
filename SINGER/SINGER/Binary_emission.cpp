@@ -37,6 +37,19 @@ float Binary_emission::mut_emit(Branch branch, float time, float theta, float bi
     return emit_prob;
 }
 
+float Binary_emission::emit(Branch branch, float time, float theta, float bin_size, vector<float> &emissions, Node *node) {
+    float emit_prob = 1;
+    float old_prob = 1;
+    float ll = time - branch.lower_node->time;
+    float lu = branch.upper_node->time - time;
+    float l0 = time - node->time;
+    emit_prob = calculate_prob(theta, bin_size, ll, lu, l0, emissions[0], emissions[1], emissions[2]);
+    old_prob = calculate_prob(theta*(ll + lu), bin_size, emissions[3]);
+    emit_prob /= old_prob;
+    assert(emit_prob != 0);
+    return emit_prob;
+}
+
 float Binary_emission::calculate_prob(float theta, float bin_size, float ll, float lu, float l0, int sl, int su, int s0) {
     float prob = 1;
     prob *= calculate_prob(ll*theta, bin_size, sl);

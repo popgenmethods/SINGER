@@ -166,6 +166,7 @@ void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Bran
     }
     assert(start_time < inserted_node->time);
     assert(merging_branch != Branch());
+    
     assert(deleted_branches.size() == 3 or deleted_branches.size() == 4);
 }
 
