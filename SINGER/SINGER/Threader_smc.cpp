@@ -103,9 +103,9 @@ void Threader_smc::run_BSP(ARG &a) {
     bsp.set_cutoff(cutoff);
     bsp.set_emission(eh);
     bsp.start(start_tree.branches, cut_time);
-    map<float, Recombination>::iterator recomb_it = a.recombinations.upper_bound(start);
-    set<float>::iterator mut_it = a.mutation_sites.lower_bound(start);
-    map<float, Branch>::iterator query_it = a.removed_branches.begin();
+    auto recomb_it = a.recombinations.upper_bound(start);
+    auto mut_it = a.mutation_sites.lower_bound(start);
+    auto query_it = a.removed_branches.begin();
     vector<float> mutations;
     set<float> mut_set = {};
     Node *query_node = nullptr;
@@ -142,10 +142,10 @@ void Threader_smc::run_TSP(ARG &a) {
     tsp.set_gap(gap);
     tsp.set_emission(eh);
     tsp.start(start_branch, cut_time);
-    map<float, Recombination>::iterator recomb_it = a.recombinations.upper_bound(start);
-    map<float, Branch>::iterator join_it = new_joining_branches.upper_bound(start);
-    set<float>::iterator mut_it = a.mutation_sites.lower_bound(start);
-    map<float, Branch>::iterator query_it = a.removed_branches.lower_bound(start);
+    auto recomb_it = a.recombinations.upper_bound(start);
+    auto join_it = new_joining_branches.upper_bound(start);
+    auto mut_it = a.mutation_sites.lower_bound(start);
+    auto query_it = a.removed_branches.lower_bound(start);
     Branch prev_branch = start_branch;
     Branch next_branch = start_branch;
     Node *query_node = nullptr;
@@ -186,9 +186,9 @@ void Threader_smc::run_TSP(ARG &a) {
 
 void Threader_smc::sample_joining_points(ARG &a) {
     map<float, Node *> added_nodes = tsp.sample_joining_nodes(start_index, a.coordinates);
-    map<float, Branch>::iterator query_it = a.removed_branches.begin();
-    map<float, Node *>::iterator add_it = added_nodes.begin();
-    map<float, Node *>::iterator end_it = added_nodes.end();
+    auto query_it = a.removed_branches.begin();
+    auto add_it = added_nodes.begin();
+    auto end_it = added_nodes.end();
     Node *query_node = nullptr;
     Node *added_node = nullptr;
     while (add_it != end_it) {

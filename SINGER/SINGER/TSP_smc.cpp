@@ -11,6 +11,11 @@ TSP_smc::TSP_smc() {
 }
 
 TSP_smc::~TSP_smc() {
+    for (auto &x : state_spaces) {
+        for (Interval *interval : x.second) {
+            delete interval;
+        }
+    }
 }
 
 void TSP_smc::set_gap(float q) {
@@ -461,10 +466,10 @@ void TSP_smc::compute_null_emit_probs(float theta, Node *query_node) {
 }
 
 void TSP_smc::compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node *query_node) {
-    compute_emissions(mut_set, curr_branch, query_node);
+    // compute_emissions(mut_set, curr_branch, query_node);
     for (int i = 0; i < dim; i++) {
-        // mut_emit_probs[i] = eh->mut_emit(curr_branch, curr_intervals[i].time, theta, bin_size, mut_set, query_node);
-        mut_emit_probs[i] = eh->emit(curr_branch, curr_intervals[i]->time, theta, bin_size, emissions, query_node);
+        mut_emit_probs[i] = eh->mut_emit(curr_branch, curr_intervals[i]->time, theta, bin_size, mut_set, query_node);
+        // mut_emit_probs[i] = eh->emit(curr_branch, curr_intervals[i]->time, theta, bin_size, emissions, query_node);
     }
 }
 
@@ -579,13 +584,13 @@ void TSP_smc::sanity_check(Recombination &r) {
 }
 
 vector<Interval *> TSP_smc::get_state_space(int x) {
-    map<int, vector<Interval *>>::iterator state_it = state_spaces.upper_bound(x);
+    auto state_it = state_spaces.upper_bound(x);
     state_it--;
     return state_it->second;
 }
 
 int TSP_smc::get_prev_breakpoint(int x) {
-    map<int, vector<Interval *>>::iterator state_it = state_spaces.upper_bound(x);
+    auto state_it = state_spaces.upper_bound(x);
     state_it--;
     return state_it->first;
 }

@@ -9,7 +9,13 @@
 
 BSP_smc::BSP_smc() {}
 
-BSP_smc::~BSP_smc() {}
+BSP_smc::~BSP_smc() {
+    for (auto &x : state_spaces) {
+        for (Interval *interval : x.second) {
+            delete interval;
+        }
+    }
+}
 
 void BSP_smc::reserve_memory(int length) {
     forward_probs.reserve(length);
@@ -22,18 +28,13 @@ void BSP_smc::start(set<Branch> &branches, float t) {
     float ub = 0;
     float p = 0;
     Interval *new_interval = nullptr;
-    coalescence_times = {cut_time};
-    for (Branch b : branches) {
-        if (b.upper_node->time > cut_time) {
-            coalescence_times.insert(b.upper_node->time);
-        }
-    }
-    calculate_coalescence_stats();
+    cc = make_shared<Coalescent_calculator>(cut_time);
+    cc->start(branches);
     for (Branch b : branches) {
         if (b.upper_node->time > cut_time) {
             lb = max(b.lower_node->time, cut_time);
             ub = b.upper_node->time;
-            p = coalescence_probs.at(ub) - coalescence_probs.at(lb);
+            p = cc->weight(lb, ub);
             new_interval = new Interval(b, lb, ub, curr_index);
             new_interval->hmm_index = (int) curr_intervals.size();
             curr_intervals.push_back(new_interval);
@@ -90,8 +91,7 @@ void BSP_smc::transfer(Recombination &r) {
         process_interval(r, i);
     }
     curr_intervals.clear();
-    update_coalescence_times(r);
-    calculate_coalescence_stats();
+    cc->update(r.deleted_branches, r.inserted_branches);
     add_new_branches(r);
     generate_intervals(r);
     set_dimensions();
@@ -99,7 +99,7 @@ void BSP_smc::transfer(Recombination &r) {
 }
 
 float BSP_smc::get_recomb_prob(float rho, float t) {
-    float p = 1 - exp(-rho*(t - cut_time));
+    float p = rho*(t - cut_time)*exp(-rho*(t - cut_time));
     return p;
 }
 
@@ -266,11 +266,19 @@ void BSP_smc::add_new_branches(Recombination &r) { // add recombined branch and 
 void BSP_smc::compute_interval_info() {
     float t;
     float p;
+    /*
     for (Interval *i : curr_intervals) {
         p = get_prop(i->lb, i->ub);
         t = get_median(i->lb, i->ub);
         i->assign_time(t);
         i->assign_weight(p);
+    }
+     */
+    for (Interval *i : curr_intervals) {
+        p = cc->weight(i->lb, i->ub);
+        t = cc->time(i->lb, i->ub);
+        i->assign_weight(p);
+        i->assign_time(t);
     }
     weight_sums.push_back(0.0);
 }
@@ -320,15 +328,6 @@ void BSP_smc::generate_intervals(Recombination &r) {
     forward_probs.push_back(temp);
     compute_interval_info();
     temp.clear();
-    // temp_weights.clear();
-    // temp_intervals.clear();
-}
-
-float BSP_smc::get_prop(float lb, float ub) {
-    assert(lb <= ub);
-    float x = get_prob(ub) - get_prob(lb);
-    assert(!isnan(x));
-    return x;
 }
 
 float BSP_smc::get_overwrite_prob(Recombination &r, float lb, float ub) {
@@ -336,99 +335,14 @@ float BSP_smc::get_overwrite_prob(Recombination &r, float lb, float ub) {
         return 0.0;
     }
     float join_time = r.inserted_node->time;
-    float p1 = get_prop(lb, ub);
-    float p2 = get_prop(max(cut_time, r.start_time), join_time);
+    float p1 = cc->weight(lb, ub);
+    float p2 = cc->weight(max(cut_time, r.start_time), join_time);
     if (p1 == 0 and p2 == 0) {
         return 1.0;
     }
     float overwrite_prob = p2/(p1 + p2);
     assert(!isnan(overwrite_prob));
     return overwrite_prob;
-}
-
-void BSP_smc::update_coalescence_times(Recombination &r) {
-    float prev_time = r.deleted_node->time;
-    float next_time = r.inserted_node->time;
-    if (prev_time >= cut_time) {
-        coalescence_times.erase(prev_time);
-    }
-    if (next_time >= cut_time) {
-        coalescence_times.insert(next_time);
-    }
-}
-
-void BSP_smc::calculate_coalescence_stats() {
-    coalescence_probs.clear();
-    coalescence_quantiles.clear();
-    coalescence_rates.clear();
-    vector<float> sorted_coalescence_times = vector<float>(coalescence_times.begin(), coalescence_times.end());
-    int n = (int) sorted_coalescence_times.size();
-    int k = n - 1;
-    float prev_prob = 1.0;
-    float next_prob = 1.0;
-    float interval_prob = 0.0;
-    float cum_prob = 0.0;
-    coalescence_probs.insert({cut_time, 0});
-    coalescence_quantiles.insert({0, cut_time});
-    coalescence_rates.insert({cut_time, k});
-    for (int i = 1; i < n; i++) {
-        next_prob = prev_prob*exp(-k*(sorted_coalescence_times[i] - sorted_coalescence_times[i-1]));
-        interval_prob = (prev_prob - next_prob)/k;
-        cum_prob += interval_prob;
-        coalescence_probs[sorted_coalescence_times[i]] = cum_prob;
-        coalescence_quantiles[cum_prob] = sorted_coalescence_times[i];
-        k -= 1;
-        coalescence_rates[sorted_coalescence_times[i]] = k;
-        prev_prob = next_prob;
-    }
-}
-
-float BSP_smc::get_prob(float x) {
-    if (coalescence_probs.count(x) > 0) {
-        return coalescence_probs.at(x);
-    }
-    map<float, float>::iterator u_it = coalescence_probs.upper_bound(x);
-    map<float, float>::iterator l_it = coalescence_probs.upper_bound(x);
-    l_it--;
-    int rate = coalescence_rates.at(l_it->first);
-    float delta_t = u_it->first - l_it->first;
-    float delta_p = u_it->second - l_it->second;
-    float new_delta_t = x - l_it->first;
-    float new_delta_p = delta_p*(1 - exp(-rate*new_delta_t))/(1 - exp(-rate*delta_t));
-    return l_it->second + new_delta_p;
-}
-
-float BSP_smc::get_quantile(float p) {
-    if (coalescence_quantiles.count(p) > 0) {
-        return coalescence_quantiles.at(p);
-    }
-    map<float, float>::iterator u_it = coalescence_quantiles.upper_bound(p);
-    map<float, float>::iterator l_it = coalescence_quantiles.upper_bound(p);
-    l_it--;
-    int rate = coalescence_rates.at(l_it->second);
-    float delta_t = u_it->second - l_it->second;
-    float delta_p = u_it->first - l_it->first;
-    float new_delta_p = p - l_it->first;
-    float new_delta_t = 1 - new_delta_p/delta_p*(1 - exp(-rate*delta_t));
-    new_delta_t = -log(new_delta_t)/rate;
-    assert(l_it->second + new_delta_t != numeric_limits<float>::infinity());
-    return l_it->second + new_delta_t;
-}
-
-float BSP_smc::get_median(float lb, float ub) {
-    float lq = get_prob(lb);
-    float uq = get_prob(ub);
-    float t;
-    if (ub == numeric_limits<float>::infinity()) {
-        return lb + log(2);
-    }
-    if (ub - lb < 1e-3 or uq - lq < 1e-3) {
-        t = 0.5*(lb + ub);
-    } else {
-        t = get_quantile(0.5*(lq + uq));
-    }
-    assert(t >= lb and t <= ub);
-    return t;
 }
 
 void BSP_smc::process_interval(Recombination &r, Interval *prev_interval) {
@@ -462,8 +376,8 @@ void BSP_smc::process_source_interval(Recombination &r, Interval *prev_interval)
         next_interval = Interval_info(next_branch, lb, ub);
         transfer_helper(next_interval, prev_interval, p);
     } else {
-        w1 = get_prop(prev_interval->lb, break_time);
-        w2 = get_prop(break_time, prev_interval->ub);
+        w1 = cc->weight(prev_interval->lb, break_time);
+        w2 = cc->weight(break_time, prev_interval->ub);
         if (w1 == 0 and w2 == 0) {
             w1 = 1;
             w2 = 0;
@@ -510,8 +424,8 @@ void BSP_smc::process_target_interval(Recombination &r, Interval *prev_interval)
         transfer_helper(next_interval, prev_interval, p);
     } else {
         w0 = get_overwrite_prob(r, prev_interval->lb, prev_interval->ub);
-        w1 = get_prop(prev_interval->lb, join_time);
-        w2 = get_prop(join_time, prev_interval->ub);
+        w1 = cc->weight(prev_interval->lb, join_time);
+        w2 = cc->weight(join_time, prev_interval->ub);
         if (w1 + w2 == 0) {
             w1 = 0;
             w2 = 0;
@@ -566,13 +480,13 @@ float BSP_smc::random() {
 }
 
 int BSP_smc::get_prev_breakpoint(int x) {
-    map<int, vector<Interval *>>::iterator state_it = state_spaces.upper_bound(x);
+    auto state_it = state_spaces.upper_bound(x);
     state_it--;
     return state_it->first;
 }
 
 vector<Interval *> BSP_smc::get_state_space(int x) {
-    map<int, vector<Interval *>>::iterator state_it = state_spaces.upper_bound(x);
+    auto state_it = state_spaces.upper_bound(x);
     state_it--;
     return state_it->second;
 }

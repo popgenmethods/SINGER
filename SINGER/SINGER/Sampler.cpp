@@ -80,6 +80,5 @@ void Sampler::iterative_start() {
         Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
         Node *n = build_node(i, 0.0);
         threader.thread(arg, n);
-        arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/test_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/test_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/test_ts_recombs.txt");
     }
 }

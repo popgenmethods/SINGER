@@ -96,7 +96,7 @@ void Parsimony_pruner::mutation_backward(Node *n, float m) {
 }
 
 Node *Parsimony_pruner::get_node_at(float x) {
-    map<float, Branch>::iterator query_it = queries.upper_bound(x);
+    auto query_it = queries.upper_bound(x);
     query_it--;
     return query_it->second.lower_node;
 }
@@ -170,9 +170,9 @@ void Parsimony_pruner::recombination_backward(Recombination &r) {
 void Parsimony_pruner::write_reduction_distance(ARG &a, string filename) {
     float start = a.removed_branches.begin()->first;
     float end = a.removed_branches.rbegin()->first;
-    map<float, Branch>::iterator join_it = a.joining_branches.begin();
-    map<float, set<Branch>>::iterator reduced_it = reductions.begin();
-    map<float, Recombination>::iterator recomb_it = a.recombinations.lower_bound(start);
+    auto join_it = a.joining_branches.begin();
+    auto reduced_it = reductions.begin();
+    auto recomb_it = a.recombinations.lower_bound(start);
     Branch joining_branch = Branch();
     Tree tree = Tree();
     float x = start;
@@ -215,7 +215,7 @@ void Parsimony_pruner::build_match_map(ARG &a) {
     float inf = INT_MAX;
     float lb = 0;
     float state = 0;
-    map<float, set<Branch>>::iterator mb_it = a.mutation_branches.lower_bound(start);
+    auto mb_it = a.mutation_branches.lower_bound(start);
     Node *n = nullptr;
     while (mb_it->first < end) {
         m = mb_it->first;
@@ -317,11 +317,11 @@ void Parsimony_pruner::write_reduction_change(float x, set<Branch> db, set<Branc
 }
 
 void Parsimony_pruner::write_reductions(ARG &a) {
-    map<float, set<Branch>>::iterator deleted_it = deleted_branches.begin();
-    map<float, set<Branch>>::iterator inserted_it = inserted_branches.begin();
-    vector<float>::iterator start_it = std::lower_bound(a.coordinates.begin(), a.coordinates.end(), start);
+    auto deleted_it = deleted_branches.begin();
+    auto inserted_it = inserted_branches.begin();
+    auto start_it = std::lower_bound(a.coordinates.begin(), a.coordinates.end(), start);
     int start_index = (int) (start_it - a.coordinates.begin());
-    vector<float>::iterator end_it = std::lower_bound(a.coordinates.begin(), a.coordinates.end(), end);
+    auto end_it = std::lower_bound(a.coordinates.begin(), a.coordinates.end(), end);
     int end_index = (int) (end_it - a.coordinates.begin());
     set<Branch> reduced_set = {};
     for (int i = start_index; i < end_index; i++) {
@@ -342,9 +342,9 @@ void Parsimony_pruner::write_reductions(ARG &a) {
 }
 
 void Parsimony_pruner::extend_forward(ARG &a, float x) {
-    map<float, Recombination>::iterator recomb_it = a.recombinations.upper_bound(x);
-    map<float, float>::iterator match_it = match_map.lower_bound(x);
-    set<float>::iterator used_it = used_seeds.upper_bound(x);
+    auto recomb_it = a.recombinations.upper_bound(x);
+    auto match_it = match_map.lower_bound(x);
+    auto used_it = used_seeds.upper_bound(x);
     float m = x;
     Node *n = nullptr;
     float ub = *used_it;
@@ -364,9 +364,9 @@ void Parsimony_pruner::extend_forward(ARG &a, float x) {
 }
 
 void Parsimony_pruner::extend_backward(ARG &a, float x) {
-    map<float, Recombination>::iterator recomb_it = a.recombinations.upper_bound(x);
-    map<float, float>::iterator match_it = match_map.find(x);
-    set<float>::iterator used_it = used_seeds.upper_bound(x);
+    auto recomb_it = a.recombinations.upper_bound(x);
+    auto match_it = match_map.find(x);
+    auto used_it = used_seeds.upper_bound(x);
     recomb_it--;
     used_it--;
     float m = x;

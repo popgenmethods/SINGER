@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <fstream>
 #include "Tree.hpp"
+#include "Coalescent_calculator.hpp"
 #include "Interval.hpp"
 #include "Emission.hpp"
 
@@ -30,10 +31,7 @@ public:
     vector<Interval *> curr_intervals = {};
     shared_ptr<Emission> eh;
     
-    set<float> coalescence_times = {};
-    map<float, int> coalescence_rates = {};
-    map<float, float> coalescence_probs = {};
-    map<float, float> coalescence_quantiles = {};
+    shared_ptr<Coalescent_calculator> cc;
     
     map<Interval *, vector<Interval *>> source_intervals = {};
     map<Interval *, vector<float>> source_weights = {};
@@ -106,19 +104,7 @@ public:
     
     void generate_intervals(Recombination &r);
     
-    float get_prop(float lb, float ub);
-    
     float get_overwrite_prob(Recombination &r, float lb, float ub);
-    
-    void update_coalescence_times(Recombination &r);
-    
-    void calculate_coalescence_stats();
-    
-    float get_prob(float x);
-    
-    float get_quantile(float p);
-    
-    float get_median(float lb, float ub);
     
     void process_interval(Recombination &r, Interval *prev_interval);
     
