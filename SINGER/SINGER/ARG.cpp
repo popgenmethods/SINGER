@@ -79,7 +79,7 @@ void ARG::build_singleton_arg(Node *n) {
 void ARG::add_sample(Node *n) {
     sample_nodes.insert(n);
     add_node(n);
-    set<float> mutations = n->mutation_sites;
+    unordered_set<float> &mutations = n->mutation_sites;
     for (float x : mutations) {
         mutation_sites.insert(x);
     }

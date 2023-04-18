@@ -62,7 +62,8 @@ float Binary_emission::calculate_prob(float theta, float bin_size, int s) {
     if (isinf(theta)) {
         return 1.0;
     }
-    return exp(-theta)*pow(theta/bin_size, s);
+    float unit_theta = theta/bin_size;
+    return exp(-theta)*pow(unit_theta, s);
 }
 
 void Binary_emission::get_diff(set<float> &mut_set, Branch branch, Node *node) {

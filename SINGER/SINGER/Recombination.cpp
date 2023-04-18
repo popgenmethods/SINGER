@@ -132,6 +132,9 @@ void Recombination::remove(Branch prev_removed_branch, Branch next_removed_branc
 }
 
 void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Branch prev_joining_branch, Branch next_joining_branch, Node *cut_node) {
+    if (prev_added_branch == next_added_branch and prev_joining_branch == next_joining_branch) {
+        return;
+    }
     add_deleted_branch(prev_added_branch);
     add_deleted_branch(next_joining_branch);
     add_deleted_branch(Branch(prev_joining_branch.lower_node, prev_added_branch.upper_node));
@@ -166,7 +169,6 @@ void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Bran
     }
     assert(start_time < inserted_node->time);
     assert(merging_branch != Branch());
-    
     assert(deleted_branches.size() == 3 or deleted_branches.size() == 4);
 }
 

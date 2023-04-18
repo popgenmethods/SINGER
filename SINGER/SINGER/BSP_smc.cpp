@@ -299,7 +299,7 @@ void BSP_smc::generate_intervals(Recombination &r) {
     for (auto x : temp_weights) {
         interval = x.first;
         weights = x.second;
-        intervals = temp_intervals.at(x.first);
+        intervals = temp_intervals[x.first];
         b = interval.branch;
         lb = interval.lb;
         ub = interval.ub;

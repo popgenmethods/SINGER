@@ -19,29 +19,42 @@ class BSP_smc {
     
 public:
     
+    // basic setup
     float cut_time = 0.0;
-    vector<float> rhos = {};
+    float cutoff = 0;
+    shared_ptr<Emission> eh;
     set<float> check_points = {};
     
-    int curr_index = 0;
-    float cutoff = 0;
-    map<int, vector<Interval *>>  state_spaces = {{INT_MAX, {}}};
+    // hmm running results
+    vector<float> rhos = {};
     vector<float> recomb_sums = {}; // length: number of blocks - 1
     vector<float> weight_sums = {}; // length: number of blocks
-    vector<Interval *> curr_intervals = {};
-    shared_ptr<Emission> eh;
     
+    // hmm states
+    int curr_index = 0;
+    map<int, vector<Interval *>>  state_spaces = {{INT_MAX, {}}};
+    vector<Interval *> curr_intervals = {};
+    
+    // coalescent computation
     shared_ptr<Coalescent_calculator> cc;
     
+    // transfer at recombinations
     map<Interval *, vector<Interval *>> source_intervals = {};
     map<Interval *, vector<float>> source_weights = {};
     map<Interval_info, vector<Interval *>> temp_intervals = {};
     map<Interval_info, vector<float>> temp_weights = {};
     
+    // cache:
     float prev_rho = -1;
     float prev_theta = -1;
     Node *prev_node = nullptr;
     
+    // branches after pruning
+    
+    map<float, set<Branch>> deleted_branches = {};
+    map<float, set<Branch>> inserted_branches = {};
+    
+    // vector computation:
     int dim = 0;
     float recomb_sum = 0;
     float weight_sum = 0;

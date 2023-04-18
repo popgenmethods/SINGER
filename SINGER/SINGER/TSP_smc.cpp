@@ -466,10 +466,10 @@ void TSP_smc::compute_null_emit_probs(float theta, Node *query_node) {
 }
 
 void TSP_smc::compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node *query_node) {
-    // compute_emissions(mut_set, curr_branch, query_node);
+    compute_emissions(mut_set, curr_branch, query_node);
     for (int i = 0; i < dim; i++) {
-        mut_emit_probs[i] = eh->mut_emit(curr_branch, curr_intervals[i]->time, theta, bin_size, mut_set, query_node);
-        // mut_emit_probs[i] = eh->emit(curr_branch, curr_intervals[i]->time, theta, bin_size, emissions, query_node);
+        // mut_emit_probs[i] = eh->mut_emit(curr_branch, curr_intervals[i]->time, theta, bin_size, mut_set, query_node);
+        mut_emit_probs[i] = eh->emit(curr_branch, curr_intervals[i]->time, theta, bin_size, emissions, query_node);
     }
 }
 
@@ -772,9 +772,8 @@ float TSP_smc::sample_time(float lb, float ub) {
         p = 1 - exp(-lb) + q*delta;
         t = -log(1 - p);
     }
-    assert(t != numeric_limits<float>::infinity());
+    assert(!isinf(t) and t != 0);
     assert(lb == ub or (t > lb and t < ub));
-    assert(t != 0);
     return t;
 }
 

@@ -13,14 +13,15 @@
 #include <fstream>
 #include <vector>
 #include <set>
+#include <unordered_set>
 using namespace std;
 
 class Node {
     
 public:
     
-    set<float> mutation_sites = {};
-    set<float> ambiguous_sites = {};
+    unordered_set<float> mutation_sites = {};
+    unordered_set<float> ambiguous_sites = {};
     
     int index;
     
