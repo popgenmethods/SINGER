@@ -123,6 +123,9 @@ void Recombination::remove(Branch prev_removed_branch, Branch next_removed_branc
     add_inserted_branch(Branch(prev_split_branch.lower_node, prev_removed_branch.upper_node));
     add_inserted_branch(Branch(prev_removed_branch.upper_node, prev_split_branch.upper_node));
     simplify_branches();
+    if (deleted_branches.size() == 0 and inserted_branches.size() == 0) {
+        return;
+    }
     if (source_branch == Branch(prev_split_branch.lower_node, prev_removed_branch.upper_node) or source_branch == Branch(prev_removed_branch.upper_node, prev_split_branch.upper_node)) { // when the previous source branch was destroyed
         source_branch = prev_split_branch;
     }

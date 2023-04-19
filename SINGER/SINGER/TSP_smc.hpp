@@ -137,13 +137,15 @@ public:
     
     vector<Interval *> get_state_space(int x);
     
+    int get_interval_index(Interval *interval, vector<Interval *> &intervals);
+    
     int get_prev_breakpoint(int x);
     
     Interval *sample_curr_interval(int x);
     
     Interval *sample_prev_interval(Interval *interval, int x);
     
-    Interval *sample_source_interval(Interval *interval);
+    Interval *sample_source_interval(Interval *interval, int x);
     
     Interval *sample_recomb_interval(Interval *interval, int x);
     

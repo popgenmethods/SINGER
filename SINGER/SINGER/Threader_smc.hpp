@@ -14,6 +14,7 @@
 #include "ARG.hpp"
 #include "BSP_smc.hpp"
 #include "TSP_smc.hpp"
+#include "Parsimony_pruner.hpp"
 
 class Threader_smc {
     
@@ -38,6 +39,7 @@ public:
     float end = 0;
     int start_index = 0;
     int end_index = 0;
+    Parsimony_pruner pp = Parsimony_pruner();
     BSP_smc bsp = BSP_smc();
     TSP_smc tsp = TSP_smc();
     float gap;

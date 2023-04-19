@@ -15,6 +15,7 @@ void Parsimony_pruner::prune_arg(ARG &a) {
     start = a.removed_branches.begin()->first;
     end = a.removed_branches.rbegin()->first;
     used_seeds = {start, end};
+    seed_trees[start] = a.get_tree_at(start);
     deleted_branches.insert({end, {}});
     inserted_branches.insert({end, {}});
     build_match_map(a);
@@ -23,15 +24,18 @@ void Parsimony_pruner::prune_arg(ARG &a) {
         x = find_minimum_match();
         extend(a, x);
     }
-    write_reductions(a);
-    cout << endl;
+    // write_reductions(a);
 }
 
 void Parsimony_pruner::start_search(ARG &a, float m) {
     curr_mismatch.clear();
     Node *n = get_node_at(m);
     float mismatch = 0;
-    Tree tree = a.get_tree_at(m);
+    float x0 = find_closest_reference(m);
+    Tree &reference_tree = seed_trees[x0];
+    Tree tree = a.get_tree_at(m, reference_tree, x0);
+    // Tree tree = a.get_tree_at(m);
+    seed_trees[m] = tree;
     for (Branch branch : tree.branches) {
         mismatch = count_mismatch(branch, n, m);
         if (mismatch == 0 and branch.lower_node != n) {
@@ -43,7 +47,6 @@ void Parsimony_pruner::start_search(ARG &a, float m) {
 
 void Parsimony_pruner::extend(ARG &a, float x) {
     start_search(a, x);
-    cout << "Seed search size: " << curr_mismatch.size() << endl;
     extend_forward(a, x);
     start_search(a, x);
     extend_backward(a, x);
@@ -244,12 +247,16 @@ void Parsimony_pruner::build_match_map(ARG &a) {
     potential_seeds = match_map;
 }
 
+float Parsimony_pruner::find_closest_reference(float x) {
+    auto tree_it = seed_trees.upper_bound(x);
+    tree_it--;
+    return tree_it->first;
+}
+
 float Parsimony_pruner::find_minimum_match() {
     auto it = min_element(potential_seeds.begin(), potential_seeds.end(),
                           [](const auto& l, const auto& r) { return l.second < r.second;});
     float x = it->first;
-    cout << "Seed mutation position: " << it->first << endl;
-    cout << "Seed mutation age: " << it->second << endl;
     return x;
 }
 
@@ -360,7 +367,6 @@ void Parsimony_pruner::extend_forward(ARG &a, float x) {
         n = get_node_at(m);
         mutation_forward(n, m);
     }
-    cout << "Extend forward from " << x << " to " << m << endl;
 }
 
 void Parsimony_pruner::extend_backward(ARG &a, float x) {
@@ -384,5 +390,4 @@ void Parsimony_pruner::extend_backward(ARG &a, float x) {
         n = get_node_at(m);
         mutation_backward(n, m);
     }
-    cout << "Extend backward from " << x << " to " << m << endl;
 }

@@ -15,6 +15,8 @@ void test_read_arg();
 
 void test_pruner();
 
+void test_pruner_efficiency();
+
 void test_iterative_start();
 
 #endif /* Test_hpp */

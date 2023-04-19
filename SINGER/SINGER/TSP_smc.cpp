@@ -265,7 +265,7 @@ map<float, Node *> TSP_smc::sample_joining_nodes(int start_index, vector<float> 
         } if (x == interval->start_pos) {
             if (source_interval.count(interval) > 0) {
                 x -= 1;
-                interval = sample_source_interval(interval);
+                interval = sample_source_interval(interval, x);
             } else {
                 x -= 1;
                 interval = sample_recomb_interval(interval, x);
@@ -369,7 +369,6 @@ void TSP_smc::generate_intervals(Branch &next_branch, float lb, float ub) {
         else {
             new_interval = new Interval(next_branch, lb, ub, curr_index);
             new_interval->fill_time();
-            new_interval->hmm_index = (int) curr_intervals.size();
             curr_intervals.push_back(new_interval);
             temp.push_back(0);
             return;
@@ -383,7 +382,6 @@ void TSP_smc::generate_intervals(Branch &next_branch, float lb, float ub) {
         u = points[i+1];
         new_interval = new Interval(next_branch, l, u, curr_index);
         new_interval->fill_time();
-        new_interval->hmm_index = (int) curr_intervals.size();
         curr_intervals.push_back(new_interval);
         temp.push_back(0);
     }
@@ -418,7 +416,6 @@ void TSP_smc::transfer_intervals(Recombination &r, Branch &prev_branch, Branch &
             new_interval = new Interval(next_branch, lb, ub, curr_index);
             new_interval->fill_time();
             new_interval->node = interval->node;
-            new_interval->hmm_index = (int) curr_intervals.size();
             new_interval->node = interval->node;
             source_interval[new_interval] = interval;
             curr_intervals.push_back(new_interval);
@@ -589,6 +586,12 @@ vector<Interval *> TSP_smc::get_state_space(int x) {
     return state_it->second;
 }
 
+int TSP_smc::get_interval_index(Interval *interval, vector<Interval *> &intervals) {
+    auto it = find(intervals.begin(), intervals.end(), interval);
+    int index = (int) distance(intervals.begin(), it);
+    return index;
+}
+
 int TSP_smc::get_prev_breakpoint(int x) {
     auto state_it = state_spaces.upper_bound(x);
     state_it--;
@@ -638,10 +641,12 @@ Interval *TSP_smc::sample_prev_interval(Interval *interval, int x) {
     exit(1);
 }
 
-Interval *TSP_smc::sample_source_interval(Interval *interval) {
+Interval *TSP_smc::sample_source_interval(Interval *interval, int x) {
     assert(source_interval.count(interval) > 0);
-    sample_index = source_interval[interval]->hmm_index;
-    return source_interval[interval];
+    Interval *sample_interval = source_interval[interval];
+    vector<Interval *> intervals = get_state_space(x);
+    sample_index = get_interval_index(sample_interval, intervals);
+    return sample_interval;
 }
 
 Interval *TSP_smc::sample_recomb_interval(Interval *interval, int x) {
@@ -699,25 +704,29 @@ int TSP_smc::trace_back_helper(Interval *interval, int x) {
 
 void TSP_smc::set_interval_constraint(Recombination &r) {
     vector<Interval *> intervals = get_state_space(curr_index - 1);
-    for (Interval *i : intervals) {
-        if (i->ub < r.start_time) {
-            forward_probs[curr_index-1][i->hmm_index] = 0; // curr_index - 1 because the index has already moved forward
+    Interval *interval;
+    for (int i = 0; i < intervals.size(); i++) {
+        interval = intervals[i];
+        if (interval->ub < r.start_time) {
+            forward_probs[curr_index-1][i] = 0; // curr_index - 1 because the index has already moved forward
         } else {
-            i->lb = max(r.start_time, i->lb);
-            i->fill_time();
+            interval->lb = max(r.start_time, interval->lb);
+            interval->fill_time();
         }
     }
 }
 
 void TSP_smc::set_point_constraint(Recombination &r) {
+    Interval *interval;
     Interval *point_interval = search_point_interval(r);
     vector<Interval *> intervals = get_state_space(curr_index - 1);
-    for (Interval *i : intervals) {
-        if (i == point_interval) {
-            forward_probs[curr_index-1][i->hmm_index] = 1; // curr_index - 1 because the index has already moved forward
-            i->node = r.inserted_node;
+    for (int i = 0; i < intervals.size(); i++) {
+        interval = intervals[i];
+        if (interval == point_interval) {
+            forward_probs[curr_index-1][i] = 1; // curr_index - 1 because the index has already moved forward
+            interval->node = r.inserted_node;
         } else {
-            forward_probs[curr_index-1][i->hmm_index] = 0;
+            forward_probs[curr_index-1][i] = 0;
         }
     }
 }

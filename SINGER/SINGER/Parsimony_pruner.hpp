@@ -27,6 +27,7 @@ public:
     map<float, float> match_map = {};
     map<float, float> potential_seeds = {};
     set<float> used_seeds = {};
+    map<float, Tree> seed_trees = {};
     
     map<float, set<Branch>> reductions = {};
     map<float, set<Branch>> deleted_branches = {};
@@ -59,6 +60,8 @@ public:
     Node *get_node_at(float x);
     
     void build_match_map(ARG &a);
+    
+    float find_closest_reference(float x);
     
     float find_minimum_match();
     

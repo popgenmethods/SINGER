@@ -74,6 +74,9 @@ void ARG::build_singleton_arg(Node *n) {
     Recombination r = Recombination({}, {branch});
     r.set_pos(0.0);
     recombinations[0] = r;
+    for (float x : mutation_sites) {
+        mutation_branches[x] = {branch};
+    }
 }
 
 void ARG::add_sample(Node *n) {
@@ -109,12 +112,24 @@ Node *ARG::add_new_node(float t) {
 
 Tree ARG::get_tree_at(float x) {
     Tree tree = Tree();
-    map<float, Recombination>::iterator recomb_it = recombinations.begin();
+    auto recomb_it = recombinations.begin();
     Recombination r;
     while (recomb_it->first <= x) {
         r = recomb_it->second;
         tree.forward_update(r);
         recomb_it++;
+    }
+    return tree;
+}
+
+Tree ARG::get_tree_at(float x, Tree &reference_tree, float x0) {
+    Tree tree = reference_tree;
+    auto recomb_it = recombinations.upper_bound(x0);
+    Recombination r;
+    while (recomb_it->first <= x) {
+        r = recomb_it->second;
+        tree.forward_update(r);
+        ++recomb_it;
     }
     return tree;
 }

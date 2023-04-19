@@ -104,9 +104,13 @@ void Threader_smc::run_BSP(ARG &a) {
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
     auto query_it = a.removed_branches.begin();
+    // auto delete_it = pp.deleted_branches.lower_bound(start);
+    // auto insert_it = pp.inserted_branches.lower_bound(start);
     vector<float> mutations;
     set<float> mut_set = {};
     Node *query_node = nullptr;
+    // set<Branch> deletion = {};
+    // set<Branch> insertion = {};
     for (int i = start_index; i < end_index; i++) {
         if (a.coordinates[i] == query_it->first) {
             query_node = query_it->second.lower_node;

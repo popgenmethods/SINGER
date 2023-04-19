@@ -36,7 +36,6 @@ void BSP_smc::start(set<Branch> &branches, float t) {
             ub = b.upper_node->time;
             p = cc->weight(lb, ub);
             new_interval = new Interval(b, lb, ub, curr_index);
-            new_interval->hmm_index = (int) curr_intervals.size();
             curr_intervals.push_back(new_interval);
             temp.push_back(p);
         }
@@ -86,8 +85,7 @@ void BSP_smc::transfer(Recombination &r) {
     curr_index += 1;
     temp_weights.clear();
     temp_intervals.clear();
-    vector<Interval *> intervals = curr_intervals;
-    for (Interval *i : intervals) {
+    for (int i = 0; i < curr_intervals.size(); i++) {
         process_interval(r, i);
     }
     curr_intervals.clear();
@@ -148,7 +146,7 @@ map<float, Branch> BSP_smc::sample_joining_branches(int start_index, vector<floa
             break;
         } else if (x == interval->start_pos) {
             x -= 1;
-            interval = sample_source_interval(interval);
+            interval = sample_source_interval(interval, x);
             b = interval->branch;
         } else {
             x -= 1;
@@ -307,7 +305,6 @@ void BSP_smc::generate_intervals(Recombination &r) {
         assert(!isnan(p));
         if (lb == max(cut_time, b.lower_node->time) and ub == b.upper_node->time) { // full intervals
             new_interval = new Interval(b, lb, ub, curr_index);
-            new_interval->hmm_index = (int) curr_intervals.size();
             curr_intervals.push_back(new_interval);
             temp.push_back(p);
             if (weights.size() > 0) {
@@ -316,7 +313,6 @@ void BSP_smc::generate_intervals(Recombination &r) {
             }
         } else if (p >= cutoff) { // partial intervals
             new_interval = new Interval(b, lb, ub, curr_index);
-            new_interval->hmm_index = (int) curr_intervals.size();
             curr_intervals.push_back(new_interval);
             temp.push_back(p);
             if (weights.size() > 0) {
@@ -345,20 +341,21 @@ float BSP_smc::get_overwrite_prob(Recombination &r, float lb, float ub) {
     return overwrite_prob;
 }
 
-void BSP_smc::process_interval(Recombination &r, Interval *prev_interval) {
-    Branch prev_branch = prev_interval->branch;
+void BSP_smc::process_interval(Recombination &r, int i) {
+    Branch prev_branch = curr_intervals[i]->branch;
     if (prev_branch == r.source_branch) {
-        process_source_interval(r, prev_interval);
+        process_source_interval(r, i);
     } else if (prev_branch == r.target_branch) {
-        process_target_interval(r, prev_interval);
+        process_target_interval(r, i);
     } else {
-        process_other_interval(r, prev_interval);
+        process_other_interval(r, i);
     }
 }
 
-void BSP_smc::process_source_interval(Recombination &r, Interval *prev_interval) {
+void BSP_smc::process_source_interval(Recombination &r, int i) {
     float w1, w2, lb, ub = 0;
-    float p = forward_probs[curr_index - 1][prev_interval->hmm_index];
+    Interval *prev_interval = curr_intervals[i];
+    float p = forward_probs[curr_index - 1][i];
     float point_time = r.source_branch.upper_node->time;
     float break_time = r.start_time;
     Branch next_branch;
@@ -398,9 +395,10 @@ void BSP_smc::process_source_interval(Recombination &r, Interval *prev_interval)
     }
 }
 
-void BSP_smc::process_target_interval(Recombination &r, Interval *prev_interval) {
+void BSP_smc::process_target_interval(Recombination &r, int i) {
     float w0, w1, w2, lb, ub = 0;
-    float p = forward_probs[curr_index - 1][prev_interval->hmm_index];
+    Interval *prev_interval = curr_intervals[i];
+    float p = forward_probs[curr_index - 1][i];
     float join_time = r.inserted_node->time;
     Branch next_branch;
     Interval_info next_interval;
@@ -454,9 +452,10 @@ void BSP_smc::process_target_interval(Recombination &r, Interval *prev_interval)
     }
 }
 
-void BSP_smc::process_other_interval(Recombination &r, Interval *prev_interval) {
+void BSP_smc::process_other_interval(Recombination &r, int i) {
     float lb, ub = 0;
-    float p = forward_probs[curr_index - 1][prev_interval->hmm_index];
+    Interval *prev_interval = curr_intervals[i];
+    float p = forward_probs[curr_index - 1][i];
     Branch prev_branch = prev_interval->branch;
     Branch next_branch;
     Interval_info next_interval;
@@ -491,6 +490,12 @@ vector<Interval *> BSP_smc::get_state_space(int x) {
     return state_it->second;
 }
 
+int BSP_smc::get_interval_index(Interval *interval, vector<Interval *> &intervals) {
+    auto it = find(intervals.begin(), intervals.end(), interval);
+    int index = (int) distance(intervals.begin(), it);
+    return index;
+}
+ 
 void BSP_smc::simplify(map<float, Branch> &joining_branches) {
     map<float, Branch> simplified_joining_branches = {};
     Branch curr_branch = joining_branches.begin()->second;
@@ -538,8 +543,9 @@ Interval *BSP_smc::sample_prev_interval(int x) {
     exit(1);
 }
 
-Interval *BSP_smc::sample_source_interval(Interval *interval) {
+Interval *BSP_smc::sample_source_interval(Interval *interval, int x) {
     assert(source_intervals.count(interval) > 0);
+    vector<Interval *> prev_intervals = get_state_space(x);
     vector<Interval *> intervals = source_intervals[interval];
     vector<float> weights = source_weights[interval];
     float q = random();
@@ -548,7 +554,7 @@ Interval *BSP_smc::sample_source_interval(Interval *interval) {
     for (int i = 0; i < weights.size(); i++) {
         w -= weights[i];
         if (w <= 0) {
-            sample_index = intervals[i]->hmm_index;
+            sample_index = get_interval_index(intervals[i], prev_intervals);
             return intervals[i];
         }
     }

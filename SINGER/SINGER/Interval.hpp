@@ -27,7 +27,6 @@ public:
     int start_pos = 0;
     Node *node = nullptr;
     float reduction = 1.0;
-    int hmm_index = -1;
     
     Interval();
     
@@ -61,6 +60,7 @@ struct compare_interval {
     }
 };
 
+
 class Interval_info {
     
 public:
@@ -73,12 +73,12 @@ public:
     
     Interval_info(Branch b, float tl, float tu);
     
+    bool operator==(const Interval_info& other) const;
+
+    bool operator!=(const Interval_info& other) const;
+
+    bool operator<(const Interval_info& other) const;
+    
 };
-
-bool operator==(const Interval_info& i1, const Interval_info& i2);
-
-bool operator!=(const Interval_info& i1, const Interval_info& i2);
-
-bool operator<(const Interval_info& i1, const Interval_info& i2);
 
 #endif /* Interval_hpp */

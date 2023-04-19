@@ -106,40 +106,38 @@ Interval_info::Interval_info(Branch b, float tl, float tu) {
     ub = tu;
 }
 
-bool operator==(const Interval_info& i1, const Interval_info& i2) {
-    if (i1.branch != i2.branch) {
+bool Interval_info::operator==(const Interval_info& other) const {
+    if (branch != other.branch) {
         return false;
     }
-    if (i1.ub != i2.ub) {
+    if (ub != other.ub) {
         return false;
     }
-    if (i1.lb != i2.lb) {
+    if (lb != other.lb) {
         return false;
     }
     return true;
 }
 
-bool operator!=(const Interval_info& i1, const Interval_info& i2) {
-    if (i1.branch != i2.branch) {
+bool Interval_info::operator!=(const Interval_info& other) const {
+    if (branch != other.branch) {
         return true;
     }
-    if (i1.ub != i2.ub) {
+    if (ub != other.ub) {
         return true;
     }
-    if (i1.lb != i2.lb) {
+    if (lb != other.lb) {
         return true;
     }
     return false;
 }
 
-bool operator<(const Interval_info& i1, const Interval_info& i2) {
-    if (i1.branch != i2.branch) {
-        return i1.branch < i2.branch;
+bool Interval_info::operator<(const Interval_info& other) const {
+    if (branch != other.branch) {
+        return branch < other.branch;
     }
-    if (i1.ub != i2.ub) {
-        return i1.ub < i2.ub;
+    if (ub != other.ub) {
+        return ub < other.ub;
     }
-    return i1.lb < i2.lb;
+    return lb < other.lb;
 }
-
-// private methods:

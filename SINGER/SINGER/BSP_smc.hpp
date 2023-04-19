@@ -49,10 +49,10 @@ public:
     float prev_theta = -1;
     Node *prev_node = nullptr;
     
-    // branches after pruning
+    // pruning:
     
-    map<float, set<Branch>> deleted_branches = {};
-    map<float, set<Branch>> inserted_branches = {};
+    set<Branch> deleted_branches = {};
+    set<Branch> inserted_branches = {};
     
     // vector computation:
     int dim = 0;
@@ -119,13 +119,13 @@ public:
     
     float get_overwrite_prob(Recombination &r, float lb, float ub);
     
-    void process_interval(Recombination &r, Interval *prev_interval);
+    void process_interval(Recombination &r, int i);
     
-    void process_source_interval(Recombination &r, Interval *prev_interval);
+    void process_source_interval(Recombination &r, int i);
     
-    void process_target_interval(Recombination &r, Interval *prev_interval);
+    void process_target_interval(Recombination &r, int i);
     
-    void process_other_interval(Recombination &r, Interval *prev_interval);
+    void process_other_interval(Recombination &r, int i);
     
     float random();
     
@@ -133,13 +133,15 @@ public:
     
     vector<Interval *> get_state_space(int x);
     
+    int get_interval_index(Interval *interval, vector<Interval *> &intervals);
+    
     void simplify(map<float, Branch> &joining_branches);
     
     Interval *sample_curr_interval(int x);
     
     Interval *sample_prev_interval(int x);
     
-    Interval *sample_source_interval(Interval *interval);
+    Interval *sample_source_interval(Interval *interval, int x);
     
     int trace_back_helper(Interval *interval, int x);
     

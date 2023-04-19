@@ -132,6 +132,8 @@ void RSP_smc::sample_recombination(Recombination &r, float cut_time, Tree &tree)
     }
     r.find_target_branch();
     r.find_recomb_info();
+    assert(r.target_branch != Branch());
+    assert(r.merging_branch != Branch());
     assert(r.start_time < r.inserted_node->time);
     assert(r.start_time > 0);
 }

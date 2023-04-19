@@ -36,6 +36,7 @@ public:
     set<Node *, compare_node> node_set = {};
     map<float, Branch> joining_branches = {};
     map<float, Branch> removed_branches = {};
+    map<float, Tree> tree_map = {};
     
     ARG();
     
@@ -59,6 +60,8 @@ public:
     
     Tree get_tree_at(float x);
     
+    Tree get_tree_at(float x, Tree &reference_tree, float x0);
+
     void remove(tuple<float, Branch, float> cut_point);
     
     void remove(map<float, Branch> seed_branches);
