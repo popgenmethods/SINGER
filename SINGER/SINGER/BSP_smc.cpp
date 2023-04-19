@@ -233,11 +233,18 @@ void BSP_smc::transfer_helper(Interval_info next_interval, Interval *prev_interv
         return;
     }
     if (temp_weights.count(next_interval) > 0) {
-        temp_weights.at(next_interval).push_back(w);
-        temp_intervals.at(next_interval).push_back(prev_interval);
+        temp_weights[next_interval].push_back(w);
+        temp_intervals[next_interval].push_back(prev_interval);
     } else {
-        temp_weights.insert({next_interval, {w}});
-        temp_intervals.insert({next_interval, {prev_interval}});
+        temp_weights[next_interval] = {w};
+        temp_intervals[next_interval] = {prev_interval};
+    }
+}
+
+void BSP_smc::transfer_helper(Interval_info next_interval) {
+    if (temp_weights.count(next_interval) == 0) {
+        temp_weights[next_interval] = {};
+        temp_intervals[next_interval] = {};
     }
 }
 
@@ -249,15 +256,17 @@ void BSP_smc::add_new_branches(Recombination &r) { // add recombined branch and 
         lb = max(cut_time, r.merging_branch.lower_node->time);
         ub = r.merging_branch.upper_node->time;
         next_interval = Interval_info(r.merging_branch, lb, ub);
-        temp_weights.insert({next_interval, {}});
-        temp_intervals.insert({next_interval, {}});
+        transfer_helper(next_interval);
+        // temp_weights.insert({next_interval, {}});
+        // temp_intervals.insert({next_interval, {}});
     }
     if (r.recombined_branch != Branch() and r.recombined_branch.upper_node->time > cut_time) {
         lb = max(cut_time, r.recombined_branch.lower_node->time);
         ub = r.recombined_branch.upper_node->time;
         next_interval = Interval_info(r.recombined_branch, lb, ub);
-        temp_weights.insert({next_interval, {}});
-        temp_intervals.insert({next_interval, {}});
+        transfer_helper(next_interval);
+        // temp_weights.insert({next_interval, {}});
+        // temp_intervals.insert({next_interval, {}});
     }
 }
 

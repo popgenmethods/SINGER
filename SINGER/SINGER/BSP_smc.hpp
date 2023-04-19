@@ -109,6 +109,8 @@ public:
     
     void transfer_helper(Interval_info next_interval, Interval *prev_interval, float w);
     
+    void transfer_helper(Interval_info next_interval);
+    
     void add_new_branches(Recombination &r);
     
     void compute_interval_info();
