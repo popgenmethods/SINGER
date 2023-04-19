@@ -8,6 +8,10 @@
 #include "Parsimony_pruner.hpp"
 
 Parsimony_pruner::Parsimony_pruner() {
+    deleted_branches[0] = {};
+    deleted_branches[INT_MAX] = {};
+    inserted_branches[0] = {};
+    inserted_branches[INT_MAX] = {};
 }
 
 void Parsimony_pruner::prune_arg(ARG &a) {

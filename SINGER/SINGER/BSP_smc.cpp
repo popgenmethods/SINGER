@@ -15,6 +15,10 @@ BSP_smc::~BSP_smc() {
             delete interval;
         }
     }
+    vector<vector<float>>().swap(forward_probs);
+    map<Interval *, vector<float>>().swap(source_weights);
+    map<Interval *, vector<Interval *>>().swap(source_intervals);
+    map<int, vector<Interval *>>().swap(state_spaces);
 }
 
 void BSP_smc::reserve_memory(int length) {

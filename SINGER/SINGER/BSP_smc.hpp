@@ -85,6 +85,10 @@ public:
     
     void transfer(Recombination &r); // forward pass when there is a recombination (without emission), and add a transition object. Don't forget to update active intervals, recomb_sums and weight_sums.
     
+    void forward(float rho, set<Branch> &deletions, set<Branch> &insertions);
+    
+    void transfer(Recombination &r, set<Branch> &deletions, set<Branch> &insertions);
+    
     float get_recomb_prob(float rho, float t);
     
     void null_emit(float theta, Node *query_node);

@@ -104,24 +104,40 @@ void Threader_smc::run_BSP(ARG &a) {
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
     auto query_it = a.removed_branches.begin();
-    // auto delete_it = pp.deleted_branches.lower_bound(start);
-    // auto insert_it = pp.inserted_branches.lower_bound(start);
+    auto delete_it = pp.deleted_branches.lower_bound(start);
+    auto insert_it = pp.inserted_branches.lower_bound(start);
     vector<float> mutations;
     set<float> mut_set = {};
+    set<Branch> deletions = {};
+    set<Branch> insertions = {};
     Node *query_node = nullptr;
-    // set<Branch> deletion = {};
-    // set<Branch> insertion = {};
     for (int i = start_index; i < end_index; i++) {
         if (a.coordinates[i] == query_it->first) {
             query_node = query_it->second.lower_node;
             query_it++;
         }
-        if (a.coordinates[i] == recomb_it->first) {
-            Recombination &r = recomb_it->second;
-            recomb_it++;
-            bsp.transfer(r);
-        } else if (a.coordinates[i] != start) {
-            bsp.forward(a.rhos[i]);
+        if (a.coordinates[i] == delete_it->first) {
+            deletions = delete_it->second;
+            insertions = insert_it->second;
+            delete_it++;
+            insert_it++;
+        }
+        if (deletions.size() > 0 or insertions.size() > 0) {
+            if (a.coordinates[i] == recomb_it->first) {
+                Recombination &r = recomb_it->second;
+                recomb_it++;
+                bsp.transfer(r);
+            } else if (a.coordinates[i] != start) {
+                bsp.forward(a.rhos[i]);
+            }
+        } else {
+            if (a.coordinates[i] == recomb_it->first) {
+                Recombination &r = recomb_it->second;
+                recomb_it++;
+                bsp.transfer(r);
+            } else if (a.coordinates[i] != start) {
+                bsp.forward(a.rhos[i]);
+            }
         }
         mut_set = {};
         while (*mut_it < a.coordinates[i+1]) {

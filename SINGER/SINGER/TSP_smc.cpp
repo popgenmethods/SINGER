@@ -16,6 +16,9 @@ TSP_smc::~TSP_smc() {
             delete interval;
         }
     }
+    vector<vector<float>>().swap(forward_probs);
+    map<Interval *, Interval *>().swap(source_interval);
+    map<int, vector<Interval *>>().swap(state_spaces);
 }
 
 void TSP_smc::set_gap(float q) {
