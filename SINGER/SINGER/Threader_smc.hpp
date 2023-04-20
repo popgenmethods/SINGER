@@ -32,6 +32,8 @@ public:
     
     void terminal_rethread(ARG &old_arg, tuple<int, Branch, float> cut_point);
     
+    void fast_thread(ARG &a, Node *n);
+    
 // private:
     
     float cut_time = 0;
@@ -56,6 +58,8 @@ public:
     void set_check_points(ARG &a);
     
     void run_BSP(ARG &a);
+    
+    void run_reduced_BSP(ARG &a);
     
     void run_TSP(ARG &a);
     

@@ -96,11 +96,50 @@ void Threader_smc::set_check_points(ARG &a) {
 }
 
 void Threader_smc::run_BSP(ARG &a) {
-    Tree start_tree = a.get_tree_at(start);
     bsp.reserve_memory(end_index - start_index);
     bsp.set_cutoff(cutoff);
     bsp.set_emission(eh);
+    Tree start_tree = a.get_tree_at(start);
     bsp.start(start_tree.branches, cut_time);
+    auto recomb_it = a.recombinations.upper_bound(start);
+    auto mut_it = a.mutation_sites.lower_bound(start);
+    auto query_it = a.removed_branches.begin();
+    vector<float> mutations;
+    set<float> mut_set = {};
+    set<Branch> deletions = {};
+    set<Branch> insertions = {};
+    Node *query_node = nullptr;
+    for (int i = start_index; i < end_index; i++) {
+        if (a.coordinates[i] == query_it->first) {
+            query_node = query_it->second.lower_node;
+            query_it++;
+        }
+        if (a.coordinates[i] == recomb_it->first) {
+            Recombination &r = recomb_it->second;
+            recomb_it++;
+            bsp.transfer(r);
+        } else if (a.coordinates[i] != start) {
+            bsp.forward(a.rhos[i]);
+        }
+        mut_set = {};
+        while (*mut_it < a.coordinates[i+1]) {
+            mut_set.insert(*mut_it);
+            mut_it++;
+        }
+        if (mut_set.size() > 0) {
+            bsp.mut_emit(a.thetas[i], a.coordinates[i+1] - a.coordinates[i], mut_set, query_node);
+        } else {
+            bsp.null_emit(a.thetas[i], query_node);
+        }
+    }
+}
+
+void Threader_smc::run_reduced_BSP(ARG &a) {
+    bsp.reserve_memory(end_index - start_index);
+    bsp.set_cutoff(cutoff);
+    bsp.set_emission(eh);
+    set<Branch> start_branches = pp.inserted_branches.begin()->second;
+    bsp.start(start_branches, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
     auto query_it = a.removed_branches.begin();
@@ -130,6 +169,8 @@ void Threader_smc::run_BSP(ARG &a) {
             } else if (a.coordinates[i] != start) {
                 bsp.forward(a.rhos[i]);
             }
+            deletions.clear();
+            insertions.clear();
         } else {
             if (a.coordinates[i] == recomb_it->first) {
                 Recombination &r = recomb_it->second;
@@ -154,10 +195,10 @@ void Threader_smc::run_BSP(ARG &a) {
 
 void Threader_smc::run_TSP(ARG &a) {
     new_joining_branches = bsp.sample_joining_branches(start_index, a.coordinates);
-    Branch start_branch = new_joining_branches.begin()->second;
     tsp.reserve_memory(end_index - start_index);
     tsp.set_gap(gap);
     tsp.set_emission(eh);
+    Branch start_branch = new_joining_branches.begin()->second;
     tsp.start(start_branch, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto join_it = new_joining_branches.upper_bound(start);

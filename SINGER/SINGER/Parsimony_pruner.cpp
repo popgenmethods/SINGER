@@ -371,6 +371,7 @@ void Parsimony_pruner::extend_forward(ARG &a, float x) {
         n = get_node_at(m);
         mutation_forward(n, m);
     }
+    cout << "Extend forward from " << x << " to " << m << endl;
 }
 
 void Parsimony_pruner::extend_backward(ARG &a, float x) {
@@ -394,4 +395,5 @@ void Parsimony_pruner::extend_backward(ARG &a, float x) {
         n = get_node_at(m);
         mutation_backward(n, m);
     }
+    cout << "Extend backward from " << x << " to " << m << endl;
 }

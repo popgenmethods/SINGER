@@ -375,6 +375,7 @@ void ARG::impute(map<float, Branch> &new_joining_branches, map<float, Branch> &a
         add_it++;
         while (*mut_it < add_it->first) {
             m = *mut_it;
+            /*
             sl = joining_branch.lower_node->get_state(m);
             su = joining_branch.upper_node->get_state(m);
             s0 = added_branch.lower_node->get_state(m);
@@ -384,7 +385,8 @@ void ARG::impute(map<float, Branch> &new_joining_branches, map<float, Branch> &a
                 sm = 0;
             }
             added_branch.upper_node->write_state(m, sm);
-            // map_mutation(m, joining_branch, added_branch);
+             */
+            map_mutation(m, joining_branch, added_branch);
             mut_it++;
         }
     }
