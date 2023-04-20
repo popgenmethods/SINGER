@@ -28,12 +28,13 @@ void BSP_smc::reserve_memory(int length) {
 void BSP_smc::start(set<Branch> &branches, float t) {
     cut_time = t;
     curr_index = 0;
+    valid_branches = branches;
     float lb = 0;
     float ub = 0;
     float p = 0;
     Interval *new_interval = nullptr;
     cc = make_shared<Coalescent_calculator>(cut_time);
-    cc->start(branches);
+    cc->compute(valid_branches);
     for (Branch b : branches) {
         if (b.upper_node->time > cut_time) {
             lb = max(b.lower_node->time, cut_time);
@@ -93,14 +94,15 @@ void BSP_smc::transfer(Recombination &r) {
         process_interval(r, i);
     }
     curr_intervals.clear();
-    cc->update(r.deleted_branches, r.inserted_branches);
+    update_states(r.deleted_branches, r.inserted_branches);
+    cc->compute(valid_branches);
     add_new_branches(r);
     generate_intervals(r);
     set_dimensions();
     state_spaces[curr_index] = curr_intervals;
 }
 
-void BSP_smc::forward(float rho, set<Branch> &deletions, set<Branch> &insertions) {
+void BSP_smc::fast_forward(float rho) {
     rhos.push_back(rho);
     compute_recomb_probs(rho);
     prev_rho = -1;
@@ -109,19 +111,23 @@ void BSP_smc::forward(float rho, set<Branch> &deletions, set<Branch> &insertions
     Interval *prev_interval = nullptr;
     Interval *next_interval = nullptr;
     vector<Interval *> next_intervals = {};
+    set<Branch> curr_branches = {};
     for (int i = 0; i < curr_intervals.size(); i++) {
         prev_interval = curr_intervals[i];
-        if (deletions.count(prev_interval->branch) == 0) {
+        if (valid_branches.count(prev_interval->branch) > 0) {
             next_intervals.push_back(prev_interval);
             temp.push_back(forward_probs[curr_index][i]*(1 - recomb_probs[i]));
+            curr_branches.insert(prev_interval->branch);
         }
     }
-    for (Branch b : insertions) {
-        lb = max(cut_time, b.lower_node->time);
-        ub = b.upper_node->time;
-        next_interval = new Interval(b, lb, ub, curr_index);
-        next_intervals.push_back(next_interval);
-        temp.push_back(0);
+    for (Branch b : valid_branches) {
+        if (curr_branches.count(b) == 0) {
+            lb = max(cut_time, b.lower_node->time);
+            ub = b.upper_node->time;
+            next_interval = new Interval(b, lb, ub, curr_index);
+            next_intervals.push_back(next_interval);
+            temp.push_back(0);
+        }
     }
     forward_probs.push_back(temp);
     set_dimensions();
@@ -135,7 +141,7 @@ void BSP_smc::forward(float rho, set<Branch> &deletions, set<Branch> &insertions
     temp.clear();
 }
 
-void BSP_smc::transfer(Recombination &r, set<Branch> &deletions, set<Branch> &insertions) {
+void BSP_smc::fast_transfer(Recombination &r) {
     rhos.push_back(0);
     prev_rho = -1;
     prev_theta = -1;
@@ -149,9 +155,8 @@ void BSP_smc::transfer(Recombination &r, set<Branch> &deletions, set<Branch> &in
         process_interval(r, i);
     }
     curr_intervals.clear();
-    cc->update(r.deleted_branches, r.inserted_branches);
-    add_new_branches(r);
-    generate_intervals(r);
+    cc->compute(valid_branches);
+    fast_generate_intervals(r);
     set_dimensions();
     state_spaces[curr_index] = curr_intervals;
 }
@@ -240,6 +245,16 @@ void BSP_smc::write_forward_probs(string filename) {
 }
 
 // private methods:
+
+void BSP_smc::update_states(set<Branch> &deletions, set<Branch> &insertions) {
+    for (Branch b : deletions) {
+        assert(valid_branches.count(b) > 0);
+        valid_branches.erase(b);
+    }
+    for (Branch b : insertions) {
+        valid_branches.insert(b);
+    }
+}
 
 void BSP_smc::set_dimensions() {
     dim = (int) curr_intervals.size();
@@ -396,7 +411,7 @@ void BSP_smc::generate_intervals(Recombination &r) {
     temp.clear();
 }
 
-void BSP_smc::generate_intervals(Recombination &r, set<Branch> &deletions, set<Branch> &insertions) {
+void BSP_smc::fast_generate_intervals(Recombination &r) {
     Branch b;
     float lb;
     float ub;
@@ -415,11 +430,11 @@ void BSP_smc::generate_intervals(Recombination &r, set<Branch> &deletions, set<B
         ub = interval.ub;
         p = accumulate(weights.begin(), weights.end(), 0.0);
         assert(!isnan(p));
-        if (deleted_branches.count(b) > 0) {
+        if (valid_branches.count(b) == 0) {
             continue;
         }
-        curr_branches.insert(b);
         if (lb == max(cut_time, b.lower_node->time) and ub == b.upper_node->time) { // full intervals
+            curr_branches.insert(b);
             new_interval = new Interval(b, lb, ub, curr_index);
             curr_intervals.push_back(new_interval);
             temp.push_back(p);
@@ -437,7 +452,7 @@ void BSP_smc::generate_intervals(Recombination &r, set<Branch> &deletions, set<B
             }
         }
     }
-    for (Branch b : insertions) {
+    for (Branch b : valid_branches) {
         if (curr_branches.count(b) == 0) {
             lb = max(cut_time, b.lower_node->time);
             ub = b.upper_node->time;

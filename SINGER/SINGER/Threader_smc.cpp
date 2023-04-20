@@ -34,6 +34,26 @@ void Threader_smc::thread(ARG &a, Node *n) {
     cout << a.recombinations.size() << endl;
 }
 
+void Threader_smc::fast_thread(ARG &a, Node *n) {
+    cut_time = 0.0;
+    a.add_sample(n);
+    get_boundary(a);
+    cout << get_time() << " : begin pruner" << endl;
+    run_pruner(a);
+    cout << get_time() << " : begin BSP" << endl;
+    run_reduced_BSP(a);
+    cout << get_time() << " : begin TSP" << endl;
+    run_TSP(a);
+    cout << get_time() << " : begin sampling" << endl;
+    sample_joining_points(a);
+    cout << get_time() << " : begin adding" << endl;
+    a.add(new_joining_branches, added_branches);
+    cout << get_time() << " : begin sampling recombination" << endl;
+    a.smc_sample_recombinations();
+    cout << get_time() << " : finish" << endl;
+    cout << a.recombinations.size() << endl;
+}
+
 void Threader_smc::internal_rethread(ARG &prev_arg, tuple<int, Branch, float> cut_point) {
     ARG next_arg = prev_arg;
     cut_time = get<2>(cut_point);
@@ -74,7 +94,6 @@ string Threader_smc::get_time() {
     auto now = system_clock::now();
     auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
     auto timer = system_clock::to_time_t(now);
-
     std::tm bt = *std::localtime(&timer);
     std::ostringstream oss;
     oss << "[" << std::put_time(&bt, "%H:%M:%S"); // HH:MM:SS
@@ -93,6 +112,10 @@ void Threader_smc::set_check_points(ARG &a) {
     set<float> check_points = a.get_check_points();
     bsp.set_check_points(check_points);
     tsp.set_check_points(check_points);
+}
+
+void Threader_smc::run_pruner(ARG &a) {
+    pp.prune_arg(a);
 }
 
 void Threader_smc::run_BSP(ARG &a) {
@@ -165,9 +188,9 @@ void Threader_smc::run_reduced_BSP(ARG &a) {
             if (a.coordinates[i] == recomb_it->first) {
                 Recombination &r = recomb_it->second;
                 recomb_it++;
-                bsp.transfer(r);
+                bsp.fast_transfer(r);
             } else if (a.coordinates[i] != start) {
-                bsp.forward(a.rhos[i]);
+                bsp.fast_forward(a.rhos[i]);
             }
             deletions.clear();
             insertions.clear();

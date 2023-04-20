@@ -19,4 +19,6 @@ void test_pruner_efficiency();
 
 void test_iterative_start();
 
+void test_fast_iterative_start();
+
 #endif /* Test_hpp */

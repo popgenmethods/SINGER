@@ -49,11 +49,6 @@ public:
     float prev_theta = -1;
     Node *prev_node = nullptr;
     
-    // pruning:
-    
-    set<Branch> deleted_branches = {};
-    set<Branch> inserted_branches = {};
-    
     // vector computation:
     int dim = 0;
     float recomb_sum = 0;
@@ -66,6 +61,9 @@ public:
     int sample_index = -1;
     vector<float> trace_back_probs = {};
     vector<vector<float>> forward_probs = {};
+    
+    // states after pruning:
+    set<Branch> valid_branches = {};
     
     BSP_smc();
     
@@ -85,9 +83,9 @@ public:
     
     void transfer(Recombination &r); // forward pass when there is a recombination (without emission), and add a transition object. Don't forget to update active intervals, recomb_sums and weight_sums.
     
-    void forward(float rho, set<Branch> &deletions, set<Branch> &insertions);
+    void fast_forward(float rho);
     
-    void transfer(Recombination &r, set<Branch> &deletions, set<Branch> &insertions);
+    void fast_transfer(Recombination &r);
     
     float get_recomb_prob(float rho, float t);
     
@@ -100,6 +98,8 @@ public:
     void write_forward_probs(string filename);
     
     // private methods:
+    
+    void update_states(set<Branch> &deletions, set<Branch> &insertions);
     
     void set_dimensions();
     
@@ -123,7 +123,7 @@ public:
     
     void generate_intervals(Recombination &r);
     
-    void generate_intervals(Recombination &r, set<Branch> &deletions, set<Branch> &insertions);
+    void fast_generate_intervals(Recombination &r);
     
     float get_overwrite_prob(Recombination &r, float lb, float ub);
     

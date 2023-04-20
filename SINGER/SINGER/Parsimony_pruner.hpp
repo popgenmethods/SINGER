@@ -21,6 +21,7 @@ public:
     float max_time = 100;
     float start = 0;
     float end = 0;
+    // vector<float> coordinates = {};
     map<float, Branch> queries = {};
     set<float> private_mutations = {};
     map<Branch, float> curr_mismatch = {};
@@ -57,6 +58,8 @@ public:
 
     // private:
     
+    // float get_coordinate(float x);
+    
     Node *get_node_at(float x);
     
     void build_match_map(ARG &a);
@@ -74,6 +77,8 @@ public:
     void write_init_set();
     
     void write_reduction_change(float x, set<Branch> db, set<Branch> ib);
+    
+    void simplify();
     
     void write_reductions(ARG &a);
     

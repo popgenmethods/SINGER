@@ -15,6 +15,7 @@ Parsimony_pruner::Parsimony_pruner() {
 }
 
 void Parsimony_pruner::prune_arg(ARG &a) {
+    // coordinates = a.coordinates;
     queries = a.removed_branches;
     start = a.removed_branches.begin()->first;
     end = a.removed_branches.rbegin()->first;
@@ -28,7 +29,7 @@ void Parsimony_pruner::prune_arg(ARG &a) {
         x = find_minimum_match();
         extend(a, x);
     }
-    // write_reductions(a);
+    write_reductions(a);
 }
 
 void Parsimony_pruner::start_search(ARG &a, float m) {
@@ -59,6 +60,7 @@ void Parsimony_pruner::extend(ARG &a, float x) {
 
 void Parsimony_pruner::mutation_forward(Node *n, float m) {
     float mismatch = 0;
+    float c = 0;
     Branch branch = Branch();
     set<Branch> bad_branches = {};
     for (auto x : curr_mismatch) {
@@ -71,6 +73,7 @@ void Parsimony_pruner::mutation_forward(Node *n, float m) {
         }
     }
     if (bad_branches.size() > 0) {
+        // c = get_coordinate(m);
         write_reduction_change(m, bad_branches, {});
     }
     for (Branch b : bad_branches) {
@@ -82,6 +85,7 @@ void Parsimony_pruner::mutation_backward(Node *n, float m) {
     float mismatch = 0;
     Branch branch = Branch();
     set<Branch> bad_branches = {};
+    float c;
     for (auto x : curr_mismatch) {
         branch = x.first;
         mismatch = x.second;
@@ -92,6 +96,7 @@ void Parsimony_pruner::mutation_backward(Node *n, float m) {
         }
     }
     if (bad_branches.size() > 0) {
+        // c = get_coordinate(m);
         write_reduction_change(m, {}, bad_branches);
     }
     for (Branch b : bad_branches) {
@@ -101,6 +106,25 @@ void Parsimony_pruner::mutation_backward(Node *n, float m) {
         write_init_set();
     }
 }
+
+/*
+float Parsimony_pruner::get_coordinate(float x) {
+    int left = 0;
+    int right = (int) coordinates.size() - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (coordinates[mid] == x) {
+            return coordinates[mid];
+        }
+        if (coordinates[mid] < x) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+    return -1;
+}
+ */
 
 Node *Parsimony_pruner::get_node_at(float x) {
     auto query_it = queries.upper_bound(x);
@@ -330,10 +354,8 @@ void Parsimony_pruner::write_reduction_change(float x, set<Branch> db, set<Branc
 void Parsimony_pruner::write_reductions(ARG &a) {
     auto deleted_it = deleted_branches.begin();
     auto inserted_it = inserted_branches.begin();
-    auto start_it = std::lower_bound(a.coordinates.begin(), a.coordinates.end(), start);
-    int start_index = (int) (start_it - a.coordinates.begin());
-    auto end_it = std::lower_bound(a.coordinates.begin(), a.coordinates.end(), end);
-    int end_index = (int) (end_it - a.coordinates.begin());
+    int start_index = a.get_index(start);
+    int end_index = a.get_index(end);
     set<Branch> reduced_set = {};
     for (int i = start_index; i < end_index; i++) {
         while (deleted_it->first < a.coordinates[i+1]) {
@@ -357,6 +379,7 @@ void Parsimony_pruner::extend_forward(ARG &a, float x) {
     auto match_it = match_map.lower_bound(x);
     auto used_it = used_seeds.upper_bound(x);
     float m = x;
+    float c;
     Node *n = nullptr;
     float ub = *used_it;
     while (curr_mismatch.size() > 0 and match_it->first < ub) {
@@ -371,7 +394,7 @@ void Parsimony_pruner::extend_forward(ARG &a, float x) {
         n = get_node_at(m);
         mutation_forward(n, m);
     }
-    cout << "Extend forward from " << x << " to " << m << endl;
+    // cout << "Extend forward from " << x << " to " << m << endl;
 }
 
 void Parsimony_pruner::extend_backward(ARG &a, float x) {
@@ -395,5 +418,5 @@ void Parsimony_pruner::extend_backward(ARG &a, float x) {
         n = get_node_at(m);
         mutation_backward(n, m);
     }
-    cout << "Extend backward from " << x << " to " << m << endl;
+    // cout << "Extend backward from " << x << " to " << m << endl;
 }

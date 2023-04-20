@@ -57,6 +57,8 @@ public:
     
     void set_check_points(ARG &a);
     
+    void run_pruner(ARG &a);
+    
     void run_BSP(ARG &a);
     
     void run_reduced_BSP(ARG &a);

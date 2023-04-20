@@ -13,6 +13,7 @@ Coalescent_calculator::Coalescent_calculator(float t) {
 
 Coalescent_calculator::~Coalescent_calculator() {}
 
+/*
 void Coalescent_calculator::start(set<Branch> &inserted_branches) {
     for (Branch b : inserted_branches) {
         branches.insert(b);
@@ -30,9 +31,10 @@ void Coalescent_calculator::update(set<Branch> &deleted_branches, set<Branch> &i
     }
     compute();
 }
+ */
 
-void Coalescent_calculator::compute() {
-    compute_rate_changes();
+void Coalescent_calculator::compute(set<Branch> &branches) {
+    compute_rate_changes(branches);
     compute_rates();
     compute_probs_quantiles();
 }
@@ -57,7 +59,7 @@ float Coalescent_calculator::time(float lb, float ub) {
     return t;
 }
 
-void Coalescent_calculator::compute_rate_changes() {
+void Coalescent_calculator::compute_rate_changes(set<Branch> &branches) {
     rate_changes.clear();
     float lb = 0;
     float ub = 0;

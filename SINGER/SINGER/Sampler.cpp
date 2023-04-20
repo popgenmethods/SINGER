@@ -82,3 +82,18 @@ void Sampler::iterative_start() {
         threader.thread(arg, n);
     }
 }
+
+void Sampler::fast_iterative_start() {
+    build_singleton_arg();
+    for (int i = 1; i < num_samples; i++) {
+        random_seed = rand();
+        srand(random_seed);
+        Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
+        Node *n = build_node(i, 0.0);
+        if (arg.sample_nodes.size() > 1) {
+            threader.fast_thread(arg, n);
+        } else {
+            threader.thread(arg, n);
+        }
+    }
+}

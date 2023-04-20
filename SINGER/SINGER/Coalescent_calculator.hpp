@@ -18,7 +18,7 @@ class Coalescent_calculator {
 public:
     
     float cut_time;
-    set<Branch> branches = {};
+    // set<Branch> branches = {};
     map<float, int> rate_changes = {};
     map<float, int> rates = {};
     map<float, float> probs = {};
@@ -28,11 +28,11 @@ public:
     
     ~Coalescent_calculator();
     
-    void start(set<Branch> &inserted_branches);
+    // void start(set<Branch> &inserted_branches);
     
-    void update(set<Branch> &deleted_branches, set<Branch> &inserted_branches);
+    // void update(set<Branch> &deleted_branches, set<Branch> &inserted_branches);
     
-    void compute();
+    void compute(set<Branch> &branches);
     
     float weight(float lb, float ub);
     
@@ -40,7 +40,7 @@ public:
     
 // private:
     
-    void compute_rate_changes();
+    void compute_rate_changes(set<Branch> &branches);
     
     void compute_rates();
     
