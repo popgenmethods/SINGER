@@ -98,6 +98,8 @@ public:
     
     void remap_mutations();
     
+    void map_mutation(float x, Branch joining_branch, Branch added_branch);
+    
     void map_mutation(Tree tree, float x);
     
     void clear_memory();

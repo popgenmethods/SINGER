@@ -123,6 +123,8 @@ public:
     
     void generate_intervals(Recombination &r);
     
+    void generate_intervals(Recombination &r, set<Branch> &deletions, set<Branch> &insertions);
+    
     float get_overwrite_prob(Recombination &r, float lb, float ub);
     
     void process_interval(Recombination &r, int i);

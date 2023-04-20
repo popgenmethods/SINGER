@@ -20,13 +20,13 @@ void Threader_smc::thread(ARG &a, Node *n) {
     cut_time = 0.0;
     a.add_sample(n);
     get_boundary(a);
-    cout << get_time() << " : begin BSP"<< endl;
+    cout << get_time() << " : begin BSP" << endl;
     run_BSP(a);
-    cout << get_time() << " : begin TSP"<< endl;
+    cout << get_time() << " : begin TSP" << endl;
     run_TSP(a);
-    cout << get_time() << " : begin sampling"<< endl;
+    cout << get_time() << " : begin sampling" << endl;
     sample_joining_points(a);
-    cout << get_time() << " : begin adding"<< endl;
+    cout << get_time() << " : begin adding" << endl;
     a.add(new_joining_branches, added_branches);
     cout << get_time() << " : begin sampling recombination" << endl;
     a.smc_sample_recombinations();

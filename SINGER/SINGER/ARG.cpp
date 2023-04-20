@@ -384,6 +384,7 @@ void ARG::impute(map<float, Branch> &new_joining_branches, map<float, Branch> &a
                 sm = 0;
             }
             added_branch.upper_node->write_state(m, sm);
+            // map_mutation(m, joining_branch, added_branch);
             mut_it++;
         }
     }
@@ -403,6 +404,34 @@ void ARG::map_mutations(float x, float y) {
         }
         map_mutation(tree, m);
         mut_it++;
+    }
+}
+
+void ARG::map_mutation(float x, Branch joining_branch, Branch added_branch) {
+    float sl, su, s0, sm;
+    Branch new_branch;
+    sl = joining_branch.lower_node->get_state(x);
+    su = joining_branch.upper_node->get_state(x);
+    s0 = added_branch.lower_node->get_state(x);
+    if (sl + su + s0 > 1) {
+        sm = 1;
+    } else {
+        sm = 0;
+    }
+    added_branch.upper_node->write_state(x, sm);
+    if (sl != su) {
+        mutation_branches[x].erase(joining_branch);
+    }
+    if (sm != sl) {
+        new_branch = Branch(joining_branch.lower_node, added_branch.upper_node);
+        mutation_branches[x].insert(new_branch);
+    }
+    if (sm != su) {
+        new_branch = Branch(added_branch.upper_node, joining_branch.upper_node);
+        mutation_branches[x].insert(new_branch);
+    }
+    if (sm != s0) {
+        mutation_branches[x].insert(added_branch);
     }
 }
 

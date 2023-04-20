@@ -100,6 +100,62 @@ void BSP_smc::transfer(Recombination &r) {
     state_spaces[curr_index] = curr_intervals;
 }
 
+void BSP_smc::forward(float rho, set<Branch> &deletions, set<Branch> &insertions) {
+    rhos.push_back(rho);
+    compute_recomb_probs(rho);
+    prev_rho = -1;
+    curr_index += 1;
+    float lb, ub;
+    Interval *prev_interval = nullptr;
+    Interval *next_interval = nullptr;
+    vector<Interval *> next_intervals = {};
+    for (int i = 0; i < curr_intervals.size(); i++) {
+        prev_interval = curr_intervals[i];
+        if (deletions.count(prev_interval->branch) == 0) {
+            next_intervals.push_back(prev_interval);
+            temp.push_back(forward_probs[curr_index][i]*(1 - recomb_probs[i]));
+        }
+    }
+    for (Branch b : insertions) {
+        lb = max(cut_time, b.lower_node->time);
+        ub = b.upper_node->time;
+        next_interval = new Interval(b, lb, ub, curr_index);
+        next_intervals.push_back(next_interval);
+        temp.push_back(0);
+    }
+    forward_probs.push_back(temp);
+    set_dimensions();
+    compute_interval_info();
+    compute_recomb_weights(rho);
+    for (int i = 0; i < dim; i++) {
+        forward_probs[curr_index][i] += recomb_sum*recomb_weights[i];
+    }
+    curr_intervals = next_intervals;
+    state_spaces[curr_index] = curr_intervals;
+    temp.clear();
+}
+
+void BSP_smc::transfer(Recombination &r, set<Branch> &deletions, set<Branch> &insertions) {
+    rhos.push_back(0);
+    prev_rho = -1;
+    prev_theta = -1;
+    prev_node = nullptr;
+    recomb_sums.push_back(0);
+    sanity_check(r);
+    curr_index += 1;
+    temp_weights.clear();
+    temp_intervals.clear();
+    for (int i = 0; i < curr_intervals.size(); i++) {
+        process_interval(r, i);
+    }
+    curr_intervals.clear();
+    cc->update(r.deleted_branches, r.inserted_branches);
+    add_new_branches(r);
+    generate_intervals(r);
+    set_dimensions();
+    state_spaces[curr_index] = curr_intervals;
+}
+
 float BSP_smc::get_recomb_prob(float rho, float t) {
     float p = rho*(t - cut_time)*exp(-rho*(t - cut_time));
     return p;
@@ -200,6 +256,7 @@ void BSP_smc::compute_recomb_probs(float rho) {
     for (int i = 0; i < dim; i++) {
         recomb_probs[i] = get_recomb_prob(rho, curr_intervals[i]->time);
     }
+    recomb_sum = inner_product(recomb_probs.begin(), recomb_probs.end(), forward_probs[curr_index].begin(), 0.0);
 }
 
 void BSP_smc::compute_recomb_weights(float rho) {
@@ -332,6 +389,61 @@ void BSP_smc::generate_intervals(Recombination &r) {
                 source_weights[new_interval] = weights;
                 source_intervals[new_interval] = intervals;
             }
+        }
+    }
+    forward_probs.push_back(temp);
+    compute_interval_info();
+    temp.clear();
+}
+
+void BSP_smc::generate_intervals(Recombination &r, set<Branch> &deletions, set<Branch> &insertions) {
+    Branch b;
+    float lb;
+    float ub;
+    float p;
+    set<Branch> curr_branches = {};
+    vector<Interval *> intervals;
+    vector<float> weights;
+    Interval_info interval;
+    Interval *new_interval = nullptr;
+    for (auto x : temp_weights) {
+        interval = x.first;
+        weights = x.second;
+        intervals = temp_intervals[x.first];
+        b = interval.branch;
+        lb = interval.lb;
+        ub = interval.ub;
+        p = accumulate(weights.begin(), weights.end(), 0.0);
+        assert(!isnan(p));
+        if (deleted_branches.count(b) > 0) {
+            continue;
+        }
+        curr_branches.insert(b);
+        if (lb == max(cut_time, b.lower_node->time) and ub == b.upper_node->time) { // full intervals
+            new_interval = new Interval(b, lb, ub, curr_index);
+            curr_intervals.push_back(new_interval);
+            temp.push_back(p);
+            if (weights.size() > 0) {
+                source_weights[new_interval] = weights;
+                source_intervals[new_interval] = intervals;
+            }
+        } else if (p >= cutoff) { // partial intervals
+            new_interval = new Interval(b, lb, ub, curr_index);
+            curr_intervals.push_back(new_interval);
+            temp.push_back(p);
+            if (weights.size() > 0) {
+                source_weights[new_interval] = weights;
+                source_intervals[new_interval] = intervals;
+            }
+        }
+    }
+    for (Branch b : insertions) {
+        if (curr_branches.count(b) == 0) {
+            lb = max(cut_time, b.lower_node->time);
+            ub = b.upper_node->time;
+            new_interval = new Interval(b, lb, ub, curr_index);
+            curr_intervals.push_back(new_interval);
+            temp.push_back(0);
         }
     }
     forward_probs.push_back(temp);
