@@ -13,16 +13,36 @@
 #include <math.h>
 #include "Branch.hpp"
 
+struct compare_time {
+    
+    bool operator()(const pair<float, float> p1, const pair<float, float> p2) const {
+        return p1.first < p2.first;
+    }
+    
+};
+
+struct compare_prob {
+    
+    bool operator()(const pair<float, float> p1, const pair<float, float> p2) const {
+            if (p1.second != p2.second) {
+                return p1.second < p2.second;
+            }
+        return p1.first < p2.first;
+    }
+    
+};
+
 class Coalescent_calculator {
     
 public:
     
     float cut_time;
     // set<Branch> branches = {};
+    float min_time, max_time;
     map<float, int> rate_changes = {};
     map<float, int> rates = {};
-    map<float, float> probs = {};
-    map<float, float> quantiles = {};
+    set<pair<float, float>, compare_time> probs = {};
+    set<pair<float, float>, compare_prob> quantiles = {};
     
     Coalescent_calculator(float t);
     

@@ -613,7 +613,7 @@ Interval *TSP_smc::sample_curr_interval(int x) {
             return intervals[i];
         }
     }
-    cerr << "Sample curr interval failed" << endl;
+    cerr << "tsp sample curr interval failed" << endl;
     exit(1);
 }
 
@@ -640,7 +640,7 @@ Interval *TSP_smc::sample_prev_interval(Interval *interval, int x) {
             }
         }
     }
-    cerr << "sampling failed" << endl;
+    cerr << "tsp prev sampling failed" << endl;
     exit(1);
 }
 
@@ -674,7 +674,7 @@ Interval *TSP_smc::sample_recomb_interval(Interval *interval, int x) {
             return intervals[i];
         }
     }
-    cerr << "sampling failed" << endl;
+    cerr << "tsp recomb sampling failed" << endl;
     exit(1);
 }
 

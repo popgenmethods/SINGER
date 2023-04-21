@@ -63,6 +63,7 @@ public:
     vector<vector<float>> forward_probs = {};
     
     // states after pruning:
+    bool states_change = false;
     set<Branch> valid_branches = {};
     
     BSP_smc();
@@ -101,6 +102,8 @@ public:
     
     void update_states(set<Branch> &deletions, set<Branch> &insertions);
     
+    void fast_update(float rho);
+    
     void set_dimensions();
     
     void compute_recomb_probs(float rho);
@@ -114,6 +117,8 @@ public:
     void transfer_helper(Interval_info next_interval, Interval *prev_interval, float w);
     
     void transfer_helper(Interval_info next_interval);
+    
+    Interval *duplicate_interval(Interval *interval);
     
     void add_new_branches(Recombination &r);
     
