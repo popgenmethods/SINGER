@@ -22,6 +22,7 @@ void Threader_smc::thread(ARG &a, Node *n) {
     get_boundary(a);
     cout << get_time() << " : begin BSP" << endl;
     run_BSP(a);
+    // bsp.check_recomb_sums();
     cout << get_time() << " : begin TSP" << endl;
     run_TSP(a);
     cout << get_time() << " : begin sampling" << endl;
@@ -34,6 +35,7 @@ void Threader_smc::thread(ARG &a, Node *n) {
     cout << a.recombinations.size() << endl;
 }
 
+/*
 void Threader_smc::fast_thread(ARG &a, Node *n) {
     cut_time = 0.0;
     a.add_sample(n);
@@ -53,6 +55,7 @@ void Threader_smc::fast_thread(ARG &a, Node *n) {
     cout << get_time() << " : finish" << endl;
     cout << a.recombinations.size() << endl;
 }
+ */
 
 void Threader_smc::internal_rethread(ARG &prev_arg, tuple<int, Branch, float> cut_point) {
     ARG next_arg = prev_arg;
@@ -142,21 +145,22 @@ void Threader_smc::run_BSP(ARG &a) {
             recomb_it++;
             bsp.transfer(r);
         } else if (a.coordinates[i] != start) {
-            bsp.forward(a.rhos[i]);
+            bsp.forward(a.rhos[i - 1]);
         }
         mut_set = {};
-        while (*mut_it < a.coordinates[i+1]) {
+        while (*mut_it < a.coordinates[i + 1]) {
             mut_set.insert(*mut_it);
             mut_it++;
         }
         if (mut_set.size() > 0) {
-            bsp.mut_emit(a.thetas[i], a.coordinates[i+1] - a.coordinates[i], mut_set, query_node);
+            bsp.mut_emit(a.thetas[i], a.coordinates[i + 1] - a.coordinates[i], mut_set, query_node);
         } else {
             bsp.null_emit(a.thetas[i], query_node);
         }
     }
 }
 
+/*
 void Threader_smc::run_reduced_BSP(ARG &a) {
     bsp.reserve_memory(end_index - start_index);
     bsp.set_cutoff(cutoff);
@@ -204,6 +208,7 @@ void Threader_smc::run_reduced_BSP(ARG &a) {
         }
     }
 }
+ */
 
 void Threader_smc::run_TSP(ARG &a) {
     new_joining_branches = bsp.sample_joining_branches(start_index, a.coordinates);

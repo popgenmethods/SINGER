@@ -32,7 +32,7 @@ public:
     
     void terminal_rethread(ARG &old_arg, tuple<int, Branch, float> cut_point);
     
-    void fast_thread(ARG &a, Node *n);
+   //  void fast_thread(ARG &a, Node *n);
     
 // private:
     
@@ -61,7 +61,7 @@ public:
     
     void run_BSP(ARG &a);
     
-    void run_reduced_BSP(ARG &a);
+    // void run_reduced_BSP(ARG &a);
     
     void run_TSP(ARG &a);
     

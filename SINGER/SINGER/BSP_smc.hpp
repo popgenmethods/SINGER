@@ -34,6 +34,7 @@ public:
     int curr_index = 0;
     map<int, vector<Interval *>>  state_spaces = {{INT_MAX, {}}};
     vector<Interval *> curr_intervals = {};
+    vector<Interval *> temp_intervals = {};
     
     // coalescent computation
     shared_ptr<Coalescent_calculator> cc;
@@ -41,8 +42,8 @@ public:
     // transfer at recombinations
     map<Interval *, vector<Interval *>> source_intervals = {};
     map<Interval *, vector<float>> source_weights = {};
-    map<Interval_info, vector<Interval *>> temp_intervals = {};
-    map<Interval_info, vector<float>> temp_weights = {};
+    map<Interval_info, vector<Interval *>> transfer_intervals = {};
+    map<Interval_info, vector<float>> transfer_weights = {};
     
     // cache:
     float prev_rho = -1;
@@ -84,9 +85,9 @@ public:
     
     void transfer(Recombination &r); // forward pass when there is a recombination (without emission), and add a transition object. Don't forget to update active intervals, recomb_sums and weight_sums.
     
-    void fast_forward(float rho);
+    // void fast_forward(float rho);
     
-    void fast_transfer(Recombination &r);
+    // void fast_transfer(Recombination &r);
     
     float get_recomb_prob(float rho, float t);
     
@@ -98,11 +99,13 @@ public:
     
     void write_forward_probs(string filename);
     
+    void check_recomb_sums();
+    
     // private methods:
     
     void update_states(set<Branch> &deletions, set<Branch> &insertions);
     
-    void fast_update(float rho);
+    // void fast_update(float rho);
     
     void set_dimensions();
     
@@ -128,7 +131,7 @@ public:
     
     void generate_intervals(Recombination &r);
     
-    void fast_generate_intervals(Recombination &r);
+    // void fast_generate_intervals(Recombination &r);
     
     float get_overwrite_prob(Recombination &r, float lb, float ub);
     
@@ -144,7 +147,7 @@ public:
     
     int get_prev_breakpoint(int x);
     
-    vector<Interval *> get_state_space(int x);
+    vector<Interval *> &get_state_space(int x);
     
     int get_interval_index(Interval *interval, vector<Interval *> &intervals);
     

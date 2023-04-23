@@ -66,6 +66,7 @@ void test_pruner_efficiency() {
 
 void test_iterative_start() {
     srand(93723823);
+    // srand(38);
     Sampler sampler = Sampler(2e4, 2e-9, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_num_samples(8);
@@ -85,5 +86,5 @@ void test_fast_iterative_start() {
     sampler.set_input_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_hap0");
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_sample0");
     sampler.set_log_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/check");
-    sampler.fast_iterative_start();
+    // sampler.fast_iterative_start();
 }
