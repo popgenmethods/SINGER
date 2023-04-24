@@ -31,6 +31,7 @@ void Tree::delete_branch(Branch b) {
     assert(b.upper_node != nullptr and b.lower_node != nullptr);
     assert(branches.count(b) > 0);
     branches.erase(b);
+    parents.erase(b.lower_node);
 }
 
 void Tree::forward_update(Recombination &r) {

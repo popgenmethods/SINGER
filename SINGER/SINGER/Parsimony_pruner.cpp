@@ -29,22 +29,25 @@ void Parsimony_pruner::prune_arg(ARG &a) {
         x = find_minimum_match();
         extend(a, x);
     }
-    write_reductions(a);
+    // write_reductions(a);
 }
 
 void Parsimony_pruner::start_search(ARG &a, float m) {
-    curr_mismatch.clear();
+    seed_match.clear();
     Node *n = get_node_at(m);
     float mismatch = 0;
     float x0 = find_closest_reference(m);
-    Tree &reference_tree = seed_trees[x0];
-    Tree tree = a.get_tree_at(m, reference_tree, x0);
-    // Tree tree = a.get_tree_at(m);
-    seed_trees[m] = tree;
-    for (Branch branch : tree.branches) {
+    /*
+    curr_tree = seed_trees[x0];
+    a.get_tree_at(m, curr_tree, x0);
+    seed_trees[m] = curr_tree;
+     */
+    seed_trees[m] = seed_trees[x0];
+    a.get_tree_at(m, seed_trees[m], x0);
+    for (Branch branch : seed_trees[m].branches) {
         mismatch = count_mismatch(branch, n, m);
         if (mismatch == 0 and branch.lower_node != n) {
-            curr_mismatch[branch] = mismatch;
+            seed_match[branch] = mismatch;
         }
     }
     potential_seeds.erase(m);
@@ -52,22 +55,24 @@ void Parsimony_pruner::start_search(ARG &a, float m) {
 
 void Parsimony_pruner::extend(ARG &a, float x) {
     start_search(a, x);
+    curr_match = seed_match;
     extend_forward(a, x);
-    start_search(a, x);
+    // start_search(a, x);
+    curr_match = seed_match;
     extend_backward(a, x);
     used_seeds.insert(x); // when extending later seeds, don't go beyond previous seeds (to save computation)
 }
 
 void Parsimony_pruner::mutation_forward(Node *n, float m) {
     float mismatch = 0;
-    float c = 0;
+    // float c = 0;
     Branch branch = Branch();
     set<Branch> bad_branches = {};
-    for (auto x : curr_mismatch) {
+    for (auto x : curr_match) {
         branch = x.first;
         mismatch = x.second;
         mismatch += count_mismatch(branch, n, m);
-        curr_mismatch[branch] = mismatch;
+        curr_match[branch] = mismatch;
         if (mismatch > max_mismatch) {
             bad_branches.insert(branch);
         }
@@ -77,7 +82,7 @@ void Parsimony_pruner::mutation_forward(Node *n, float m) {
         write_reduction_change(m, bad_branches, {});
     }
     for (Branch b : bad_branches) {
-        curr_mismatch.erase(b);
+        curr_match.erase(b);
     }
 }
 
@@ -85,12 +90,12 @@ void Parsimony_pruner::mutation_backward(Node *n, float m) {
     float mismatch = 0;
     Branch branch = Branch();
     set<Branch> bad_branches = {};
-    float c;
-    for (auto x : curr_mismatch) {
+    // float c;
+    for (auto x : curr_match) {
         branch = x.first;
         mismatch = x.second;
         mismatch += count_mismatch(branch, n, m);
-        curr_mismatch[branch] = mismatch;
+        curr_match[branch] = mismatch;
         if (mismatch > max_mismatch) {
             bad_branches.insert(branch);
         }
@@ -100,7 +105,7 @@ void Parsimony_pruner::mutation_backward(Node *n, float m) {
         write_reduction_change(m, {}, bad_branches);
     }
     for (Branch b : bad_branches) {
-        curr_mismatch.erase(b);
+        curr_match.erase(b);
     }
     if (m == start) {
         write_init_set();
@@ -137,7 +142,7 @@ void Parsimony_pruner::recombination_forward(Recombination &r) {
     Branch branch = Branch();
     set<Branch> db = {};
     set<Branch> ib = {};
-    for (auto x : curr_mismatch) {
+    for (auto x : curr_match) {
         branch = x.first;
         if (not r.affect(branch)) {
             transition_helper(branch, branch);
@@ -166,7 +171,7 @@ void Parsimony_pruner::recombination_backward(Recombination &r) {
     Branch branch = Branch();
     set<Branch> db = {};
     set<Branch> ib = {};
-    for (auto x : curr_mismatch) {
+    for (auto x : curr_match) {
         branch = x.first;
         if (not r.create(branch)) {
             transition_helper(branch, branch);
@@ -218,7 +223,7 @@ void Parsimony_pruner::write_reduction_distance(ARG &a, string filename) {
             reduced_it++;
         }
         while (recomb_it->first <= x) {
-            Recombination r = recomb_it->second;
+            Recombination &r = recomb_it->second;
             tree.forward_update(r);
             recomb_it++;
         }
@@ -311,7 +316,7 @@ void Parsimony_pruner::transition_helper(Branch sb, Branch tb) {
 }
 
 void Parsimony_pruner::update_mismatch() {
-    map<Branch, float> prev_mismatch = curr_mismatch;
+    map<Branch, float> prev_mismatch = curr_match;
     map<Branch, float> next_mismatch = {};
     Branch branch = Branch();
     float mismatch_sum = 0;
@@ -323,12 +328,12 @@ void Parsimony_pruner::update_mismatch() {
         }
         next_mismatch[branch] = mismatch_sum/x.second.size();
     }
-    curr_mismatch = next_mismatch;
+    curr_match = next_mismatch;
 }
 
 void Parsimony_pruner::write_init_set() {
     set<Branch> init_branches = {};
-    for (auto x : curr_mismatch) {
+    for (auto x : curr_match) {
         init_branches.insert(x.first);
     }
     deleted_branches[start] = {};
@@ -379,15 +384,15 @@ void Parsimony_pruner::extend_forward(ARG &a, float x) {
     auto match_it = match_map.lower_bound(x);
     auto used_it = used_seeds.upper_bound(x);
     float m = x;
-    float c;
+    // float c;
     Node *n = nullptr;
     float ub = *used_it;
-    while (curr_mismatch.size() > 0 and match_it->first < ub) {
+    while (curr_match.size() > 0 and match_it->first < ub) {
         potential_seeds.erase(m);
         match_it++;
         m = match_it->first;
         while (recomb_it->first <= m) {
-            Recombination r = recomb_it->second;
+            Recombination &r = recomb_it->second;
             recomb_it++;
             recombination_forward(r);
         }
@@ -406,12 +411,12 @@ void Parsimony_pruner::extend_backward(ARG &a, float x) {
     float m = x;
     Node *n = nullptr;
     float lb = *used_it;
-    while (curr_mismatch.size() > 0 and match_it->first > lb) {
+    while (curr_match.size() > 0 and match_it->first > lb) {
         potential_seeds.erase(m);
         match_it--;
         m = match_it->first;
         while (recomb_it->first > m) {
-            Recombination r = recomb_it->second;
+            Recombination &r = recomb_it->second;
             recomb_it--;
             recombination_backward(r);
         }

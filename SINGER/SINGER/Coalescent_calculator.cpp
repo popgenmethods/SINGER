@@ -188,6 +188,9 @@ float Coalescent_calculator::prob(float x) {
     l_it--;
     float base_prob = l_it->second;
     int rate = rates[l_it->first];
+    if (rate == 0) {
+        return base_prob;
+    }
     float delta_t = u_it->first - l_it->first;
     float delta_p = u_it->second - l_it->second;
     float new_delta_t = x - l_it->first;

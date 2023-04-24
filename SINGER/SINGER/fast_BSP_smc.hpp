@@ -1,27 +1,26 @@
 //
-//  BSP_smc.hpp
+//  fast_BSP_smc.hpp
 //  SINGER
 //
-//  Created by Yun Deng on 4/2/23.
+//  Created by Yun Deng on 4/21/23.
 //
 
-#ifndef BSP_smc_hpp
-#define BSP_smc_hpp
+#ifndef fast_BSP_smc_hpp
+#define fast_BSP_smc_hpp
 
 #include <stdio.h>
-#include <fstream>
 #include "Tree.hpp"
-#include "Coalescent_calculator.hpp"
-#include "Interval.hpp"
 #include "Emission.hpp"
+#include "Interval.hpp"
+#include "Coalescent_calculator.hpp"
 
-class BSP_smc {
+class fast_BSP_smc {
     
 public:
     
     // basic setup
     float cut_time = 0.0;
-    float cutoff = 0;
+    float cutoff = 0.0;
     shared_ptr<Emission> eh;
     set<float> check_points = {};
     
@@ -34,6 +33,7 @@ public:
     int curr_index = 0;
     map<int, vector<Interval *>>  state_spaces = {{INT_MAX, {}}};
     vector<Interval *> curr_intervals = {};
+    vector<float> temp_probs = {};
     vector<Interval *> temp_intervals = {};
     
     // coalescent computation
@@ -54,7 +54,6 @@ public:
     int dim = 0;
     float recomb_sum = 0;
     float weight_sum = 0;
-    vector<float> temp = {};
     vector<float> recomb_probs = {};
     vector<float> recomb_weights = {};
     vector<float> null_emit_probs = {};
@@ -65,11 +64,12 @@ public:
     
     // states after pruning:
     bool states_change = false;
+    set<Branch> covered_branches = {};
     set<Branch> valid_branches = {};
     
-    BSP_smc();
+    fast_BSP_smc();
     
-    ~BSP_smc();
+    ~fast_BSP_smc();
     
     void reserve_memory(int length);
     
@@ -85,9 +85,9 @@ public:
     
     void transfer(Recombination &r); // forward pass when there is a recombination (without emission), and add a transition object. Don't forget to update active intervals, recomb_sums and weight_sums.
     
-    // void fast_forward(float rho);
+    void regular_forward(float rho);
     
-    // void fast_transfer(Recombination &r);
+    void update(float rho);
     
     float get_recomb_prob(float rho, float t);
     
@@ -99,13 +99,9 @@ public:
     
     void write_forward_probs(string filename);
     
-    void check_recomb_sums();
-    
     // private methods:
     
     void update_states(set<Branch> &deletions, set<Branch> &insertions);
-    
-    // void fast_update(float rho);
     
     void set_dimensions();
     
@@ -121,6 +117,8 @@ public:
     
     void transfer_helper(Interval_info next_interval);
     
+    float compute_transfer_prob();
+    
     Interval *duplicate_interval(Interval *interval);
     
     void add_new_branches(Recombination &r);
@@ -130,8 +128,6 @@ public:
     void sanity_check(Recombination &r);
     
     void generate_intervals(Recombination &r);
-    
-    // void fast_generate_intervals(Recombination &r);
     
     float get_overwrite_prob(Recombination &r, float lb, float ub);
     
@@ -165,4 +161,4 @@ public:
     
 };
 
-#endif /* BSP_smc_hpp */
+#endif /* fast_BSP_smc_hpp */

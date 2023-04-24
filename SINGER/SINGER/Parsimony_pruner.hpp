@@ -21,14 +21,15 @@ public:
     float max_time = 100;
     float start = 0;
     float end = 0;
-    // vector<float> coordinates = {};
     map<float, Branch> queries = {};
     set<float> private_mutations = {};
-    map<Branch, float> curr_mismatch = {};
+    map<Branch, float> curr_match = {};
     map<float, float> match_map = {};
     map<float, float> potential_seeds = {};
     set<float> used_seeds = {};
+    Tree curr_tree;
     map<float, Tree> seed_trees = {};
+    map<Branch, float> seed_match = {};
     
     map<float, set<Branch>> reductions = {};
     map<float, set<Branch>> deleted_branches = {};

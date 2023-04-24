@@ -122,6 +122,7 @@ Tree ARG::get_tree_at(float x) {
     return tree;
 }
 
+/*
 Tree ARG::get_tree_at(float x, Tree &reference_tree, float x0) {
     Tree tree = reference_tree;
     auto recomb_it = recombinations.upper_bound(x0);
@@ -132,6 +133,19 @@ Tree ARG::get_tree_at(float x, Tree &reference_tree, float x0) {
         ++recomb_it;
     }
     return tree;
+}
+ */
+
+void ARG::get_tree_at(float x, Tree &reference_tree, float x0) {
+    // Tree tree = reference_tree;
+    auto recomb_it = recombinations.upper_bound(x0);
+    // Recombination r;
+    while (recomb_it->first <= x) {
+        Recombination &r = recomb_it->second;
+        reference_tree.forward_update(r);
+        ++recomb_it;
+    }
+    // return tree;
 }
 
 void ARG::remove(tuple<float, Branch, float> cut_point) {

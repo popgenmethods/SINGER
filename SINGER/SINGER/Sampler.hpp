@@ -60,7 +60,7 @@ public:
     
     void iterative_start();
     
-    // void fast_iterative_start();
+    void fast_iterative_start();
     
     void sample(int num_iters, int spacing);
     

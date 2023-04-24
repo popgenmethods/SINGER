@@ -83,7 +83,6 @@ void Sampler::iterative_start() {
     }
 }
 
-/*
 void Sampler::fast_iterative_start() {
     build_singleton_arg();
     for (int i = 1; i < num_samples; i++) {
@@ -98,4 +97,3 @@ void Sampler::fast_iterative_start() {
         }
     }
 }
-*/

@@ -13,6 +13,7 @@
 #include <sstream>
 #include "ARG.hpp"
 #include "BSP_smc.hpp"
+#include "fast_BSP_smc.hpp"
 #include "TSP_smc.hpp"
 #include "Parsimony_pruner.hpp"
 
@@ -24,15 +25,13 @@ public:
     
     ~Threader_smc();
     
-    void thread_TSP(ARG &a, Node *n, map<int, Branch> joining_branches);
-    
     void thread(ARG &a, Node *n);
     
     void internal_rethread(ARG &a, tuple<int, Branch, float> cut_point);
     
     void terminal_rethread(ARG &old_arg, tuple<int, Branch, float> cut_point);
     
-   //  void fast_thread(ARG &a, Node *n);
+    void fast_thread(ARG &a, Node *n);
     
 // private:
     
@@ -43,6 +42,7 @@ public:
     int end_index = 0;
     Parsimony_pruner pp = Parsimony_pruner();
     BSP_smc bsp = BSP_smc();
+    fast_BSP_smc fbsp = fast_BSP_smc();
     TSP_smc tsp = TSP_smc();
     float gap;
     float cutoff;
@@ -61,7 +61,7 @@ public:
     
     void run_BSP(ARG &a);
     
-    // void run_reduced_BSP(ARG &a);
+    void run_fast_BSP(ARG &a);
     
     void run_TSP(ARG &a);
     

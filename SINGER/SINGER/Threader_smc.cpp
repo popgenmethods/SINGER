@@ -22,7 +22,6 @@ void Threader_smc::thread(ARG &a, Node *n) {
     get_boundary(a);
     cout << get_time() << " : begin BSP" << endl;
     run_BSP(a);
-    // bsp.check_recomb_sums();
     cout << get_time() << " : begin TSP" << endl;
     run_TSP(a);
     cout << get_time() << " : begin sampling" << endl;
@@ -35,7 +34,6 @@ void Threader_smc::thread(ARG &a, Node *n) {
     cout << a.recombinations.size() << endl;
 }
 
-/*
 void Threader_smc::fast_thread(ARG &a, Node *n) {
     cut_time = 0.0;
     a.add_sample(n);
@@ -43,7 +41,7 @@ void Threader_smc::fast_thread(ARG &a, Node *n) {
     cout << get_time() << " : begin pruner" << endl;
     run_pruner(a);
     cout << get_time() << " : begin BSP" << endl;
-    run_reduced_BSP(a);
+    run_fast_BSP(a);
     cout << get_time() << " : begin TSP" << endl;
     run_TSP(a);
     cout << get_time() << " : begin sampling" << endl;
@@ -55,7 +53,6 @@ void Threader_smc::fast_thread(ARG &a, Node *n) {
     cout << get_time() << " : finish" << endl;
     cout << a.recombinations.size() << endl;
 }
- */
 
 void Threader_smc::internal_rethread(ARG &prev_arg, tuple<int, Branch, float> cut_point) {
     ARG next_arg = prev_arg;
@@ -160,13 +157,12 @@ void Threader_smc::run_BSP(ARG &a) {
     }
 }
 
-/*
-void Threader_smc::run_reduced_BSP(ARG &a) {
-    bsp.reserve_memory(end_index - start_index);
-    bsp.set_cutoff(cutoff);
-    bsp.set_emission(eh);
+void Threader_smc::run_fast_BSP(ARG &a) {
+    fbsp.reserve_memory(end_index - start_index);
+    fbsp.set_cutoff(cutoff);
+    fbsp.set_emission(eh);
     set<Branch> start_branches = pp.inserted_branches.begin()->second;
-    bsp.start(start_branches, cut_time);
+    fbsp.start(start_branches, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
     auto query_it = a.removed_branches.begin();
@@ -185,33 +181,37 @@ void Threader_smc::run_reduced_BSP(ARG &a) {
         while (delete_it->first <= a.coordinates[i]) {
             deletions = delete_it->second;
             insertions = insert_it->second;
-            bsp.update_states(deletions, insertions);
+            fbsp.update_states(deletions, insertions);
             delete_it++;
             insert_it++;
         }
         if (a.coordinates[i] == recomb_it->first) {
             Recombination &r = recomb_it->second;
             recomb_it++;
-            bsp.fast_transfer(r);
+            fbsp.transfer(r);
         } else if (a.coordinates[i] != start) {
-            bsp.fast_forward(a.rhos[i]);
+            fbsp.forward(a.rhos[i - 1]);
         }
+        // fbsp.check_intervals();
         mut_set = {};
         while (*mut_it < a.coordinates[i+1]) {
             mut_set.insert(*mut_it);
             mut_it++;
         }
         if (mut_set.size() > 0) {
-            bsp.mut_emit(a.thetas[i], a.coordinates[i+1] - a.coordinates[i], mut_set, query_node);
+            fbsp.mut_emit(a.thetas[i], a.coordinates[i+1] - a.coordinates[i], mut_set, query_node);
         } else {
-            bsp.null_emit(a.thetas[i], query_node);
+            fbsp.null_emit(a.thetas[i], query_node);
         }
     }
 }
- */
 
 void Threader_smc::run_TSP(ARG &a) {
-    new_joining_branches = bsp.sample_joining_branches(start_index, a.coordinates);
+    if (fbsp.curr_index > 0) {
+        new_joining_branches = fbsp.sample_joining_branches(start_index, a.coordinates);
+    } else {
+        new_joining_branches = bsp.sample_joining_branches(start_index, a.coordinates);
+    }
     tsp.reserve_memory(end_index - start_index);
     tsp.set_gap(gap);
     tsp.set_emission(eh);

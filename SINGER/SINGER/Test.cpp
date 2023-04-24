@@ -86,5 +86,5 @@ void test_fast_iterative_start() {
     sampler.set_input_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_hap0");
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_sample0");
     sampler.set_log_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/check");
-    // sampler.fast_iterative_start();
+    sampler.fast_iterative_start();
 }

@@ -23,9 +23,9 @@ public:
     unordered_set<float> mutation_sites = {};
     unordered_set<float> ambiguous_sites = {};
     
-    int index;
+    int index = 0;
     
-    float time;
+    float time = 0;
     
     Node(float t);
     
