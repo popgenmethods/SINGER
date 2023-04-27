@@ -18,7 +18,8 @@ class Trace_pruner : public Pruner {
     
 public:
     
-    float min_score = 0.1;
+    float cutoff = 0.01;
+    float mut_prob = 4e-4;
     float max_time = 100;
     float start = 0;
     float end = 0;
@@ -31,7 +32,7 @@ public:
     
     map<float, float> match_map = {};
     map<float, float> potential_seeds = {};
-    set<float> used_seeds = {};
+    set<int> used_seeds = {};
     
     map<Branch, int> seed_match = {};
     map<Interval_info, float> seed_scores = {};
@@ -41,7 +42,7 @@ public:
     map<float, set<Branch>> deleted_branches = {};
     map<float, set<Branch>> inserted_branches = {};
     
-    map<Interval_info, float> next_scores = {};
+    map<Interval_info, float> transition_scores = {};
     
     Trace_pruner();
     
@@ -55,9 +56,7 @@ public:
     
     void extend_backward(ARG &a, float x);
     
-    void mutation_forward(Node *n, float m);
-    
-    void mutation_backward(Node *n, float m);
+    void mutation_update(Node *n, float m);
 
     void recombination_forward(Recombination &r);
     
@@ -72,6 +71,16 @@ public:
     float find_minimum_match();
     
     float count_mismatch(Branch branch, Node *n, float m);
+    
+    void forward_prune_states(float x);
+    
+    void backward_prune_states(float x);
+    
+    void forward_transition(Recombination &r, const Interval_info &interval);
+    
+    void backward_transition(Recombination &r, const Interval_info &interval);
+    
+    void transition_helper(Interval_info &new_interval, float p);
     
     float exp_prob(float l, float u);
     

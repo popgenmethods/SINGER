@@ -96,6 +96,190 @@ float Trace_pruner::find_minimum_match() {
     return x;
 }
 
+void Trace_pruner::extend_forward(ARG &a, float x) {
+    auto recomb_it = a.recombinations.upper_bound(x);
+    auto match_it = match_map.lower_bound(x);
+    auto used_it = used_seeds.upper_bound(x);
+    float m = x;
+    Node *n = nullptr;
+    float ub = *used_it;
+    int index = a.get_index(x);
+    while (curr_scores.size() > 0 and match_it->first < ub) {
+        potential_seeds.erase(m);
+        match_it++;
+        m = match_it->first;
+        while (recomb_it->first <= match_it->first) {
+            Recombination &r = recomb_it->second;
+            recomb_it++;
+            recombination_forward(r);
+        }
+        if (m >= a.coordinates[index + 1]) {
+            forward_prune_states(a.coordinates[index + 1]);
+            index = a.get_index(m);
+        }
+        n = get_node_at(m);
+        mutation_update(n, m);
+    }
+    // cout << "Extend forward from " << x << " to " << m << endl;
+}
+
+void Trace_pruner::extend_backward(ARG &a, float x) {
+    auto recomb_it = a.recombinations.upper_bound(x);
+    auto match_it = match_map.find(x);
+    auto used_it = used_seeds.upper_bound(x);
+    recomb_it--;
+    used_it--;
+    float m = x;
+    Node *n = nullptr;
+    float lb = *used_it;
+    int index = a.get_index(x);
+    while (curr_scores.size() > 0 and match_it->first > lb) {
+        potential_seeds.erase(m);
+        match_it--;
+        m = match_it->first;
+        while (recomb_it->first > m) {
+            Recombination &r = recomb_it->second;
+            recomb_it--;
+            recombination_backward(r);
+        }
+        if (m < a.coordinates[index]) {
+            backward_prune_states(a.coordinates[index]);
+            index = a.get_index(m);
+        }
+        n = get_node_at(m);
+        mutation_update(n, m);
+    }
+    // cout << "Extend backward from " << x << " to " << m << endl;
+}
+
+void Trace_pruner::mutation_update(Node *n, float m) {
+    float mismatch = 0;
+    for (auto &[i, s] : curr_scores) {
+        mismatch = count_mismatch(i.branch, n, m);
+        s *= pow(mut_prob, mismatch);
+    }
+}
+
+void Trace_pruner::recombination_forward(Recombination &r) {
+    transition_scores.clear();
+    for (auto &[i, s] : curr_scores) {
+        forward_transition(r, i);
+    }
+}
+
+void Trace_pruner::recombination_backward(Recombination &r) {
+    
+}
+
+void Trace_pruner::forward_transition(Recombination &r, const Interval_info &interval) {
+    float lb, ub;
+    float w1, w2;
+    Interval_info new_interval;
+    Branch b;
+    float p = curr_scores[interval];
+    float l = interval.lb;
+    float u = interval.ub;
+    if (!r.affect(interval.branch)) {
+        transition_scores[interval] = curr_scores[interval];
+    } else if (interval.branch == r.source_branch) {
+        lb = min(l, r.start_time);
+        ub = min(u, r.start_time);
+        w1 = exp_prop(interval.lb, interval.ub, lb, ub);
+        new_interval = Interval_info(r.recombined_branch, lb, ub);
+        transition_helper(new_interval, w1*p);
+        lb = max(r.start_time, l);
+        ub = max(r.start_time, u);
+        w2 = exp_prop(l, u, lb, ub);
+        new_interval = Interval_info(r.merging_branch, r.deleted_node->time, r.deleted_node->time);
+        transition_helper(new_interval, w2*p);
+    } else if (interval.branch == r.target_branch) {
+        lb = min(l, r.inserted_node->time);
+        ub = min(u, r.inserted_node->time);
+        w1 = exp_prop(l, u, lb, ub);
+        new_interval = Interval_info(r.lower_transfer_branch, lb, ub);
+        transition_helper(new_interval, w1*p);
+        lb = max(r.inserted_node->time, l);
+        ub = max(r.inserted_node->time, u);
+        w2 = exp_prop(l, u, lb, ub);
+        new_interval = Interval_info(r.upper_transfer_branch, lb, ub);
+        transition_helper(new_interval, w2*p);
+    } else {
+        new_interval = Interval_info(r.merging_branch, l, u);
+        transition_helper(new_interval, p);
+    }
+}
+
+void Trace_pruner::backward_transition(Recombination &r, const Interval_info &interval) {
+    float lb, ub;
+    float w1, w2;
+    Interval_info new_interval;
+    Branch b;
+    float p = curr_scores[interval];
+    float l = interval.lb;
+    float u = interval.ub;
+    if (!r.affect(interval.branch)) {
+        transition_scores[interval] = curr_scores[interval];
+    } else if (interval.branch == r.recombined_branch) {
+        lb = min(l, r.start_time);
+        ub = min(u, r.start_time);
+        w1 = exp_prop(interval.lb, interval.ub, lb, ub);
+        new_interval = Interval_info(r.source_branch, lb, ub);
+        transition_helper(new_interval, w1*p);
+        lb = max(r.start_time, l);
+        ub = max(r.start_time, u);
+        w2 = exp_prop(l, u, lb, ub);
+        new_interval = Interval_info(r.target_branch, r.inserted_node->time, r.inserted_node->time);
+        transition_helper(new_interval, w2*p);
+    } else if (interval.branch == r.merging_branch) {
+        lb = min(l, r.deleted_node->time);
+        ub = min(u, r.deleted_node->time);
+        w1 = exp_prop(l, u, lb, ub);
+        new_interval = Interval_info(r.source_sister_branch, lb, ub);
+        transition_helper(new_interval, w1*p);
+        lb = max(r.deleted_node->time, l);
+        ub = max(r.deleted_node->time, u);
+        w2 = exp_prop(l, u, lb, ub);
+        new_interval = Interval_info(r.source_parent_branch, lb, ub);
+        transition_helper(new_interval, w2*p);
+    } else {
+        new_interval = Interval_info(r.target_branch, l, u);
+        transition_helper(new_interval, p);
+    }
+}
+
+void Trace_pruner::transition_helper(Interval_info &new_interval, float p) {
+    if (p == 0) {
+        return;
+    }
+    transition_scores[new_interval] += p;
+}
+
+void Trace_pruner::forward_prune_states(float x) {
+    auto it = curr_scores.begin();
+    while (it != curr_scores.begin()) {
+        if (it->second < cutoff) {
+            deleted_branches[x].insert(it->first.branch);
+            it = curr_scores.erase(it);
+            inserted_branches[x];
+        } else {
+            ++it;
+        }
+    }
+}
+
+void Trace_pruner::backward_prune_states(float x) {
+    auto it = curr_scores.begin();
+    while (it != curr_scores.begin()) {
+        if (it->second < cutoff) {
+            inserted_branches[x].insert(it->first.branch);
+            it = curr_scores.erase(it);
+            deleted_branches[x];
+        } else {
+            ++it;
+        }
+    }
+}
+
 float Trace_pruner::exp_prob(float l, float u) {
     float prob = exp(-l) - exp(-u);
     return prob;

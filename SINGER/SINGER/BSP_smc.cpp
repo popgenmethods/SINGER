@@ -265,10 +265,6 @@ void BSP_smc::compute_mut_emit_probs(float theta, float bin_size, set<float> &mu
 
 void BSP_smc::transfer_helper(Interval_info next_interval, Interval *prev_interval, float w) {
     /*
-    if (w == 0) {
-        return;
-    }
-     */
     if (transfer_weights.count(next_interval) > 0) {
         transfer_weights[next_interval].push_back(w);
         transfer_intervals[next_interval].push_back(prev_interval);
@@ -276,13 +272,20 @@ void BSP_smc::transfer_helper(Interval_info next_interval, Interval *prev_interv
         transfer_weights[next_interval] = {w};
         transfer_intervals[next_interval] = {prev_interval};
     }
+     */
+    transfer_weights[next_interval].push_back(w);
+    transfer_intervals[next_interval].push_back(prev_interval);
 }
 
 void BSP_smc::transfer_helper(Interval_info next_interval) {
+    /*
     if (transfer_weights.count(next_interval) == 0) {
         transfer_weights[next_interval] = {};
         transfer_intervals[next_interval] = {};
     }
+     */
+    transfer_weights[next_interval];
+    transfer_intervals[next_interval];
 }
 
 Interval *BSP_smc::duplicate_interval(Interval *interval) {
