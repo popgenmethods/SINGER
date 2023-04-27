@@ -289,7 +289,8 @@ void ARG::add(map<float, Branch> &new_joining_branches, map<float, Branch> &adde
         }
     }
     remove_empty_recombinations();
-    impute(new_joining_branches, added_branches);
+    // impute(new_joining_branches, added_branches);
+    impute_nodes(0, sequence_length);
     removed_branches.clear();
     joining_branches.clear();
 }
@@ -519,6 +520,24 @@ void ARG::check_mapping() {
     }
 }
 
+void ARG::check_incompatibility() {
+    Tree tree = Tree();
+    auto recomb_it = recombinations.begin();
+    auto mut_it = mutation_sites.begin();
+    int total_count = 0;
+    while (mut_it != prev(mutation_sites.end())) {
+        float m = *mut_it;
+        while (recomb_it->first < m) {
+            Recombination &r = recomb_it->second;
+            tree.forward_update(r);
+            recomb_it++;
+        }
+        total_count += count_incompatibility(tree, m);
+        mut_it++;
+    }
+    cout << "Number of incompatibilities: " << total_count << endl;
+}
+
 void ARG::clear_memory(map<float, Branch> added_branches) {
     Node *node = nullptr;
     for (auto x : added_branches) {
@@ -685,7 +704,7 @@ void ARG::remove_empty_recombinations() {
 int ARG::count_incompatibility(Tree tree, float x) {
     int count = -1;
     for (Branch b : tree.branches) {
-        if (b.upper_node->index > 0) {
+        if (b.upper_node->index >= 0) {
             int i1 = b.upper_node->get_state(x);
             int i2 = b.lower_node->get_state(x);
             if (i1 != i2) {

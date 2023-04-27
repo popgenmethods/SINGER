@@ -111,6 +111,8 @@ public:
     
     void check_mapping();
     
+    void check_incompatibility();
+    
     void clear_remove_info();
     
     float smc_prior_likelihood(float r);

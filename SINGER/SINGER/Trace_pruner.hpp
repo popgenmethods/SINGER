@@ -1,50 +1,60 @@
 //
-//  Parsimony_pruner.hpp
+//  Trace_pruner.hpp
 //  SINGER
 //
-//  Created by Yun Deng on 3/14/23.
+//  Created by Yun Deng on 4/25/23.
 //
 
-#ifndef Parsimony_pruner_hpp
-#define Parsimony_pruner_hpp
+#ifndef Trace_pruner_hpp
+#define Trace_pruner_hpp
 
 #include <stdio.h>
 #include <algorithm>
 #include "Pruner.hpp"
+#include "Interval.hpp"
 #include "ARG.hpp"
 
-class Parsimony_pruner : public Pruner {
+class Trace_pruner : public Pruner {
     
 public:
     
-    float max_mismatch = 0.999;
+    float min_score = 0.1;
     float max_time = 100;
     float start = 0;
     float end = 0;
+    float cut_time = 0;
+    
     map<float, Branch> queries = {};
     set<float> private_mutations = {};
-    map<Branch, float> curr_match = {};
+    
+    map<float, Tree> seed_trees = {};
+    
     map<float, float> match_map = {};
     map<float, float> potential_seeds = {};
     set<float> used_seeds = {};
-    Tree curr_tree;
-    map<float, Tree> seed_trees = {};
-    map<Branch, float> seed_match = {};
+    
+    map<Branch, int> seed_match = {};
+    map<Interval_info, float> seed_scores = {};
+    map<Interval_info, float> curr_scores = {};
     
     map<float, set<Branch>> reductions = {};
     map<float, set<Branch>> deleted_branches = {};
     map<float, set<Branch>> inserted_branches = {};
     
-    map<Branch, set<Branch>> transitions = {};
-
-    Parsimony_pruner();
+    map<Interval_info, float> next_scores = {};
+    
+    Trace_pruner();
     
     void prune_arg(ARG &a);
     
     void start_search(ARG &a, float m);
     
     void extend(ARG &a, float x);
-
+    
+    void extend_forward(ARG &a, float x);
+    
+    void extend_backward(ARG &a, float x);
+    
     void mutation_forward(Node *n, float m);
     
     void mutation_backward(Node *n, float m);
@@ -52,12 +62,6 @@ public:
     void recombination_forward(Recombination &r);
     
     void recombination_backward(Recombination &r);
-    
-    void write_reduction_distance(ARG &a, string filename);
-    
-    void write_reduction_size(string filename);
-
-// private:
     
     Node *get_node_at(float x);
     
@@ -69,22 +73,11 @@ public:
     
     float count_mismatch(Branch branch, Node *n, float m);
     
-    void transition_helper(Branch sb, Branch tb);
+    float exp_prob(float l, float u);
     
-    void update_mismatch();
+    float exp_prop(float l, float u, float x, float y);
     
-    void write_init_set();
-    
-    void write_reduction_change(float x, set<Branch> db, set<Branch> ib);
-    
-    void simplify();
-    
-    void write_reductions(ARG &a);
-    
-    void extend_forward(ARG &a, float x);
-    
-    void extend_backward(ARG &a, float x);
-    
+    float exp_median(float l, float u);
 };
 
-#endif /* Parsimony_pruner_hpp */
+#endif /* Trace_pruner_hpp */

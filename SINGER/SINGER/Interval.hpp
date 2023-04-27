@@ -28,6 +28,9 @@ public:
     Node *node = nullptr;
     float reduction = 1.0;
     
+    vector<float> source_weights = {};
+    vector<Interval *> source_intervals = {};
+    
     Interval();
     
     Interval(Branch b, float tl, float tu, int init_pos);
@@ -60,6 +63,19 @@ struct compare_interval {
     }
 };
 
+struct equal_interval {
+    
+    bool operator()(const Interval *i1, const Interval *i2) const {
+            if (i1->branch != i2->branch) {
+                return false;
+            }
+            if (i1->ub != i2->ub) {
+                return false;
+            }
+            return i1->lb == i2->lb;
+    }
+};
+
 
 class Interval_info {
     
@@ -68,6 +84,7 @@ public:
     Branch branch;
     float lb;
     float ub;
+    float time;
     
     Interval_info();
     

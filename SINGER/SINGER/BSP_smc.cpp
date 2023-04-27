@@ -94,7 +94,6 @@ void BSP_smc::transfer(Recombination &r) {
     temp.clear();
     temp_intervals.clear();
     update_states(r.deleted_branches, r.inserted_branches);
-    // cc->compute(valid_branches);
     for (int i = 0; i < curr_intervals.size(); i++) {
         process_interval(r, i);
     }
@@ -336,10 +335,11 @@ void BSP_smc::generate_intervals(Recombination &r) {
     vector<float> weights;
     Interval_info interval;
     Interval *new_interval = nullptr;
-    for (auto x : transfer_weights) {
-        interval = x.first;
-        weights = x.second;
-        intervals = transfer_intervals[x.first];
+    auto y = transfer_intervals.begin();
+    for (auto x = transfer_weights.begin(); x != transfer_weights.end(); ++x, ++y) {
+        interval = x->first;
+        const auto &weights = x->second;
+        const auto &intervals = y->second;
         b = interval.branch;
         lb = interval.lb;
         ub = interval.ub;
@@ -350,16 +350,20 @@ void BSP_smc::generate_intervals(Recombination &r) {
             temp_intervals.push_back(new_interval);
             temp.push_back(p);
             if (weights.size() > 0) {
-                source_weights[new_interval] = weights;
-                source_intervals[new_interval] = intervals;
+                source_weights[new_interval] = std::move(weights);
+                source_intervals[new_interval] = std::move(intervals);
+                // new_interval->source_weights = weights;
+                // new_interval->source_intervals = intervals;
             }
         } else if (p >= cutoff) { // partial intervals
             new_interval = new Interval(b, lb, ub, curr_index);
             temp_intervals.push_back(new_interval);
             temp.push_back(p);
             if (weights.size() > 0) {
-                source_weights[new_interval] = weights;
-                source_intervals[new_interval] = intervals;
+                source_weights[new_interval] = std::move(weights);
+                source_intervals[new_interval] = std::move(intervals);
+                // new_interval->source_weights = weights;
+                // new_interval->source_intervals = intervals;
             }
         }
     }

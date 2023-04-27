@@ -81,7 +81,7 @@ void test_fast_iterative_start() {
     srand(93723823);
     Sampler sampler = Sampler(2e4, 2e-9, 2e-8);
     sampler.set_precision(0.01, 0.05);
-    sampler.set_num_samples(8);
+    sampler.set_num_samples(3);
     sampler.set_sequence_length(1e7);
     sampler.set_input_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_hap0");
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_sample0");

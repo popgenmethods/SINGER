@@ -65,6 +65,8 @@ public:
     
     void run_TSP(ARG &a);
     
+    void sample_joining_branches(ARG &a);
+    
     void sample_joining_points(ARG &a);
     
     float random();

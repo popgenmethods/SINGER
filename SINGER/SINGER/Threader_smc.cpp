@@ -22,9 +22,11 @@ void Threader_smc::thread(ARG &a, Node *n) {
     get_boundary(a);
     cout << get_time() << " : begin BSP" << endl;
     run_BSP(a);
+    cout << get_time() << " : begin sampling branches" << endl;
+    sample_joining_branches(a);
     cout << get_time() << " : begin TSP" << endl;
     run_TSP(a);
-    cout << get_time() << " : begin sampling" << endl;
+    cout << get_time() << " : begin sampling points" << endl;
     sample_joining_points(a);
     cout << get_time() << " : begin adding" << endl;
     a.add(new_joining_branches, added_branches);
@@ -42,9 +44,12 @@ void Threader_smc::fast_thread(ARG &a, Node *n) {
     run_pruner(a);
     cout << get_time() << " : begin BSP" << endl;
     run_fast_BSP(a);
+    fbsp.check_recomb_sums();
+    cout << get_time() << " : begin sampling branches" << endl;
+    sample_joining_branches(a);
     cout << get_time() << " : begin TSP" << endl;
     run_TSP(a);
-    cout << get_time() << " : begin sampling" << endl;
+    cout << get_time() << " : begin sampling points" << endl;
     sample_joining_points(a);
     cout << get_time() << " : begin adding" << endl;
     a.add(new_joining_branches, added_branches);
@@ -207,11 +212,6 @@ void Threader_smc::run_fast_BSP(ARG &a) {
 }
 
 void Threader_smc::run_TSP(ARG &a) {
-    if (fbsp.curr_index > 0) {
-        new_joining_branches = fbsp.sample_joining_branches(start_index, a.coordinates);
-    } else {
-        new_joining_branches = bsp.sample_joining_branches(start_index, a.coordinates);
-    }
     tsp.reserve_memory(end_index - start_index);
     tsp.set_gap(gap);
     tsp.set_emission(eh);
@@ -256,6 +256,14 @@ void Threader_smc::run_TSP(ARG &a) {
         } else {
             tsp.null_emit(a.thetas[i], query_node);
         }
+    }
+}
+
+void Threader_smc::sample_joining_branches(ARG &a) {
+    if (fbsp.curr_index > 0) {
+        new_joining_branches = fbsp.sample_joining_branches(start_index, a.coordinates);
+    } else {
+        new_joining_branches = bsp.sample_joining_branches(start_index, a.coordinates);
     }
 }
 

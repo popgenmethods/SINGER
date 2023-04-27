@@ -23,6 +23,7 @@ public:
     float cutoff = 0.0;
     shared_ptr<Emission> eh;
     set<float> check_points = {};
+    equal_interval ei = equal_interval();
     
     // hmm running results
     vector<float> rhos = {};
@@ -155,9 +156,13 @@ public:
     
     Interval *sample_source_interval(Interval *interval, int x);
     
+    Interval *sample_connection_interval(Interval *interval, int x);
+    
     int trace_back_helper(Interval *interval, int x);
     
     void check_intervals();
+    
+    void check_recomb_sums();
     
 };
 
