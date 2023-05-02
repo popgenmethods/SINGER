@@ -101,12 +101,16 @@ Interval_info::Interval_info() {
 
 Interval_info::Interval_info(Branch b, float tl, float tu) {
     assert(tl <= tu);
+    assert(tl >= b.lower_node->time and tu <= b.upper_node->time);
     branch = b;
     lb = tl;
     ub = tu;
 }
 
 bool Interval_info::operator==(const Interval_info& other) const {
+    if (seed_pos != other.seed_pos) {
+        return false;
+    }
     if (branch != other.branch) {
         return false;
     }
@@ -120,6 +124,9 @@ bool Interval_info::operator==(const Interval_info& other) const {
 }
 
 bool Interval_info::operator!=(const Interval_info& other) const {
+    if (seed_pos != other.seed_pos) {
+        return true;
+    }
     if (branch != other.branch) {
         return true;
     }
@@ -133,6 +140,9 @@ bool Interval_info::operator!=(const Interval_info& other) const {
 }
 
 bool Interval_info::operator<(const Interval_info& other) const {
+    if (seed_pos != other.seed_pos) {
+        return seed_pos < other.seed_pos;
+    }
     if (branch != other.branch) {
         return branch < other.branch;
     }

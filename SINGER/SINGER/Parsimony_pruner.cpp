@@ -337,7 +337,7 @@ void Parsimony_pruner::write_reductions(ARG &a) {
     int end_index = a.get_index(end);
     set<Branch> reduced_set = {};
     for (int i = start_index; i < end_index; i++) {
-        while (deleted_it->first < a.coordinates[i+1]) {
+        while (deleted_it->first <= a.coordinates[i]) {
             for (auto x : deleted_it->second) {
                 assert(reduced_set.count(x) > 0);
                 reduced_set.erase(x);

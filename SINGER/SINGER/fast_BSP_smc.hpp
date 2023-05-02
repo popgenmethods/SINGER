@@ -104,6 +104,8 @@ public:
     
     void update_states(set<Branch> &deletions, set<Branch> &insertions);
     
+    void set_states(set<Branch> &branches);
+    
     void set_dimensions();
     
     void compute_recomb_probs(float rho);

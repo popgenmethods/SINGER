@@ -120,7 +120,7 @@ void Threader_smc::set_check_points(ARG &a) {
 }
 
 void Threader_smc::run_pruner(ARG &a) {
-    pp.prune_arg(a);
+    pruner.prune_arg(a);
 }
 
 void Threader_smc::run_BSP(ARG &a) {
@@ -166,29 +166,23 @@ void Threader_smc::run_fast_BSP(ARG &a) {
     fbsp.reserve_memory(end_index - start_index);
     fbsp.set_cutoff(cutoff);
     fbsp.set_emission(eh);
-    set<Branch> start_branches = pp.inserted_branches.begin()->second;
+    set<Branch> start_branches = pruner.reductions.begin()->second;
     fbsp.start(start_branches, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
     auto query_it = a.removed_branches.begin();
-    auto delete_it = pp.deleted_branches.upper_bound(start);
-    auto insert_it = pp.inserted_branches.upper_bound(start);
+    auto reduction_it = pruner.reductions.begin();
     vector<float> mutations;
     set<float> mut_set = {};
-    set<Branch> deletions = {};
-    set<Branch> insertions = {};
     Node *query_node = nullptr;
     for (int i = start_index; i < end_index; i++) {
         if (a.coordinates[i] == query_it->first) {
             query_node = query_it->second.lower_node;
             query_it++;
         }
-        while (delete_it->first <= a.coordinates[i]) {
-            deletions = delete_it->second;
-            insertions = insert_it->second;
-            fbsp.update_states(deletions, insertions);
-            delete_it++;
-            insert_it++;
+        while (reduction_it->first <= a.coordinates[i]) {
+            fbsp.set_states(reduction_it->second);
+            reduction_it++;
         }
         if (a.coordinates[i] == recomb_it->first) {
             Recombination &r = recomb_it->second;
@@ -197,7 +191,6 @@ void Threader_smc::run_fast_BSP(ARG &a) {
         } else if (a.coordinates[i] != start) {
             fbsp.forward(a.rhos[i - 1]);
         }
-        // fbsp.check_intervals();
         mut_set = {};
         while (*mut_it < a.coordinates[i+1]) {
             mut_set.insert(*mut_it);

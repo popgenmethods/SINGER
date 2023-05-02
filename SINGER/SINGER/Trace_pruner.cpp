@@ -9,7 +9,22 @@
 
 Trace_pruner::Trace_pruner() {}
 
-void Trace_pruner::prune_arg(ARG &a) {}
+void Trace_pruner::prune_arg(ARG &a) {
+    queries = a.removed_branches;
+    start = a.removed_branches.begin()->first;
+    end = a.removed_branches.rbegin()->first;
+    used_seeds = {start, end};
+    seed_trees[start] = a.get_tree_at(start);
+    deletions[end] = {};
+    insertions[end] = {};
+    build_match_map(a);
+    float x = 0;
+    while (potential_seeds.size() > 2) {
+        x = find_minimum_match();
+        extend(a, x);
+    }
+    write_reductions(a);
+}
 
 void Trace_pruner::start_search(ARG &a, float m) {
     seed_scores.clear();
@@ -23,13 +38,83 @@ void Trace_pruner::start_search(ARG &a, float m) {
     for (Branch b : seed_trees[m].branches) {
         mismatch = count_mismatch(b, n, m);
         if (mismatch == 0) {
-            lb = lb = max(cut_time, b.lower_node->time);
+            lb = max(cut_time, b.lower_node->time);
             ub = b.upper_node->time;
             interval = Interval_info(b, lb, ub);
+            interval.seed_pos = m;
             seed_scores[interval] = 1;
         }
     }
     potential_seeds.erase(m);
+}
+
+void Trace_pruner::write_reduction_distance(ARG &a, string filename) {
+    float start = a.removed_branches.begin()->first;
+    float end = a.removed_branches.rbegin()->first;
+    auto join_it = a.joining_branches.begin();
+    auto reduced_it = reductions.begin();
+    auto recomb_it = a.recombinations.lower_bound(start);
+    Branch joining_branch = Branch();
+    Tree tree = Tree();
+    float x = start;
+    set<Branch> reduced_set = reduced_it->second;
+    ofstream file;
+    file.open(filename);
+    while (join_it->first < end) {
+        x = join_it->first;
+        joining_branch = join_it->second;
+        while (reduced_it->first <= x) {
+            reduced_set = reduced_it->second;
+            reduced_it++;
+        }
+        while (recomb_it->first <= x) {
+            Recombination &r = recomb_it->second;
+            tree.forward_update(r);
+            recomb_it++;
+        }
+        int min_distance = INT_MAX;
+        int distance = INT_MAX;
+        for (Branch b : reduced_set) {
+            assert(tree.branches.count(b) > 0);
+            distance = tree.distance(joining_branch.lower_node, b.lower_node);
+            min_distance = min(min_distance, distance);
+        }
+        file << join_it->first << " " << min_distance << "\n";
+        join_it++;
+    }
+}
+
+void Trace_pruner::write_reduction_size(string filename) {
+    ofstream file;
+    file.open(filename);
+    for (auto x : reductions) {
+        file << x.first << " " << x.second.size() << "\n";
+    }
+}
+
+void Trace_pruner::write_reductions(ARG &a) {
+    auto delete_it = deletions.begin();
+    auto insert_it = insertions.begin();
+    int start_index = a.get_index(start);
+    int end_index = a.get_index(end);
+    set<Interval_info> reduced_set = {};
+    for (int i = start_index; i < end_index; i++) {
+        while (delete_it->first <= a.coordinates[i]) {
+            for (auto x : delete_it->second) {
+                assert(reduced_set.count(x) > 0);
+                reduced_set.erase(x);
+            }
+            for (auto x : insert_it->second) {
+                reduced_set.insert(x);
+            }
+            delete_it++;
+            insert_it++;
+        }
+        for (auto x : reduced_set) {
+            reductions[a.coordinates[i]].insert(x.branch);
+        }
+    }
+    reductions[a.sequence_length] = {};
 }
 
 Node *Trace_pruner::get_node_at(float x) {
@@ -103,22 +188,21 @@ void Trace_pruner::extend_forward(ARG &a, float x) {
     float m = x;
     Node *n = nullptr;
     float ub = *used_it;
-    int index = a.get_index(x);
     while (curr_scores.size() > 0 and match_it->first < ub) {
         potential_seeds.erase(m);
         match_it++;
         m = match_it->first;
-        while (recomb_it->first <= match_it->first) {
+        while (recomb_it->first <= m) {
             Recombination &r = recomb_it->second;
             recomb_it++;
             recombination_forward(r);
         }
-        if (m >= a.coordinates[index + 1]) {
-            forward_prune_states(a.coordinates[index + 1]);
-            index = a.get_index(m);
-        }
         n = get_node_at(m);
         mutation_update(n, m);
+        forward_prune_states(m);
+    }
+    if (curr_scores.size() > 0) {
+        delete_all(ub);
     }
     // cout << "Extend forward from " << x << " to " << m << endl;
 }
@@ -132,7 +216,6 @@ void Trace_pruner::extend_backward(ARG &a, float x) {
     float m = x;
     Node *n = nullptr;
     float lb = *used_it;
-    int index = a.get_index(x);
     while (curr_scores.size() > 0 and match_it->first > lb) {
         potential_seeds.erase(m);
         match_it--;
@@ -142,21 +225,32 @@ void Trace_pruner::extend_backward(ARG &a, float x) {
             recomb_it--;
             recombination_backward(r);
         }
-        if (m < a.coordinates[index]) {
-            backward_prune_states(a.coordinates[index]);
-            index = a.get_index(m);
-        }
         n = get_node_at(m);
         mutation_update(n, m);
+        backward_prune_states(m);
+    }
+    if (curr_scores.size() > 0) {
+        insert_all(lb);
     }
     // cout << "Extend backward from " << x << " to " << m << endl;
 }
 
+void Trace_pruner::extend(ARG &a, float x) {
+    start_search(a, x);
+    curr_scores = seed_scores;
+    extend_forward(a, x);
+    curr_scores = seed_scores;
+    extend_backward(a, x);
+    used_seeds.insert(x); // when extending later seeds, don't go beyond previous seeds (to save computation)
+}
+
 void Trace_pruner::mutation_update(Node *n, float m) {
     float mismatch = 0;
+    float penalty = 0;
     for (auto &[i, s] : curr_scores) {
         mismatch = count_mismatch(i.branch, n, m);
-        s *= pow(mut_prob, mismatch);
+        penalty = pow(mut_prob, mismatch);
+        s *= penalty;
     }
 }
 
@@ -165,15 +259,20 @@ void Trace_pruner::recombination_forward(Recombination &r) {
     for (auto &[i, s] : curr_scores) {
         forward_transition(r, i);
     }
+    curr_scores = transition_scores;
 }
 
 void Trace_pruner::recombination_backward(Recombination &r) {
-    
+    transition_scores.clear();
+    for (auto &[i, s] : curr_scores) {
+        backward_transition(r, i);
+    }
+    curr_scores = transition_scores;
 }
 
 void Trace_pruner::forward_transition(Recombination &r, const Interval_info &interval) {
     float lb, ub;
-    float w1, w2;
+    float w0, w1, w2;
     Interval_info new_interval;
     Branch b;
     float p = curr_scores[interval];
@@ -186,81 +285,105 @@ void Trace_pruner::forward_transition(Recombination &r, const Interval_info &int
         ub = min(u, r.start_time);
         w1 = exp_prop(interval.lb, interval.ub, lb, ub);
         new_interval = Interval_info(r.recombined_branch, lb, ub);
-        transition_helper(new_interval, w1*p);
+        forward_transition_helper(interval, new_interval, r.pos, w1*p);
         lb = max(r.start_time, l);
         ub = max(r.start_time, u);
         w2 = exp_prop(l, u, lb, ub);
         new_interval = Interval_info(r.merging_branch, r.deleted_node->time, r.deleted_node->time);
-        transition_helper(new_interval, w2*p);
+        forward_transition_helper(interval, new_interval, r.pos, w2*p);
     } else if (interval.branch == r.target_branch) {
+        w0 = forward_overwrite_prob(r, l, u);
         lb = min(l, r.inserted_node->time);
         ub = min(u, r.inserted_node->time);
         w1 = exp_prop(l, u, lb, ub);
         new_interval = Interval_info(r.lower_transfer_branch, lb, ub);
-        transition_helper(new_interval, w1*p);
+        forward_transition_helper(interval, new_interval, r.pos, (1 - w0)*w1*p);
         lb = max(r.inserted_node->time, l);
         ub = max(r.inserted_node->time, u);
         w2 = exp_prop(l, u, lb, ub);
         new_interval = Interval_info(r.upper_transfer_branch, lb, ub);
-        transition_helper(new_interval, w2*p);
+        forward_transition_helper(interval, new_interval, r.pos, (1 - w0)*w2*p);
+        lb = r.start_time;
+        ub = r.inserted_node->time;
+        new_interval = Interval_info(r.recombined_branch, lb, ub);
+        forward_transition_helper(interval, new_interval, r.pos, w0*p);
     } else {
         new_interval = Interval_info(r.merging_branch, l, u);
-        transition_helper(new_interval, p);
+        forward_transition_helper(interval, new_interval, r.pos, p);
     }
 }
 
 void Trace_pruner::backward_transition(Recombination &r, const Interval_info &interval) {
     float lb, ub;
-    float w1, w2;
+    float w0, w1, w2;
     Interval_info new_interval;
     Branch b;
     float p = curr_scores[interval];
     float l = interval.lb;
     float u = interval.ub;
-    if (!r.affect(interval.branch)) {
+    float x = r.pos;
+    if (!r.create(interval.branch)) {
         transition_scores[interval] = curr_scores[interval];
     } else if (interval.branch == r.recombined_branch) {
         lb = min(l, r.start_time);
         ub = min(u, r.start_time);
         w1 = exp_prop(interval.lb, interval.ub, lb, ub);
         new_interval = Interval_info(r.source_branch, lb, ub);
-        transition_helper(new_interval, w1*p);
+        backward_transition_helper(interval, new_interval, x, w1*p);
         lb = max(r.start_time, l);
         ub = max(r.start_time, u);
         w2 = exp_prop(l, u, lb, ub);
         new_interval = Interval_info(r.target_branch, r.inserted_node->time, r.inserted_node->time);
-        transition_helper(new_interval, w2*p);
+        backward_transition_helper(interval, new_interval, x, w2*p);
     } else if (interval.branch == r.merging_branch) {
+        w0 = backward_overwrite_prob(r, l, u);
         lb = min(l, r.deleted_node->time);
         ub = min(u, r.deleted_node->time);
         w1 = exp_prop(l, u, lb, ub);
         new_interval = Interval_info(r.source_sister_branch, lb, ub);
-        transition_helper(new_interval, w1*p);
+        backward_transition_helper(interval, new_interval, r.pos, (1 - w0)*w1*p);
         lb = max(r.deleted_node->time, l);
         ub = max(r.deleted_node->time, u);
         w2 = exp_prop(l, u, lb, ub);
         new_interval = Interval_info(r.source_parent_branch, lb, ub);
-        transition_helper(new_interval, w2*p);
+        backward_transition_helper(interval, new_interval, r.pos, (1 - w0)*w2*p);
+        lb = r.start_time;
+        ub = r.deleted_node->time;
+        new_interval = Interval_info(r.source_branch, lb, ub);
+        backward_transition_helper(interval, new_interval, r.pos, w0*p);
     } else {
         new_interval = Interval_info(r.target_branch, l, u);
-        transition_helper(new_interval, p);
+        backward_transition_helper(interval, new_interval, r.pos, p);
     }
 }
 
-void Trace_pruner::transition_helper(Interval_info &new_interval, float p) {
+void Trace_pruner::forward_transition_helper(Interval_info prev_interval, Interval_info next_interval, float x, float p) {
     if (p == 0) {
         return;
     }
-    transition_scores[new_interval] += p;
+    next_interval.seed_pos = prev_interval.seed_pos;
+    transition_scores[next_interval] += p;
+    deletions[x].insert(prev_interval);
+    insertions[x].insert(next_interval);
+}
+
+void Trace_pruner::backward_transition_helper(Interval_info next_interval, Interval_info prev_interval, float x, float p) {
+    if (p == 0) {
+        return;
+    }
+    prev_interval.seed_pos = next_interval.seed_pos;
+    transition_scores[prev_interval] += p;
+    deletions[x].insert(prev_interval);
+    insertions[x].insert(next_interval);
 }
 
 void Trace_pruner::forward_prune_states(float x) {
     auto it = curr_scores.begin();
-    while (it != curr_scores.begin()) {
+    while (it != curr_scores.end()) {
         if (it->second < cutoff) {
-            deleted_branches[x].insert(it->first.branch);
+            deletions[x].insert(it->first);
             it = curr_scores.erase(it);
-            inserted_branches[x];
+            insertions[x];
         } else {
             ++it;
         }
@@ -269,14 +392,37 @@ void Trace_pruner::forward_prune_states(float x) {
 
 void Trace_pruner::backward_prune_states(float x) {
     auto it = curr_scores.begin();
-    while (it != curr_scores.begin()) {
+    while (it != curr_scores.end()) {
         if (it->second < cutoff) {
-            inserted_branches[x].insert(it->first.branch);
+            insertions[x].insert(it->first);
             it = curr_scores.erase(it);
-            deleted_branches[x];
+            deletions[x];
         } else {
             ++it;
         }
+    }
+}
+
+/*
+void Trace_pruner::write_init_set() {
+    for (auto &[i, s] : curr_scores) {
+        deletions[start];
+        insertions[start].insert(i);
+    }
+}
+ */
+
+void Trace_pruner::delete_all(float x) {
+    for (auto &[i, s] : curr_scores) {
+        deletions[x].insert(i);
+        insertions[x];
+    }
+}
+
+void Trace_pruner::insert_all(float x) {
+    for (auto &[i, s] : curr_scores) {
+        insertions[x].insert(i);
+        deletions[x];
     }
 }
 
@@ -286,9 +432,18 @@ float Trace_pruner::exp_prob(float l, float u) {
 }
 
 float Trace_pruner::exp_prop(float l, float u, float x, float y) {
+    if (l == u) {
+        if (x == y and x == l) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
     float sub_prob = exp_prob(x, y);
     float prob = exp_prob(l, u);
-    return sub_prob/prob;
+    float prop = sub_prob/prob;
+    assert(!isnan(prop));
+    return prop;
 }
 
 float Trace_pruner::exp_median(float l, float u) {
@@ -297,4 +452,26 @@ float Trace_pruner::exp_median(float l, float u) {
     float cdf = 0.5*(lcdf + ucdf);
     float m = -log(1 - cdf);
     return m;
+}
+
+float Trace_pruner::forward_overwrite_prob(Recombination &r, float lb, float ub) {
+    if (lb >= r.inserted_node->time or ub <= r.inserted_node->time) {
+        return 0;
+    }
+    float p1 = exp_prob(lb, ub);
+    float p2 = exp_prob(r.start_time, r.inserted_node->time);
+    float p = p2/(p1 + p2);
+    assert(!isnan(p) and p < 1);
+    return p;
+}
+
+float Trace_pruner::backward_overwrite_prob(Recombination &r, float lb, float ub) {
+    if (lb > r.deleted_node->time or ub < r.deleted_node->time) {
+        return 0;
+    }
+    float p1 = exp_prob(lb, ub);
+    float p2 = exp_prob(r.start_time, r.deleted_node->time);
+    float p = p2/(p1 + p2);
+    assert(!isnan(p));
+    return p;
 }

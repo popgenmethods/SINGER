@@ -259,6 +259,11 @@ void fast_BSP_smc::update_states(set<Branch> &deletions, set<Branch> &insertions
     states_change = true;
 }
 
+void fast_BSP_smc::set_states(set<Branch> &branches) {
+    valid_branches = branches;
+    states_change = true;
+}
+
 void fast_BSP_smc::set_dimensions() {
     dim = (int) curr_intervals.size();
     recomb_probs.resize(dim); recomb_probs.assign(dim, 0);
@@ -458,7 +463,7 @@ void fast_BSP_smc::process_interval(Recombination &r, int i) {
 
 void fast_BSP_smc::process_interval(Recombination &r, int i) {
     Interval *prev_interval = curr_intervals[i];
-    Interval *next_interval;
+    // Interval *next_interval;
     Branch prev_branch = prev_interval->branch;
     /*
     if (!r.affect(prev_branch)) {
@@ -572,7 +577,7 @@ void fast_BSP_smc::process_target_interval(Recombination &r, int i) {
         next_interval = Interval_info(next_branch, lb, ub);
         transfer_helper(next_interval, prev_interval, w2*p);
         lb = max(r.start_time, cut_time);
-        ub = r.recombined_branch.upper_node->time;;
+        ub = r.recombined_branch.upper_node->time;
         next_branch = r.recombined_branch;
         next_interval = Interval_info(next_branch, lb, ub);
         transfer_helper(next_interval, prev_interval, w0*p);

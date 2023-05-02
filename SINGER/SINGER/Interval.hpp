@@ -82,9 +82,10 @@ class Interval_info {
 public:
     
     Branch branch;
-    float lb;
-    float ub;
-    float time;
+    float lb = 0;
+    float ub = 0;
+    float time = 0;
+    float seed_pos = 0;
     
     Interval_info();
     

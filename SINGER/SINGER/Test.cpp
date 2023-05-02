@@ -22,7 +22,7 @@ void test_read_arg() {
     cout << "Number of incompatibilities: " << a.count_incompatibility() <<  endl;
 }
 
-void test_pruner() {
+void test_parsimony_pruner() {
     Sampler sampler = Sampler(1, 1, 1);
     srand(23491256);
     ARG a = ARG(2e4, 1e6);
@@ -42,8 +42,9 @@ void test_pruner() {
     cout << sampler.get_time() << endl;
     parsimony_pruner.prune_arg(a);
     cout << sampler.get_time() << endl;
-    // parsimony_pruner.write_reduction_distance(a, "/Users/yun_deng/Desktop/SINGER/arg_files/high_mu_reduction_distance_100.txt");
-    // parsimony_pruner.write_reduction_size("/Users/yun_deng/Desktop/SINGER/arg_files/high_mu_reduction_size_100.txt");
+    parsimony_pruner.write_reductions(a);
+    parsimony_pruner.write_reduction_distance(a, "/Users/yun_deng/Desktop/SINGER/arg_files/high_mu_parsimony_reduction_distance_10.txt");
+    parsimony_pruner.write_reduction_size("/Users/yun_deng/Desktop/SINGER/arg_files/high_mu_parsimony_reduction_size_10.txt");
 }
 
 void test_pruner_efficiency() {
@@ -64,6 +65,29 @@ void test_pruner_efficiency() {
     cout << sampler.get_time() << endl;
 }
 
+void test_trace_pruner() {
+    Sampler sampler = Sampler(1, 1, 1);
+    srand(23491256);
+    ARG a = ARG(2e4, 1e6);
+    a.read("/Users/yun_deng/Desktop/SINGER/arg_files/high_mu_continuous_ts_10_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/high_mu_continuous_ts_10_branches.txt");
+    a.discretize(100);
+    a.smc_sample_recombinations();
+    for (Node *n : a.sample_nodes) {
+        int index = n->index;
+        string mutation_file = "/Users/yun_deng/Desktop/SINGER/arg_files/high_mu_continuous_sample_10_" + to_string(index) + ".txt";
+        n->read_mutation(mutation_file);
+        a.add_sample(n);
+    }
+    a.impute_nodes(0, 1e6);
+    a.map_mutations(0, 1e6);
+    a.remove_leaf(9);
+    Trace_pruner trace_pruner = Trace_pruner();
+    trace_pruner.prune_arg(a);
+    trace_pruner.write_reductions(a);
+    trace_pruner.write_reduction_distance(a, "/Users/yun_deng/Desktop/SINGER/arg_files/high_mu_trace_reduction_distance_10.txt");
+    trace_pruner.write_reduction_size("/Users/yun_deng/Desktop/SINGER/arg_files/high_mu_trace_reduction_size_10.txt");
+}
+
 void test_iterative_start() {
     srand(93723823);
     // srand(38);
@@ -81,7 +105,7 @@ void test_fast_iterative_start() {
     srand(93723823);
     Sampler sampler = Sampler(2e4, 2e-9, 2e-8);
     sampler.set_precision(0.01, 0.05);
-    sampler.set_num_samples(3);
+    sampler.set_num_samples(8);
     sampler.set_sequence_length(1e7);
     sampler.set_input_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_hap0");
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_sample0");

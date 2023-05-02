@@ -44,10 +44,12 @@ void ARG::discretize(float s) {
 }
 
 int ARG::get_index(float x) {
+    /*
     int left = 0;
     int right = (int) coordinates.size() - 1;
+    int mid;
     while (left <= right) {
-        int mid = left + (right - left) / 2;
+        mid = left + (right - left) / 2;
         if (coordinates[mid] == x) {
             return mid;
         }
@@ -57,7 +59,12 @@ int ARG::get_index(float x) {
             right = mid - 1;
         }
     }
-    return -1;
+    return right;
+     */
+    auto it = upper_bound(coordinates.begin(), coordinates.end(), x);
+    --it;
+    int index = (int) distance(coordinates.begin(), it);
+    return index;
 }
 
 void ARG::compute_rhos_thetas(float r, float m) {

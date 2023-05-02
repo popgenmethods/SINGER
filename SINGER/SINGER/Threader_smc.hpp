@@ -16,6 +16,7 @@
 #include "fast_BSP_smc.hpp"
 #include "TSP_smc.hpp"
 #include "Parsimony_pruner.hpp"
+#include "Trace_pruner.hpp"
 
 class Threader_smc {
     
@@ -40,7 +41,7 @@ public:
     float end = 0;
     int start_index = 0;
     int end_index = 0;
-    Parsimony_pruner pp = Parsimony_pruner();
+    Trace_pruner pruner = Trace_pruner();
     BSP_smc bsp = BSP_smc();
     fast_BSP_smc fbsp = fast_BSP_smc();
     TSP_smc tsp = TSP_smc();
