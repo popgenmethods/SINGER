@@ -34,6 +34,8 @@ public:
     
     void fast_thread(ARG &a, Node *n);
     
+    void internal_fast_rethread(ARG &old_arg, tuple<int, Branch, float> cut_point);
+    
 // private:
     
     float cut_time = 0;

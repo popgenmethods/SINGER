@@ -296,8 +296,8 @@ void ARG::add(map<float, Branch> &new_joining_branches, map<float, Branch> &adde
         }
     }
     remove_empty_recombinations();
-    // impute(new_joining_branches, added_branches);
-    impute_nodes(0, sequence_length);
+    impute(new_joining_branches, added_branches);
+    // impute_nodes(0, sequence_length);
     removed_branches.clear();
     joining_branches.clear();
 }

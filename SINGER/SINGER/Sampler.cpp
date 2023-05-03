@@ -83,7 +83,6 @@ void Sampler::iterative_start() {
         arg.check_incompatibility();
         arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_ts_recombs.txt");
     }
-    // arg.check_incompatibility();
 }
 
 void Sampler::fast_iterative_start() {
@@ -99,6 +98,12 @@ void Sampler::fast_iterative_start() {
             threader.thread(arg, n);
         }
         arg.check_incompatibility();
-        // arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_ts_recombs.txt");
+        arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_fast_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_fast_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_fast_ts_recombs.txt");
     }
 }
+
+void Sampler::sample(int num_iters, int spacing) {
+    
+}
+
+

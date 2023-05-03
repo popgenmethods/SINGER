@@ -355,8 +355,6 @@ void BSP_smc::generate_intervals(Recombination &r) {
             if (weights.size() > 0) {
                 source_weights[new_interval] = std::move(weights);
                 source_intervals[new_interval] = std::move(intervals);
-                // new_interval->source_weights = weights;
-                // new_interval->source_intervals = intervals;
             }
         } else if (p >= cutoff) { // partial intervals
             new_interval = new Interval(b, lb, ub, curr_index);
@@ -365,17 +363,13 @@ void BSP_smc::generate_intervals(Recombination &r) {
             if (weights.size() > 0) {
                 source_weights[new_interval] = std::move(weights);
                 source_intervals[new_interval] = std::move(intervals);
-                // new_interval->source_weights = weights;
-                // new_interval->source_intervals = intervals;
             }
         }
     }
     forward_probs.push_back(temp);
     curr_intervals = temp_intervals;
     compute_interval_info();
-    // temp.clear();
-    // temp_intervals.clear();
-    assert(valid_branches.size() <= curr_intervals.size());
+    // assert(valid_branches.size() <= curr_intervals.size());
 }
 
 /*
@@ -451,16 +445,7 @@ float BSP_smc::get_overwrite_prob(Recombination &r, float lb, float ub) {
 }
 
 void BSP_smc::process_interval(Recombination &r, int i) {
-    // Interval *next_interval = nullptr;
     Branch prev_branch = curr_intervals[i]->branch;
-    /*
-    if (!r.affect(prev_branch)) {
-        next_interval = duplicate_interval(curr_intervals[i]);
-        temp_intervals.push_back(next_interval);
-        temp.push_back(forward_probs[curr_index - 1][i]);
-        return;
-    }
-     */
     if (prev_branch == r.source_branch) {
         process_source_interval(r, i);
     } else if (prev_branch == r.target_branch) {

@@ -24,4 +24,8 @@ void test_iterative_start();
 
 void test_fast_iterative_start();
 
+void test_internal_sampling();
+
+void test_fast_internal_sampling();
+
 #endif /* Test_hpp */

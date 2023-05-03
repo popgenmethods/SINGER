@@ -103,6 +103,7 @@ void test_iterative_start() {
 
 void test_fast_iterative_start() {
     srand(93723823);
+    // srand(13);
     Sampler sampler = Sampler(2e4, 2e-9, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_num_samples(8);

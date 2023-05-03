@@ -23,12 +23,10 @@ void Threader_smc::thread(ARG &a, Node *n) {
     cout << get_time() << " : begin BSP" << endl;
     run_BSP(a);
     cout << get_time() << " : begin sampling branches" << endl;
-    // srand(795);
     sample_joining_branches(a);
     cout << get_time() << " : begin TSP" << endl;
     run_TSP(a);
     cout << get_time() << " : begin sampling points" << endl;
-    // srand(3829);
     sample_joining_points(a);
     cout << get_time() << " : begin adding" << endl;
     a.add(new_joining_branches, added_branches);
@@ -46,13 +44,11 @@ void Threader_smc::fast_thread(ARG &a, Node *n) {
     run_pruner(a);
     cout << get_time() << " : begin BSP" << endl;
     run_fast_BSP(a);
-    // fbsp.check_recomb_sums();
     cout << get_time() << " : begin sampling branches" << endl;
     sample_joining_branches(a);
     cout << get_time() << " : begin TSP" << endl;
     run_TSP(a);
     cout << get_time() << " : begin sampling points" << endl;
-    srand(3829);
     sample_joining_points(a);
     cout << get_time() << " : begin adding" << endl;
     a.add(new_joining_branches, added_branches);

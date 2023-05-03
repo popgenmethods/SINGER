@@ -101,6 +101,7 @@ void TSP_smc::transfer(Recombination &r, Branch &prev_branch, Branch &next_branc
     forward_probs.emplace_back(temp);
     temp.clear();
     set_dimensions();
+    compute_factors();
 }
 
 void TSP_smc::recombine(Branch &prev_branch, Branch &next_branch) {
@@ -118,6 +119,7 @@ void TSP_smc::recombine(Branch &prev_branch, Branch &next_branch) {
     forward_probs.emplace_back(temp);
     state_spaces[curr_index] = curr_intervals;
     set_dimensions();
+    compute_factors();
     float new_prob;
     float base;
     for (int i = 0; i < prev_intervals.size(); i++) {
@@ -291,6 +293,7 @@ float TSP_smc::recomb_prob(float s, float t1, float t2) {
     assert(t1 >= cut_time and s >= cut_time);
     float p = recomb_cdf(s, t2) - recomb_cdf(s, t1);
     assert(p >= 0);
+    p = max(p, 1e-5f);
     return p;
 }
 
