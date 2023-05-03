@@ -36,6 +36,8 @@ void TSP_smc::set_check_points(set<float> &p) {
 void TSP_smc::reserve_memory(int length) {
     forward_probs.reserve(length);
     rhos.reserve(length);
+    // forward_probs.resize(length);
+    // rhos.resize(length);
 }
 
 void TSP_smc::start(Branch &branch, float t) {
@@ -50,12 +52,12 @@ void TSP_smc::start(Branch &branch, float t) {
         temp[i] = exp(-curr_intervals[i]->lb) - exp(-curr_intervals[i]->ub);
     }
     state_spaces[0] = curr_intervals;
-    forward_probs.push_back(temp);
+    forward_probs.emplace_back(temp);
     temp.clear();
 }
 
 void TSP_smc::transfer(Recombination &r, Branch &prev_branch, Branch &next_branch) {
-    rhos.push_back(0);
+    rhos.emplace_back(0);
     prev_rho = -1;
     prev_theta = -1;
     prev_node = nullptr;
@@ -96,7 +98,7 @@ void TSP_smc::transfer(Recombination &r, Branch &prev_branch, Branch &next_branc
         generate_intervals(next_branch, lb, ub);
     }
     state_spaces[curr_index] = curr_intervals;
-    forward_probs.push_back(temp);
+    forward_probs.emplace_back(temp);
     temp.clear();
     set_dimensions();
 }
@@ -105,7 +107,7 @@ void TSP_smc::recombine(Branch &prev_branch, Branch &next_branch) {
     assert(next_branch != Branch());
     vector<Interval *> prev_intervals = curr_intervals;
     curr_intervals.clear();
-    rhos.push_back(0);
+    rhos.emplace_back(0);
     prev_rho = -1;
     prev_theta = -1;
     prev_node = nullptr;
@@ -113,7 +115,7 @@ void TSP_smc::recombine(Branch &prev_branch, Branch &next_branch) {
     curr_index += 1;
     lower_bound = max(cut_time, next_branch.lower_node->time);
     generate_intervals(next_branch, next_branch.lower_node->time, next_branch.upper_node->time);
-    forward_probs.push_back(temp);
+    forward_probs.emplace_back(temp);
     state_spaces[curr_index] = curr_intervals;
     set_dimensions();
     float new_prob;
@@ -157,9 +159,9 @@ vector<float> TSP_smc::generate_grid(float lb, float ub) {
     float l;
     for (int i = 1; i < n; i++) {
         l = get_exp_quantile(lq + i*q/n);
-        points.push_back(l);
+        points.emplace_back(l);
     }
-    points.push_back(ub);
+    points.emplace_back(ub);
     return points;
 }
 
@@ -205,7 +207,7 @@ float TSP_smc::recomb_quantile(float s, float q, float lb, float ub) {
 }
 
 void TSP_smc::forward(float rho) {
-    rhos.push_back(rho);
+    rhos.emplace_back(rho);
     compute_diagonals(rho);
     compute_lower_diagonals(rho);
     compute_upper_diagonals(rho);
@@ -213,7 +215,7 @@ void TSP_smc::forward(float rho) {
     compute_upper_sums();
     curr_index += 1;
     prev_rho = rho;
-    forward_probs.push_back(lower_sums);
+    forward_probs.emplace_back(lower_sums);
     for (int i = 0; i < dim; i++) {
         assert(forward_probs[curr_index][i] >= 0);
         forward_probs[curr_index][i] += diagonals[i]*forward_probs[curr_index-1][i] + lower_diagonals[i]*upper_sums[i];
@@ -372,8 +374,8 @@ void TSP_smc::generate_intervals(Branch &next_branch, float lb, float ub) {
         else {
             new_interval = new Interval(next_branch, lb, ub, curr_index);
             new_interval->fill_time();
-            curr_intervals.push_back(new_interval);
-            temp.push_back(0);
+            curr_intervals.emplace_back(new_interval);
+            temp.emplace_back(0);
             return;
         }
     }
@@ -385,8 +387,8 @@ void TSP_smc::generate_intervals(Branch &next_branch, float lb, float ub) {
         u = points[i+1];
         new_interval = new Interval(next_branch, l, u, curr_index);
         new_interval->fill_time();
-        curr_intervals.push_back(new_interval);
-        temp.push_back(0);
+        curr_intervals.emplace_back(new_interval);
+        temp.emplace_back(0);
     }
 }
 
@@ -421,8 +423,8 @@ void TSP_smc::transfer_intervals(Recombination &r, Branch &prev_branch, Branch &
             new_interval->node = interval->node;
             new_interval->node = interval->node;
             source_interval[new_interval] = interval;
-            curr_intervals.push_back(new_interval);
-            temp.push_back(p);
+            curr_intervals.emplace_back(new_interval);
+            temp.emplace_back(p);
         }
     }
 }
@@ -753,7 +755,7 @@ Interval *TSP_smc::search_point_interval(Recombination &r) {
     vector<Interval *> candidate_point_intervals = {};
     for (Interval *i : curr_intervals) {
         if (i->lb <= t and i->ub >= t) {
-            candidate_point_intervals.push_back(i);
+            candidate_point_intervals.emplace_back(i);
         }
     }
     assert(candidate_point_intervals.size() == 2);

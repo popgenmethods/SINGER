@@ -80,9 +80,9 @@ void Sampler::iterative_start() {
         Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
         Node *n = build_node(i, 0.0);
         threader.thread(arg, n);
-        // arg.check_incompatibility();
+        arg.check_incompatibility();
+        arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_ts_recombs.txt");
     }
-    arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_ts_recombs.txt");
     // arg.check_incompatibility();
 }
 
@@ -98,6 +98,7 @@ void Sampler::fast_iterative_start() {
         } else {
             threader.thread(arg, n);
         }
-        arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_ts_recombs.txt");
+        arg.check_incompatibility();
+        // arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_ts_recombs.txt");
     }
 }

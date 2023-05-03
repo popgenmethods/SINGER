@@ -98,6 +98,7 @@ void Trace_pruner::write_reductions(ARG &a) {
     int start_index = a.get_index(start);
     int end_index = a.get_index(end);
     set<Interval_info> reduced_set = {};
+    bool state_change = false;
     for (int i = start_index; i < end_index; i++) {
         while (delete_it->first <= a.coordinates[i]) {
             for (auto x : delete_it->second) {
@@ -109,12 +110,31 @@ void Trace_pruner::write_reductions(ARG &a) {
             }
             delete_it++;
             insert_it++;
+            state_change = true;
         }
-        for (auto x : reduced_set) {
-            reductions[a.coordinates[i]].insert(x.branch);
+        if (state_change) {
+            for (auto x : reduced_set) {
+                reductions[a.coordinates[i]].insert(x.branch);
+            }
+            state_change = false;
         }
     }
     reductions[a.sequence_length] = {};
+}
+
+void Trace_pruner::write_changes(ARG &a) {
+    map<Branch, set<Interval_info>> segments = {};
+    auto delete_it = deletions.begin();
+    auto insert_it = insertions.begin();
+    float x = 0;
+    while (delete_it != deletions.end()) {
+        x = delete_it->first;
+        for (auto y : delete_it->second) {
+            segments[y.branch].erase(y);
+            if (segments[y.branch].size() == 0) {
+            }
+        }
+    }
 }
 
 Node *Trace_pruner::get_node_at(float x) {

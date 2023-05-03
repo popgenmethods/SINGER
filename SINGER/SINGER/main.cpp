@@ -14,8 +14,8 @@ int main(int argc, const char * argv[]) {
     // test_parsimony_pruner();
     // test_pruner_efficiency();
     // test_trace_pruner();
-    // test_iterative_start();
-    test_fast_iterative_start();
+    test_iterative_start();
+    // test_fast_iterative_start();
     std::cout << "Hello, World!\n";
     return 0;
 }

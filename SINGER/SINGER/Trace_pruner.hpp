@@ -18,7 +18,7 @@ class Trace_pruner : public Pruner {
     
 public:
     
-    float cutoff = 0.001;
+    float cutoff = 0.01;
     float mut_prob = 4e-4;
     float max_time = 100;
     float start = 0;
@@ -41,6 +41,8 @@ public:
     map<float, set<Branch>> reductions = {};
     map<float, set<Interval_info>> deletions = {};
     map<float, set<Interval_info>> insertions = {};
+    map<float, set<Branch>> deleted_branches = {};
+    map<float, set<Branch>> inserted_branches = {};
     
     map<Interval_info, float> transition_scores = {};
     
@@ -65,6 +67,8 @@ public:
     void write_reduction_distance(ARG &a, string filename);
     
     void write_reduction_size(string filename);
+    
+    void write_changes(ARG &a);
     
     void write_reductions(ARG &a);
     
