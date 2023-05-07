@@ -52,6 +52,35 @@ void Tree::backward_update(Recombination &r) {
     }
 }
 
+void Tree::remove(Branch b, Node *n) {
+    assert(branches.count(b) > 0);
+    assert(b.upper_node->index >= 0);
+    Branch joining_branch = find_joining_branch(b);
+    Node *sibling = find_sibling(b.lower_node);
+    Node *parent = parents[b.upper_node];
+    Branch sibling_branch = Branch(sibling, b.upper_node);
+    Branch parent_branch = Branch(b.upper_node, parent);
+    Branch cut_branch = Branch(b.lower_node, n);
+    delete_branch(b);
+    delete_branch(sibling_branch);
+    delete_branch(parent_branch);
+    insert_branch(joining_branch);
+    insert_branch(cut_branch);
+}
+
+void Tree::add(Branch added_branch, Branch joining_branch, Node *n) {
+    Branch lower_branch = Branch(joining_branch.lower_node, added_branch.upper_node);
+    Branch upper_branch = Branch(added_branch.upper_node, joining_branch.upper_node);
+    delete_branch(joining_branch);
+    insert_branch(lower_branch);
+    insert_branch(upper_branch);
+    insert_branch(added_branch);
+    if (n != nullptr) {
+        Branch cut_branch = Branch(added_branch.lower_node, n);
+        delete_branch(cut_branch);
+    }
+}
+
 Node *Tree::find_sibling(Node *n) {
     Node *p = parents[n];
     Branch b = Branch(n, p);
@@ -66,6 +95,9 @@ Node *Tree::find_sibling(Node *n) {
 }
 
 Branch Tree::find_joining_branch(Branch removed_branch) {
+    if (removed_branch == Branch()) {
+        return Branch();
+    }
     Node *p = parents[removed_branch.upper_node];
     Node *c = find_sibling(removed_branch.lower_node);
     return Branch(c, p);

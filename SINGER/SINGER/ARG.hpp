@@ -37,7 +37,12 @@ public:
     map<float, Branch> joining_branches = {};
     map<float, Branch> removed_branches = {};
     map<float, Tree> tree_map = {};
-    Tree query_tree;
+    
+    float start = 0;
+    float end = 0;
+    float cut_pos = 0;
+    Tree cut_tree;
+    Tree start_tree;
     
     ARG();
     
@@ -61,9 +66,9 @@ public:
     
     Tree get_tree_at(float x);
     
-    // Tree get_tree_at(float x, Tree &reference_tree, float x0);
+    Tree modify_tree_to(float x, Tree &reference_tree, float x0);
     
-    void get_tree_at(float x, Tree &reference_tree, float x0);
+    Node *get_query_node_at(float x);
 
     void remove(tuple<float, Branch, float> cut_point);
     
@@ -71,11 +76,11 @@ public:
     
     void remove_leaf(int index);
     
+    float get_updated_length();
+    
     void add(map<float, Branch> &new_joining_branches, map<float, Branch> &added_branches);
     
     void smc_sample_recombinations();
-    
-    // void smcprime_sample_recombinations();
     
     int count_incompatibility();
     
@@ -83,11 +88,13 @@ public:
     
     void read(string node_file, string branch_file);
     
-    void read(string node_file, string branch_file, string recomb_file);
+    void read(string node_file, string branch_file, string recomb_file);\
     
     float get_arg_length();
     
     float get_arg_length(float x, float y);
+    
+    float get_arg_length(map<float, Branch> &new_joining_branches, map<float, Branch> &new_added_branches);
     
     tuple<float, Branch, float> sample_internal_cut();
     
@@ -117,13 +124,9 @@ public:
     
     float smc_prior_likelihood(float r);
     
-    // float smcprime_prior_likelihood();
-    
     float data_likelihood(float m);
     
     float smc_likelihood(float r, float m);
-    
-    // float smcprime_likelihood();
     
     set<float> get_check_points();
     

@@ -27,7 +27,7 @@ ARG::~ARG() {
 }
 
 void ARG::discretize(float s) {
-    map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(0);
+    auto recomb_it = recombinations.upper_bound(0);
     float curr_pos = 0;
     while (curr_pos < sequence_length) {
         // coordinates.push_back(max(curr_pos - 0.1f, 0.0f));
@@ -95,11 +95,15 @@ void ARG::add_sample(Node *n) {
     }
     removed_branches.clear();
     removed_branches[0] = Branch(n, root);
-    removed_branches[sequence_length] = Branch(n, root);
+    removed_branches[sequence_length] = Branch();
+    start_tree = get_tree_at(0);
+    cut_pos = 0;
+    start = 0;
+    end = sequence_length;
 }
 
 void ARG::add_node(Node *n) {
-    if (n != root) {
+    if (n != nullptr and n != root) {
         node_set.insert(n);
     }
 }
@@ -120,13 +124,18 @@ Node *ARG::add_new_node(float t) {
 Tree ARG::get_tree_at(float x) {
     Tree tree = Tree();
     auto recomb_it = recombinations.begin();
-    Recombination r;
     while (recomb_it->first <= x) {
-        r = recomb_it->second;
+        Recombination &r = recomb_it->second;
         tree.forward_update(r);
         recomb_it++;
     }
     return tree;
+}
+
+Node *ARG::get_query_node_at(float x) {
+    auto query_it = removed_branches.upper_bound(x);
+    query_it--;
+    return query_it->second.lower_node;
 }
 
 /*
@@ -143,16 +152,28 @@ Tree ARG::get_tree_at(float x, Tree &reference_tree, float x0) {
 }
  */
 
-void ARG::get_tree_at(float x, Tree &reference_tree, float x0) {
-    // Tree tree = reference_tree;
-    auto recomb_it = recombinations.upper_bound(x0);
-    // Recombination r;
-    while (recomb_it->first <= x) {
-        Recombination &r = recomb_it->second;
-        reference_tree.forward_update(r);
-        ++recomb_it;
+Tree ARG::modify_tree_to(float x, Tree &reference_tree, float x0) {
+    Tree tree = reference_tree;
+    if (x == x0) {
+        return tree;
+    } else if (x > x0) {
+        auto recomb_it = recombinations.upper_bound(x0);
+        while (recomb_it->first <= x) {
+            Recombination &r = recomb_it->second;
+            tree.forward_update(r);
+            ++recomb_it;
+        }
+        return tree;
+    } else {
+        auto recomb_it = recombinations.upper_bound(x0);
+        --recomb_it;
+        while (recomb_it->first > x) {
+            Recombination &r = recomb_it->second;
+            tree.backward_update(r);
+            --recomb_it;
+        }
+        return tree;
     }
-    // return tree;
 }
 
 void ARG::remove(tuple<float, Branch, float> cut_point) {
@@ -164,22 +185,28 @@ void ARG::remove(tuple<float, Branch, float> cut_point) {
     cut_node = new Node(cut_time);
     cut_node->set_index(-2);
     add_node(cut_node);
-    Tree forward_tree = get_tree_at(pos);
-    Tree backward_tree = forward_tree;
-    map<float, Recombination>::iterator f_it = recombinations.upper_bound(pos);
-    map<float, Recombination>::iterator b_it = recombinations.upper_bound(pos);
+    // cut_tree.remove(center_branch);
+    // Tree forward_tree = get_tree_at(pos);
+    // Tree backward_tree = forward_tree;
+    Tree forward_tree = cut_tree;
+    Tree backward_tree = cut_tree;
+    auto f_it = recombinations.upper_bound(pos);
+    auto b_it = recombinations.upper_bound(pos);
     Branch prev_joining_branch;
     Branch next_joining_branch;
     Branch prev_removed_branch = center_branch;
     Branch next_removed_branch = center_branch;
-    pair<Branch, Node *> joining_point = {};
+    // pair<Branch, Node *> joining_point = {};
     while (next_removed_branch != Branch()) {
         Recombination &r = f_it->second;
         prev_joining_branch = forward_tree.find_joining_branch(prev_removed_branch);
         forward_tree.forward_update(r);
         next_removed_branch = r.trace_forward(t, prev_removed_branch);
+        if (next_removed_branch.upper_node == root) {
+            next_removed_branch = Branch();
+        }
         next_joining_branch = forward_tree.find_joining_branch(next_removed_branch);
-        joining_point = {next_joining_branch, next_removed_branch.upper_node};
+        // joining_point = {next_joining_branch, next_removed_branch.upper_node};
         r.remove(prev_removed_branch, next_removed_branch, prev_joining_branch, next_joining_branch, cut_node);
         removed_branches[min(r.pos, sequence_length)] = next_removed_branch;
         joining_branches[min(r.pos, sequence_length)] = next_joining_branch;
@@ -196,21 +223,26 @@ void ARG::remove(tuple<float, Branch, float> cut_point) {
         joining_branches[r.pos] = next_joining_branch;
         backward_tree.backward_update(r);
         prev_removed_branch = r.trace_backward(t, next_removed_branch);
+        if (prev_removed_branch.upper_node == root) {
+            prev_removed_branch = Branch();
+        }
         prev_joining_branch = backward_tree.find_joining_branch(prev_removed_branch);
         r.remove(prev_removed_branch, next_removed_branch, prev_joining_branch, next_joining_branch, cut_node);
         next_removed_branch = prev_removed_branch;
     }
     remove_empty_recombinations();
     remap_mutations();
+    start = removed_branches.begin()->first;
+    end = removed_branches.rbegin()->first;
+    cut_tree.remove(center_branch, cut_node);
+    start_tree = modify_tree_to(start, cut_tree, cut_pos);
 }
 
 void ARG::remove(map<float, Branch> seed_branches) {
     // insights here: the coordinates of removed branches is the same as recombinations
-    float start = removed_branches.begin()->first;
-    float end = removed_branches.rbegin()->first;
     Tree tree = Tree();
-    map<float, Recombination>::iterator recomb_it = recombinations.lower_bound(start);
-    map<float, Branch>::iterator seed_it = seed_branches.begin();
+    auto recomb_it = recombinations.lower_bound(start);
+    auto seed_it = seed_branches.begin();
     Branch prev_removed_branch = Branch();
     Branch next_removed_branch = Branch();
     Branch prev_joining_branch = Branch();
@@ -232,6 +264,8 @@ void ARG::remove(map<float, Branch> seed_branches) {
     joining_branches[end] = next_joining_branch;
     remove_empty_recombinations();
     remap_mutations();
+    start = removed_branches.begin()->first;
+    end = removed_branches.rbegin()->first;
 }
 
 void ARG::remove_leaf(int index) {
@@ -242,7 +276,7 @@ void ARG::remove_leaf(int index) {
         }
     }
     Tree tree = Tree();
-    map<float, Recombination>::iterator recomb_it = recombinations.begin();
+    auto recomb_it = recombinations.begin();
     Branch removed_branch = Branch();
     Node *joining_node = nullptr;
     map<float, Branch> removed_branches = {};
@@ -257,20 +291,23 @@ void ARG::remove_leaf(int index) {
     remove(removed_branches);
 }
 
+float ARG::get_updated_length() {
+    float length = removed_branches.rbegin()->first - removed_branches.begin()->first;
+    return length;
+}
+
 void ARG::add(map<float, Branch> &new_joining_branches, map<float, Branch> &added_branches) {
     for (auto x : added_branches) {
         add_node(x.second.upper_node);
     }
-    float start = removed_branches.begin()->first;
-    float end = removed_branches.rbegin()->first;
-    map<float, Branch>::iterator join_it = new_joining_branches.begin();
-    map<float, Branch>::iterator add_it = added_branches.begin();
-    map<float, Recombination>::iterator recomb_it = recombinations.lower_bound(start);
+    auto join_it = new_joining_branches.begin();
+    auto add_it = added_branches.begin();
+    auto recomb_it = recombinations.lower_bound(start);
     Branch prev_joining_branch = Branch();
     Branch next_joining_branch = Branch();
     Branch prev_added_branch = Branch();
     Branch next_added_branch = Branch();
-    while (add_it->first < end) {
+    while (add_it != added_branches.end() and add_it->first < sequence_length) {
         if (recomb_it->first == add_it->first) {
             Recombination &r = recomb_it->second;
             recomb_it++;
@@ -297,26 +334,42 @@ void ARG::add(map<float, Branch> &new_joining_branches, map<float, Branch> &adde
     }
     remove_empty_recombinations();
     impute(new_joining_branches, added_branches);
-    // impute_nodes(0, sequence_length);
-    removed_branches.clear();
-    joining_branches.clear();
+    start_tree.add(added_branches.begin()->second, new_joining_branches.begin()->second, cut_node);
 }
 
+/*
 void ARG::smc_sample_recombinations() {
     RSP_smc rsp = RSP_smc();
     Tree tree = Tree();
     for (auto &x : recombinations) {
         if (x.first != 0 and x.first < sequence_length) {
             rsp.sample_recombination(x.second, cut_time, tree);
+            assert(x.second.start_time > 0);
         }
         tree.forward_update(x.second);
+    }
+}
+ */
+
+void ARG::smc_sample_recombinations() {
+    RSP_smc rsp = RSP_smc();
+    Tree tree = start_tree;
+    auto it = recombinations.upper_bound(start);
+    while (it->first < end) {
+        Recombination &r = it->second;
+        if (r.pos != 0 and r.pos < sequence_length) {
+            rsp.sample_recombination(r, cut_time, tree);
+            assert(r.start_time > 0);
+        }
+        tree.forward_update(r);
+        it++;
     }
 }
 
 int ARG::count_incompatibility() {
     Tree tree = Tree();
-    map<float, Recombination>::iterator recomb_it = recombinations.begin();
-    set<float>::iterator mut_it = mutation_sites.begin();
+    auto recomb_it = recombinations.begin();
+    auto mut_it = mutation_sites.begin();
     float start = 0;
     float end = 0;
     float x = 0;
@@ -362,8 +415,8 @@ void ARG::impute_nodes(float x, float y) {
     Tree start_tree = get_tree_at(x);
     Branch null_branch = Branch();
     Fitch_reconstruction rc = Fitch_reconstruction(start_tree);
-    map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(x);
-    set<float>::iterator mut_it = mutation_sites.lower_bound(x);
+    auto recomb_it = recombinations.upper_bound(x);
+    auto mut_it = mutation_sites.lower_bound(x);
     float curr_pos = x;
     float m = 0;
     while (curr_pos < y) {
@@ -382,9 +435,9 @@ void ARG::impute_nodes(float x, float y) {
 void ARG::impute(map<float, Branch> &new_joining_branches, map<float, Branch> &added_branches) {
     float start = added_branches.begin()->first;
     float end = added_branches.rbegin()->first;
-    set<float>::iterator mut_it = mutation_sites.lower_bound(start);
-    map<float, Branch>::iterator join_it = new_joining_branches.begin();
-    map<float, Branch>::iterator add_it = added_branches.begin();
+    auto mut_it = mutation_sites.lower_bound(start);
+    auto join_it = new_joining_branches.begin();
+    auto add_it = added_branches.begin();
     float m = 0;
     Branch joining_branch = Branch();
     Branch added_branch = Branch();
@@ -405,8 +458,8 @@ void ARG::impute(map<float, Branch> &new_joining_branches, map<float, Branch> &a
 
 void ARG::map_mutations(float x, float y) {
     Tree tree = get_tree_at(x);
-    map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(x);
-    set<float>::iterator mut_it = mutation_sites.lower_bound(x);
+    auto recomb_it = recombinations.upper_bound(x);
+    auto mut_it = mutation_sites.lower_bound(x);
     float m = *mut_it;
     while (*mut_it < y) {
         m = *mut_it;
@@ -451,9 +504,9 @@ void ARG::map_mutation(float x, Branch joining_branch, Branch added_branch) {
 void ARG::remap_mutations() {
     float x = joining_branches.begin()->first;
     float y = joining_branches.rbegin()->first;
-    map<float, set<Branch>>::iterator mut_it = mutation_branches.lower_bound(x);
-    map<float, Branch>::iterator join_it = joining_branches.begin();
-    map<float, Branch>::iterator remove_it = removed_branches.begin();
+    auto mut_it = mutation_branches.lower_bound(x);
+    auto join_it = joining_branches.begin();
+    auto remove_it = removed_branches.begin();
     Node *joining_node = nullptr;
     Branch joining_branch = Branch();
     Branch removed_branch = Branch();
@@ -500,11 +553,11 @@ void ARG::map_mutation(Tree tree, float x) {
 void ARG::clear_memory() {
     set<Node*, compare_node> reduced_node_set = {};
     set<Node *> deleted_nodes = {};
-    Recombination r = recombinations.begin()->second;
+    Recombination &r = recombinations.begin()->second;
     for (Branch b : r.inserted_branches) {
         reduced_node_set.insert(b.lower_node);
     }
-    for (auto x : recombinations) {
+    for (auto &x : recombinations) {
         if (x.first > 0 and x.first < sequence_length) {
             reduced_node_set.insert(x.second.inserted_node);
         }
@@ -550,7 +603,7 @@ void ARG::clear_memory(map<float, Branch> added_branches) {
     for (auto x : added_branches) {
         if (x.second.upper_node != node) {
             node = x.second.upper_node;
-            if (node_set.count(node) == 0) {
+            if (node != nullptr and node_set.count(node) == 0) {
                 delete node;
             }
         }
@@ -560,6 +613,8 @@ void ARG::clear_memory(map<float, Branch> added_branches) {
 void ARG::clear_remove_info() {
     removed_branches.clear();
     joining_branches.clear();
+    start = 0;
+    end = 0;
 }
  
 float ARG::smc_prior_likelihood(float r) {
@@ -568,7 +623,7 @@ float ARG::smc_prior_likelihood(float r) {
     float log_likelihood = 0;
     log_likelihood += tree.prior_likelihood();
     float tree_length = tree.length();
-    map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(0);
+    auto recomb_it = recombinations.upper_bound(0);
     float bin_start = 0;
     float bin_end = 0;
     for (int i = 0; i < bin_num; i++) {
@@ -597,8 +652,8 @@ float ARG::data_likelihood(float m) {
     float theta = 0;
     float log_likelihood = 0;
     Tree tree = get_tree_at(0);
-    map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(0);
-    set<float>::iterator mut_it = mutation_sites.begin();
+    auto recomb_it = recombinations.upper_bound(0);
+    auto mut_it = mutation_sites.begin();
     float bin_start = 0;
     float bin_end = 0;
     float prev_mut_pos = 0;
@@ -630,7 +685,7 @@ float ARG::smc_likelihood(float r, float m) {
 set<float> ARG::get_check_points() {
     float start_pos = removed_branches.begin()->first;
     float end_pos = removed_branches.rbegin()->first;
-    map<float, Recombination>::iterator recomb_it = recombinations.lower_bound(start_pos);
+    auto recomb_it = recombinations.lower_bound(start_pos);
     map<Node *, float> deleted_nodes = {};
     vector<tuple<Node *, float, float>> node_span = {};
     while (recomb_it->first <= end_pos) {
@@ -657,7 +712,7 @@ set<float> ARG::get_check_points() {
 }
 
 bool ARG::check_disjoint_nodes(float x, float y) {
-    map<float, Recombination>::iterator recomb_it = recombinations.lower_bound(x);
+    auto recomb_it = recombinations.lower_bound(x);
     float t = recomb_it->second.deleted_node->time;
     Branch b = recomb_it->second.merging_branch;
     while (recomb_it->first < y) {
@@ -697,9 +752,9 @@ float ARG::random() {
 }
 
 void ARG::remove_empty_recombinations() {
-    map<float, Recombination>::iterator recomb_it = recombinations.begin();
+    auto recomb_it = recombinations.begin();
     while (recomb_it != recombinations.end()) {
-        Recombination r = recomb_it->second;
+        Recombination &r = recomb_it->second;
         if (r.deleted_branches.size() == 0 and r.inserted_branches.size() == 0 and r.pos < sequence_length) {
             recomb_it = recombinations.erase(recomb_it);
         } else {
@@ -907,71 +962,97 @@ void ARG::read_recombs(string filename) {
 }
 
 float ARG::get_arg_length() {
-    Tree tree = Tree();
-    map<float, Recombination>::iterator recomb_it = recombinations.begin();
-    Recombination r;
-    float l = 0;
-    float tree_length = 0;
-    float curr_pos = 0;
-    while (curr_pos < sequence_length) {
-        
-    }
-    for (int i = 0; i < bin_num; i++) {
-        if (recomb_it->first == i) {
-            r = recomb_it->second;
-            recomb_it++;
-            tree.forward_update(r);
-            tree_length = tree.length();
-        }
-        l += tree_length;
+    Tree tree = get_tree_at(0);
+    auto recomb_it = recombinations.upper_bound(0);
+    float l = 0, span = 0;
+    float tree_length = tree.length();
+    float prev_pos = 0;
+    float next_pos = 0;
+    while (next_pos <= sequence_length) {
+        next_pos = recomb_it->first;
+        span = min(sequence_length, next_pos) - prev_pos;
+        l += tree_length*span;
+        Recombination &r = recomb_it->second;
+        recomb_it++;
+        tree.forward_update(r);
+        tree_length = tree.length();
+        prev_pos = next_pos;
     }
     return l;
 }
 
 float ARG::get_arg_length(float x, float y) {
-    Tree tree = get_tree_at(x);
-    map<float, Recombination>::iterator recomb_it = recombinations.upper_bound(x);
-    Recombination r;
-    float l = 0;
+    Tree tree = start_tree;
+    auto recomb_it = recombinations.upper_bound(x);
+    float l = 0, span = 0;
     float tree_length = tree.length();
     float prev_pos = x;
     float next_pos = x;
     while (next_pos <= y) {
         next_pos = recomb_it->first;
-        l += tree_length*(next_pos - prev_pos);
-        r = recomb_it->second;
+        span = min(sequence_length, next_pos) - prev_pos;
+        l += tree_length*span;
+        Recombination &r = recomb_it->second;
         recomb_it++;
         tree.forward_update(r);
         tree_length = tree.length();
+        prev_pos = next_pos;
+    }
+    return l;
+}
+
+float ARG::get_arg_length(map<float, Branch> &new_joining_branches, map<float, Branch> &new_added_branches) {
+    float x = new_added_branches.begin()->first;
+    float y = new_added_branches.rbegin()->first;
+    float l = get_arg_length(x, y);
+    auto add_it = new_added_branches.begin();
+    auto join_it = new_joining_branches.begin();
+    Branch joining_branch;
+    float span = 0, h = 0, join_time = 0;
+    while (add_it->first < y) {
+        span = next(add_it)->first - add_it->first;
+        joining_branch = join_it->second;
+        join_time = add_it->second.upper_node->time;
+        if (joining_branch.upper_node == root) {
+            h = 2*join_time - joining_branch.lower_node->time - cut_time;
+        } else {
+            h = join_time - cut_time;
+        }
+        l += h*span;
+        if (next(join_it)->first == next(add_it)->first) {
+            join_it++;
+        }
+        add_it++;
     }
     return l;
 }
 
 tuple<float, Branch, float> ARG::sample_internal_cut() {
+    // float arg_length = get_arg_length(0, sequence_length);
     float arg_length = get_arg_length();
+    cut_tree = Tree();
     float p = random();
-    p = 0.01 + 0.98*p; // smooth p away from extremely values
+    p = 0.01 + 0.98*p; // smooth p away from extreme values
     float l = arg_length*p;
-    Tree tree = Tree();
-    map<float, Recombination>::iterator recomb_it = recombinations.begin();
+    auto recomb_it = recombinations.begin();
     float tree_length = 0;
-    Recombination r;
     Branch branch;
     float prev_pos = 0;
     float next_pos = 0;
-    float cut_pos = 0;
+    float pos = 0;
     float time;
     while (next_pos < sequence_length) {
-        r = recomb_it->second;
+        Recombination &r = recomb_it->second;
         recomb_it++;
         next_pos = recomb_it->first;
-        tree.forward_update(r);
-        tree_length = tree.length();
+        cut_tree.forward_update(r);
+        tree_length = cut_tree.length();
         l -= tree_length*(next_pos - prev_pos);
         if (l < 0) {
-            cut_pos = next_pos + l/tree_length;
-            tie(branch, time) = tree.sample_cut_point();
-            return {cut_pos, branch, time};
+            pos = next_pos + l/tree_length;
+            tie(branch, time) = cut_tree.sample_cut_point();
+            cut_pos = pos;
+            return {pos, branch, time};
         }
         prev_pos = next_pos;
     }
@@ -985,8 +1066,8 @@ tuple<float, Branch, float> ARG::sample_terminal_cut() {
     vector<Node *> nodes = vector<Node *>(sample_nodes.begin(), sample_nodes.end());
     int index = rand() % nodes.size();
     Node *terminal_node = nodes[index];
-    Tree start_tree = get_tree_at(0);
-    for (Branch b : start_tree.branches) {
+    cut_tree = get_tree_at(0);
+    for (Branch b : cut_tree.branches) {
         if (b.lower_node == terminal_node) {
             branch = b;
             break;

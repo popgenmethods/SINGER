@@ -80,8 +80,8 @@ void Sampler::iterative_start() {
         Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
         Node *n = build_node(i, 0.0);
         threader.thread(arg, n);
-        arg.check_incompatibility();
-        arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_ts_recombs.txt");
+        // arg.check_incompatibility();
+        // arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_ts_recombs.txt");
     }
 }
 
@@ -102,8 +102,37 @@ void Sampler::fast_iterative_start() {
     }
 }
 
+void Sampler::terminal_sample(int num_iters) {
+    for (int i = 0; i < num_iters; i++) {
+        cout << get_time() << " Iteration: " << to_string(i) << endl;
+        random_seed = rand();
+        srand(random_seed);
+        Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
+        tuple<int, Branch, float> cut_point = arg.sample_terminal_cut();
+        threader.terminal_rethread(arg, cut_point);
+        arg.clear_remove_info();
+        // arg.smc_sample_recombinations();
+        cout << "Number of trees: " << arg.recombinations.size() << endl;
+    }
+}
+
 void Sampler::sample(int num_iters, int spacing) {
-    
+    for (int i = 0; i < num_iters; i++) {
+        cout << get_time() << " Iteration: " << to_string(i) << endl;
+        float updated_length = 0;
+        random_seed = rand();
+        srand(random_seed);
+        while (updated_length < spacing*arg.sequence_length) {
+            Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
+            tuple<int, Branch, float> cut_point = arg.sample_internal_cut();
+            threader.internal_rethread(arg, cut_point);
+            updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
+            arg.clear_remove_info();
+            // arg.smc_sample_recombinations();
+        }
+        // arg.check_incompatibility();
+        cout << "Number of trees: " << arg.recombinations.size() << endl;
+    }
 }
 
 

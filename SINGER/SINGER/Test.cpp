@@ -92,6 +92,7 @@ void test_iterative_start() {
     srand(93723823);
     // srand(38);
     Sampler sampler = Sampler(2e4, 2e-9, 2e-8);
+    // Sampler sampler = Sampler(2e4, 0.5e-9, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_num_samples(8);
     sampler.set_sequence_length(1e7);
@@ -102,9 +103,10 @@ void test_iterative_start() {
 }
 
 void test_fast_iterative_start() {
-    srand(93723823);
-    // srand(13);
+    // srand(93723823);
+    srand(13);
     Sampler sampler = Sampler(2e4, 2e-9, 2e-8);
+    // Sampler sampler = Sampler(2e4, 0.5e-9, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_num_samples(8);
     sampler.set_sequence_length(1e7);
@@ -112,4 +114,30 @@ void test_fast_iterative_start() {
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_sample0");
     sampler.set_log_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/check");
     sampler.fast_iterative_start();
+}
+
+void test_terminal_sampling() {
+    srand(93723823);
+    Sampler sampler = Sampler(2e4, 2e-9, 2e-8);
+    sampler.set_precision(0.01, 0.05);
+    sampler.set_num_samples(8);
+    sampler.set_sequence_length(1e7);
+    sampler.set_input_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_hap0");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_sample0");
+    sampler.set_log_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/check");
+    sampler.iterative_start();
+    sampler.terminal_sample(10);
+}
+
+void test_internal_sampling() {
+    srand(93723823);
+    Sampler sampler = Sampler(2e4, 2e-9, 2e-8);
+    sampler.set_precision(0.01, 0.05);
+    sampler.set_num_samples(8);
+    sampler.set_sequence_length(1e7);
+    sampler.set_input_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_hap0");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_sample0");
+    sampler.set_log_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/check");
+    sampler.iterative_start();
+    sampler.sample(10, 1);
 }

@@ -32,6 +32,7 @@ void Threader_smc::thread(ARG &a, Node *n) {
     a.add(new_joining_branches, added_branches);
     cout << get_time() << " : begin sampling recombination" << endl;
     a.smc_sample_recombinations();
+    a.clear_remove_info();
     cout << get_time() << " : finish" << endl;
     cout << a.recombinations.size() << endl;
 }
@@ -58,18 +59,23 @@ void Threader_smc::fast_thread(ARG &a, Node *n) {
     cout << a.recombinations.size() << endl;
 }
 
+/*
 void Threader_smc::internal_rethread(ARG &prev_arg, tuple<int, Branch, float> cut_point) {
     ARG next_arg = prev_arg;
     cut_time = get<2>(cut_point);
-    get_boundary(next_arg);
+    // next_arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/prev_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/prev_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/prev_ts_recombs.txt");
     next_arg.remove(cut_point);
+    // next_arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/partial_ts_recombs.txt");
+    get_boundary(next_arg);
     set_check_points(next_arg);
     run_BSP(next_arg);
+    sample_joining_branches(next_arg);
     run_TSP(next_arg);
     sample_joining_points(next_arg);
     next_arg.add(new_joining_branches, added_branches);
-    float start = added_branches.begin()->first;
-    float end = added_branches.rbegin()->first;
+    next_arg.clear_remove_info();
+    next_arg.smc_sample_recombinations();
+    // next_arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/next_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/next_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/next_ts_recombs.txt");
     float prev_length = prev_arg.get_arg_length(start, end);
     float next_length = next_arg.get_arg_length(start, end);
     float q = random();
@@ -80,17 +86,48 @@ void Threader_smc::internal_rethread(ARG &prev_arg, tuple<int, Branch, float> cu
         prev_arg.clear_memory(added_branches);
     }
 }
+ */
+
+void Threader_smc::internal_rethread(ARG &a, tuple<int, Branch, float> cut_point) {
+    cut_time = get<2>(cut_point);
+    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/prev_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/prev_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/prev_ts_recombs.txt");
+    a.remove(cut_point);
+    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/partial_ts_recombs.txt");
+    get_boundary(a);
+    set_check_points(a);
+    run_BSP(a);
+    sample_joining_branches(a);
+    run_TSP(a);
+    sample_joining_points(a);
+    float prev_length = a.get_arg_length(a.joining_branches, a.removed_branches);
+    float next_length = a.get_arg_length(new_joining_branches, added_branches);
+    float q = random();
+    if (q < prev_length/next_length) {
+        a.add(new_joining_branches, added_branches);
+        // a.clear_memory();
+    } else {
+        a.add(a.joining_branches, a.removed_branches);
+        // a.clear_memory(added_branches);
+    }
+    a.smc_sample_recombinations();
+    a.clear_remove_info();
+    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/next_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/next_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/next_ts_recombs.txt");
+}
+
 
 void Threader_smc::terminal_rethread(ARG &a, tuple<int, Branch, float> cut_point) {
     cut_time = get<2>(cut_point);
-    get_boundary(a);
     a.remove(cut_point);
+    get_boundary(a);
     set_check_points(a);
     run_BSP(a);
+    sample_joining_branches(a);
     run_TSP(a);
     sample_joining_points(a);
     a.add(new_joining_branches, added_branches);
-    a.clear_memory();
+    a.smc_sample_recombinations();
+    a.clear_remove_info();
+    // a.clear_memory();
 }
 
 string Threader_smc::get_time() {
@@ -106,8 +143,8 @@ string Threader_smc::get_time() {
 }
 
 void Threader_smc::get_boundary(ARG &a) {
-    start = a.removed_branches.begin()->first;
-    end = a.removed_branches.rbegin()->first;
+    start = a.start;
+    end = a.end;
     start_index = a.get_index(start);
     end_index = a.get_index(end);
 }
@@ -126,8 +163,9 @@ void Threader_smc::run_BSP(ARG &a) {
     bsp.reserve_memory(end_index - start_index);
     bsp.set_cutoff(cutoff);
     bsp.set_emission(eh);
-    Tree start_tree = a.get_tree_at(start);
-    bsp.start(start_tree.branches, cut_time);
+    // Tree start_tree = a.get_tree_at(start);
+    // bsp.start(start_tree.branches, cut_time);
+    bsp.start(a.start_tree.branches, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
     auto query_it = a.removed_branches.begin();
@@ -261,18 +299,23 @@ void Threader_smc::sample_joining_branches(ARG &a) {
 
 void Threader_smc::sample_joining_points(ARG &a) {
     map<float, Node *> added_nodes = tsp.sample_joining_nodes(start_index, a.coordinates);
-    auto query_it = a.removed_branches.begin();
     auto add_it = added_nodes.begin();
     auto end_it = added_nodes.end();
     Node *query_node = nullptr;
     Node *added_node = nullptr;
+    float x;
     while (add_it != end_it) {
+        x = add_it->first;
         added_node = add_it->second;
-        if (query_it->first == add_it->first) {
-            query_node = query_it->second.lower_node;
-            query_it++;
+        query_node = a.get_query_node_at(x);
+        /*
+        if (query_node == nullptr) {
+            added_branches[x] = Branch();
+        } else {
+            added_branches[x] = Branch(query_node, added_node);
         }
-        added_branches[add_it->first] = Branch(query_node, added_node);
+         */
+        added_branches[x] = Branch(query_node, added_node);
         add_it++;
     }
 }

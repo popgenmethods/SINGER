@@ -110,7 +110,10 @@ void Recombination::remove(Branch prev_removed_branch, Branch next_removed_branc
     }
     find_nodes();
     find_target_branch();
-    find_recomb_info();
+    if (deleted_branches.size() > 0) {
+        find_recomb_info();
+    }
+    assert(deleted_branches.size() == 0 or deleted_branches.count(source_branch) > 0);
 }
 
 void Recombination::remove(Branch prev_removed_branch, Branch next_removed_branch, Branch prev_split_branch, Branch next_split_branch) {
@@ -138,6 +141,25 @@ void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Bran
     if (prev_added_branch == next_added_branch and prev_joining_branch == next_joining_branch) {
         return;
     }
+    if (next_added_branch != Branch()) {
+        add_inserted_branch(next_added_branch);
+        add_inserted_branch(Branch(next_joining_branch.lower_node, next_added_branch.upper_node));
+        add_inserted_branch(Branch(next_added_branch.upper_node, next_joining_branch.upper_node));
+        add_deleted_branch(next_joining_branch);
+        if (cut_node != nullptr) {
+            add_deleted_branch(Branch(next_added_branch.lower_node, cut_node));
+        }
+    }
+    if (prev_added_branch != Branch()) {
+        add_deleted_branch(prev_added_branch);
+        add_deleted_branch(Branch(prev_joining_branch.lower_node, prev_added_branch.upper_node));
+        add_deleted_branch(Branch(prev_added_branch.upper_node, prev_joining_branch.upper_node));
+        add_inserted_branch(prev_joining_branch);
+        if (cut_node != nullptr) {
+            add_inserted_branch(Branch(prev_added_branch.lower_node, cut_node));
+        }
+    }
+    /*
     add_deleted_branch(prev_added_branch);
     add_deleted_branch(next_joining_branch);
     add_deleted_branch(Branch(prev_joining_branch.lower_node, prev_added_branch.upper_node));
@@ -147,9 +169,14 @@ void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Bran
     add_inserted_branch(Branch(next_joining_branch.lower_node, next_added_branch.upper_node));
     add_inserted_branch(Branch(next_added_branch.upper_node, next_joining_branch.upper_node));
     if (cut_node != nullptr) {
-        add_deleted_branch(Branch(next_added_branch.lower_node, cut_node));
-        add_inserted_branch(Branch(prev_added_branch.lower_node, cut_node));
+        if (next_added_branch != Branch()) {
+            add_deleted_branch(Branch(next_added_branch.lower_node, cut_node));
+        }
+        if (prev_added_branch != Branch()) {
+            add_inserted_branch(Branch(prev_added_branch.lower_node, cut_node));
+        }
     }
+     */
     simplify_branches();
     if (pos == 0) {
         return;
@@ -164,6 +191,8 @@ void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Bran
         } else {
             source_branch = Branch(prev_added_branch.upper_node, source_branch.upper_node);
         }
+    } else {
+        source_branch = search_lower_node(source_branch.lower_node);
     }
     find_target_branch();
     find_recomb_info();
@@ -172,6 +201,7 @@ void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Bran
     }
     assert(start_time < inserted_node->time);
     assert(merging_branch != Branch());
+    assert(deleted_branches.count(source_branch) > 0);
     assert(deleted_branches.size() == 3 or deleted_branches.size() == 4);
 }
 
@@ -261,20 +291,32 @@ void Recombination::fix_end(Branch prev_added_branch, Branch prev_joining_branch
 }
 
 void Recombination::simplify_branches() {
+    /*
     set<Branch> simplified_deleted_branches;
     set<Branch> simplified_inserted_branches;
     for (Branch b : deleted_branches) {
-        if (inserted_branches.count(b) == 0 and b != Branch()) {
+        if (inserted_branches.count(b) == 0) {
             simplified_deleted_branches.insert(b);
         }
     }
     for (Branch b : inserted_branches) {
-        if (deleted_branches.count(b) == 0 and b != Branch()) {
+        if (deleted_branches.count(b) == 0) {
             simplified_inserted_branches.insert(b);
         }
     }
     deleted_branches = simplified_deleted_branches;
     inserted_branches = simplified_inserted_branches;
+     */
+    for (auto it = deleted_branches.begin(); it != deleted_branches.end();) {
+        if (inserted_branches.count(*it) > 0) {
+            inserted_branches.erase(*it);
+            it = deleted_branches.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    // assert(deleted_branches.size() == inserted_branches.size() or deleted_branches.size() == 0);
+    // assert(deleted_branches.size() == 3 or deleted_branches.size() == 4);
 }
 
 void Recombination::add_deleted_branch(Branch b) {
@@ -294,11 +336,11 @@ void Recombination::find_nodes() {
     set<Node*> prev_nodes = {};
     set<Node*> next_nodes = {};
     for (Branch b : deleted_branches) {
-        prev_nodes.insert(b.lower_node);
+        // prev_nodes.insert(b.lower_node);
         prev_nodes.insert(b.upper_node);
     }
     for (Branch b : inserted_branches) {
-        next_nodes.insert(b.lower_node);
+        // next_nodes.insert(b.lower_node);
         next_nodes.insert(b.upper_node);
     }
     for (Node* n : prev_nodes) {

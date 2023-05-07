@@ -13,26 +13,6 @@ Coalescent_calculator::Coalescent_calculator(float t) {
 
 Coalescent_calculator::~Coalescent_calculator() {}
 
-/*
-void Coalescent_calculator::start(set<Branch> &inserted_branches) {
-    for (Branch b : inserted_branches) {
-        branches.insert(b);
-    }
-    compute();
-}
-
-void Coalescent_calculator::update(set<Branch> &deleted_branches, set<Branch> &inserted_branches) {
-    for (Branch b : deleted_branches) {
-        assert(branches.count(b) > 0);
-        branches.erase(b);
-    }
-    for (Branch b : inserted_branches) {
-        branches.insert(b);
-    }
-    compute();
-}
- */
-
 void Coalescent_calculator::compute(set<Branch> &branches) {
     compute_rate_changes(branches);
     compute_rates();
@@ -72,16 +52,8 @@ void Coalescent_calculator::compute_rate_changes(set<Branch> &branches) {
     for (Branch b : branches) {
         lb = max(cut_time, b.lower_node->time);
         ub = b.upper_node->time;
-        if (rate_changes.count(lb) > 0) {
-            rate_changes[lb] += 1;
-        } else {
-            rate_changes[lb] = 1;
-        }
-        if (rate_changes.count(ub) > 0) {
-            rate_changes[ub] -= 1;
-        } else {
-            rate_changes[ub] = -1;
-        }
+        rate_changes[lb] += 1;
+        rate_changes[ub] -= 1;
     }
     min_time = rate_changes.begin()->first;
     max_time = rate_changes.rbegin()->first;
@@ -116,15 +88,11 @@ void Coalescent_calculator::compute_probs_quantiles() {
         } else {
             next_prob = prev_prob;
         }
-        // probs[next_time] = cum_prob;
         assert(cum_prob <= 1);
-        // quantiles[cum_prob] = next_time;
         probs.insert({next_time, cum_prob});
         quantiles.insert({next_time, cum_prob});
         prev_prob = next_prob;
     }
-    // probs[rates.begin()->first] = 0;
-    // quantiles[0] = rates.begin()->first;
     probs.insert({min_time, 0});
     quantiles.insert({min_time, 0});
     assert(probs.size() == rates.size());

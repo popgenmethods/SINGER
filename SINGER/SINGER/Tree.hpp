@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <map>
+#include <unordered_map>
 #include "Branch.hpp"
 #include "Recombination.hpp"
 
@@ -19,7 +20,7 @@ class Tree {
 public:
     
     set<Branch> branches = {};
-    map<Node *, Node *> parents = {};
+    unordered_map<Node *, Node *> parents = {};
     
     Tree();
     
@@ -32,6 +33,10 @@ public:
     void forward_update(Recombination &r);
     
     void backward_update(Recombination &r);
+    
+    void remove(Branch b, Node *n);
+    
+    void add(Branch added_branch, Branch joining_branch, Node *n);
     
     Node *find_sibling(Node *n);
     

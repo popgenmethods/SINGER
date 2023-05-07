@@ -261,10 +261,10 @@ map<float, Node *> TSP_smc::sample_joining_nodes(int start_index, vector<float> 
     float pos = coordinates[x + start_index + 1];
     Interval *interval = sample_curr_interval(x);
     Node *n = sample_joining_node(interval);
-    joining_nodes[pos] = n;
+    joining_nodes[pos] = nullptr;
     while (x >= 0) {
         x = trace_back_helper(interval, x);
-        pos = coordinates[x];
+        pos = coordinates[x + start_index];
         joining_nodes[pos] = n;
         assert(x >= interval->start_pos);
         if (x == 0) {

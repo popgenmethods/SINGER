@@ -33,8 +33,7 @@ void Trace_pruner::start_search(ARG &a, float m) {
     float lb, ub;
     Interval_info interval;
     float x0 = find_closest_reference(m);
-    seed_trees[m] = seed_trees[x0];
-    a.get_tree_at(m, seed_trees[m], x0);
+    seed_trees[m] = a.modify_tree_to(m, seed_trees[x0], x0);
     for (Branch b : seed_trees[m].branches) {
         mismatch = count_mismatch(b, n, m);
         if (mismatch == 0) {
@@ -123,18 +122,6 @@ void Trace_pruner::write_reductions(ARG &a) {
 }
 
 void Trace_pruner::write_changes(ARG &a) {
-    map<Branch, set<Interval_info>> segments = {};
-    auto delete_it = deletions.begin();
-    auto insert_it = insertions.begin();
-    float x = 0;
-    while (delete_it != deletions.end()) {
-        x = delete_it->first;
-        for (auto y : delete_it->second) {
-            segments[y.branch].erase(y);
-            if (segments[y.branch].size() == 0) {
-            }
-        }
-    }
 }
 
 Node *Trace_pruner::get_node_at(float x) {

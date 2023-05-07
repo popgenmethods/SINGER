@@ -28,7 +28,12 @@ void BSP_smc::reserve_memory(int length) {
 void BSP_smc::start(set<Branch> &branches, float t) {
     cut_time = t;
     curr_index = 0;
-    valid_branches = branches;
+    // valid_branches = branches;
+    for (Branch b : branches) {
+        if (b.upper_node->time > cut_time) {
+            valid_branches.insert(b);
+        }
+    }
     float lb = 0;
     float ub = 0;
     float p = 0;
@@ -207,13 +212,19 @@ void BSP_smc::write_forward_probs(string filename) {
 
 void BSP_smc::update_states(set<Branch> &deletions, set<Branch> &insertions) {
     for (Branch b : deletions) {
-        assert(valid_branches.count(b) > 0);
-        valid_branches.erase(b);
+        if (b.upper_node->time > cut_time) {
+            assert(valid_branches.count(b) > 0);
+            valid_branches.erase(b);
+        }
+        states_change = true;
     }
     for (Branch b : insertions) {
-        valid_branches.insert(b);
+        if (b.upper_node->time > cut_time) {
+            valid_branches.insert(b);
+        }
+        states_change = true;
     }
-    states_change = true;
+    // states_change = true;
 }
 
 void BSP_smc::set_dimensions() {
@@ -368,7 +379,10 @@ void BSP_smc::generate_intervals(Recombination &r) {
     }
     forward_probs.push_back(temp);
     curr_intervals = temp_intervals;
-    compute_interval_info();
+    if (states_change) {
+        compute_interval_info();
+        states_change = false;
+    }
     // assert(valid_branches.size() <= curr_intervals.size());
 }
 

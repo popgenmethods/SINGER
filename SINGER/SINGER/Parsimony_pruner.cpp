@@ -38,8 +38,7 @@ void Parsimony_pruner::start_search(ARG &a, float m) {
     a.get_tree_at(m, curr_tree, x0);
     seed_trees[m] = curr_tree;
      */
-    seed_trees[m] = seed_trees[x0];
-    a.get_tree_at(m, seed_trees[m], x0);
+    seed_trees[m] = a.modify_tree_to(m, seed_trees[x0], x0);
     for (Branch branch : seed_trees[m].branches) {
         mismatch = count_mismatch(branch, n, m);
         if (mismatch == 0 and branch.lower_node != n) {

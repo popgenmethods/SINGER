@@ -62,6 +62,8 @@ public:
     
     void fast_iterative_start();
     
+    void terminal_sample(int num_iters);
+    
     void sample(int num_iters, int spacing);
     
 };
