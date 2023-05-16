@@ -12,6 +12,7 @@
 #include <math.h>
 #include <map>
 #include <unordered_map>
+#include "random_utils.hpp"
 #include "Branch.hpp"
 #include "Recombination.hpp"
 

@@ -14,6 +14,7 @@ Interval::Interval(Branch b, float tl, float tu, int init_pos) {
     lb = tl;
     ub = tu;
     assert(lb <= ub);
+    // assert(ub >= 0.001);
     start_pos = init_pos;
 }
 

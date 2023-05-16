@@ -16,8 +16,8 @@ fast_BSP_smc::~fast_BSP_smc() {
         }
     }
     vector<vector<float>>().swap(forward_probs);
-    map<Interval *, vector<float>>().swap(source_weights);
-    map<Interval *, vector<Interval *>>().swap(source_intervals);
+    // map<Interval *, vector<float>>().swap(source_weights);
+    // map<Interval *, vector<Interval *>>().swap(source_intervals);
     map<int, vector<Interval *>>().swap(state_spaces);
 }
 
@@ -35,6 +35,7 @@ void fast_BSP_smc::start(set<Branch> &branches, float t) {
     Interval *new_interval = nullptr;
     cc = make_shared<Coalescent_calculator>(cut_time);
     cc->compute(valid_branches);
+    // states_change = true;
     for (Branch b : branches) {
         if (b.upper_node->time > cut_time) {
             lb = max(b.lower_node->time, cut_time);
@@ -252,11 +253,13 @@ void fast_BSP_smc::update_states(set<Branch> &deletions, set<Branch> &insertions
     for (Branch b : deletions) {
         assert(valid_branches.count(b) > 0);
         valid_branches.erase(b);
+        states_change = true;
     }
     for (Branch b : insertions) {
         valid_branches.insert(b);
+        states_change = true;
     }
-    states_change = true;
+    // states_change = true;
 }
 
 void fast_BSP_smc::set_states(set<Branch> &branches) {
@@ -320,6 +323,7 @@ void fast_BSP_smc::transfer_helper(Interval_info next_interval, Interval *prev_i
     if (valid_branches.count(next_interval.branch) == 0) {
         return;
     }
+    /*
     if (transfer_weights.count(next_interval) > 0) {
         transfer_weights[next_interval].emplace_back(w);
         transfer_intervals[next_interval].emplace_back(prev_interval);
@@ -327,16 +331,23 @@ void fast_BSP_smc::transfer_helper(Interval_info next_interval, Interval *prev_i
         transfer_weights[next_interval] = {w};
         transfer_intervals[next_interval] = {prev_interval};
     }
+     */
+    transfer_weights[next_interval].push_back(w);
+    transfer_intervals[next_interval].push_back(prev_interval);
 }
 
 void fast_BSP_smc::transfer_helper(Interval_info next_interval) {
     if (valid_branches.count(next_interval.branch) == 0) {
         return;
     }
+    /*
     if (transfer_weights.count(next_interval) == 0) {
         transfer_weights[next_interval] = {};
         transfer_intervals[next_interval] = {};
     }
+     */
+    transfer_weights[next_interval];
+    transfer_intervals[next_interval];
 }
 
 float fast_BSP_smc::compute_transfer_prob() {
@@ -373,7 +384,9 @@ void fast_BSP_smc::add_new_branches(Recombination &r) { // add recombined branch
 }
 
 void fast_BSP_smc::compute_interval_info() {
-    cc->compute(valid_branches);
+    if (states_change == true) {
+        cc->compute(valid_branches);
+    }
     float t;
     float p;
     for (Interval *i : curr_intervals) {
@@ -389,6 +402,7 @@ void fast_BSP_smc::sanity_check(Recombination &r) {
 
 void fast_BSP_smc::generate_intervals(Recombination &r) {
     float p0 = compute_transfer_prob();
+    assert(p0 > 0);
     Branch b;
     float lb;
     float ub;
@@ -397,10 +411,11 @@ void fast_BSP_smc::generate_intervals(Recombination &r) {
     vector<float> weights;
     Interval_info interval;
     Interval *new_interval;
-    for (auto x : transfer_weights) {
-        interval = x.first;
-        weights = x.second;
-        intervals = transfer_intervals[x.first];
+    auto y = transfer_intervals.begin();
+    for (auto x = transfer_weights.begin(); x != transfer_weights.end(); ++x, ++y) {
+        interval = x->first;
+        const auto &weights = x->second;
+        const auto &intervals = y->second;
         b = interval.branch;
         lb = interval.lb;
         ub = interval.ub;
@@ -411,8 +426,10 @@ void fast_BSP_smc::generate_intervals(Recombination &r) {
             temp_intervals.emplace_back(new_interval);
             temp_probs.emplace_back(p);
             if (weights.size() > 0) {
-                source_weights[new_interval] = weights;
-                source_intervals[new_interval] = intervals;
+                new_interval->source_weights = move(weights);
+                new_interval->source_intervals = move(intervals);
+                // source_weights[new_interval] = std::move(weights);
+                // source_intervals[new_interval] = std::move(intervals);
             }
             covered_branches.insert(b);
         } else if (p >= cutoff*p0) { // partial intervals
@@ -420,8 +437,10 @@ void fast_BSP_smc::generate_intervals(Recombination &r) {
             temp_intervals.emplace_back(new_interval);
             temp_probs.emplace_back(p);
             if (weights.size() > 0) {
-                source_weights[new_interval] = weights;
-                source_intervals[new_interval] = intervals;
+                new_interval->source_weights = move(weights);
+                new_interval->source_intervals = move(intervals);
+                // source_weights[new_interval] = std::move(weights);
+                // source_intervals[new_interval] = std::move(intervals);
             }
         }
     }
@@ -611,7 +630,9 @@ void fast_BSP_smc::process_other_interval(Recombination &r, int i) {
 }
 
 float fast_BSP_smc::random() {
-    return (float) rand()/RAND_MAX;
+    // return (float) rand()/RAND_MAX;
+    float p = uniform_random();
+    return p;
 }
 
 int fast_BSP_smc::get_prev_breakpoint(int x) {
@@ -682,10 +703,12 @@ Interval *fast_BSP_smc::sample_prev_interval(int x) {
 }
 
 Interval *fast_BSP_smc::sample_source_interval(Interval *interval, int x) {
-    assert(source_intervals.count(interval) > 0);
+    // assert(source_intervals.count(interval) > 0);
     vector<Interval *> &prev_intervals = get_state_space(x);
-    vector<Interval *> intervals = source_intervals[interval];
-    vector<float> weights = source_weights[interval];
+    // vector<Interval *> intervals = source_intervals[interval];
+    // vector<float> weights = source_weights[interval];
+    vector<Interval *> &intervals = interval->source_intervals;
+    vector<float> &weights = interval->source_weights;
     float q = random();
     float ws = accumulate(weights.begin(), weights.end(), 0.0);
     float w = ws*q;

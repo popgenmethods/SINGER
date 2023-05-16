@@ -9,6 +9,7 @@
 #define TSP_smc_hpp
 
 #include <stdio.h>
+#include "random_utils.hpp"
 #include "Interval.hpp"
 #include "Emission.hpp"
 

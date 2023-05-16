@@ -31,7 +31,6 @@ float RSP_smc::sample_start_time(Branch b, int density, float join_time, float c
         weight_sum += w;
     }
     p = random();
-    p = min(p, 0.999f);
     weight_sum = weight_sum*p;
     for (int i = 0; i < density; i++) {
         weight_sum -= weights[i];
@@ -80,7 +79,6 @@ pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density
         branch_indices.push_back(2);
     }
     p = random();
-    p = min(p, 0.999f);
     weight_sum = weight_sum*p;
     for (int i = 0; i < density; i++) {
         weight_sum -= weights[i];
@@ -127,7 +125,7 @@ void RSP_smc::sample_recombination(Recombination &r, float cut_time, Tree &tree)
         r.source_branch = breakpoint.first;
         r.start_time = breakpoint.second;
     } else {
-        cerr << "no candidates" << endl;
+        cerr << "no candidates in smc sampling" << endl;
         exit(1);
     }
     r.find_target_branch();
@@ -174,8 +172,7 @@ void RSP_smc::get_coalescence_rate(Tree &tree, Recombination &r, float cut_time)
 }
 
 float RSP_smc::random() {
-    float p = (float) rand()/RAND_MAX;
-    p = min(0.99f, p);
-    p = max(0.01f, p);
+    float p = uniform_random();
+    p = 0.01 + 0.98*p;
     return p;
 }

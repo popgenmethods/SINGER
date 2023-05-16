@@ -112,9 +112,9 @@ public:
     
     void map_mutation(Tree tree, float x);
     
-    void clear_memory();
+    // void clear_memory();
     
-    void clear_memory(map<float, Branch> added_branches);
+    // void clear_memory(map<float, Branch> added_branches);
     
     void check_mapping();
     

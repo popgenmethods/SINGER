@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <map>
+#include "random_utils.hpp"
 #include "Branch.hpp"
 #include "Tree.hpp"
 #include "Recombination.hpp"
@@ -18,6 +19,8 @@
 class RSP_smc {
     
 public:
+    
+    float min_time = 0.005;
     
     RSP_smc();
     

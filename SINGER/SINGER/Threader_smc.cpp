@@ -17,7 +17,8 @@ Threader_smc::~Threader_smc() {
 }
 
 void Threader_smc::thread(ARG &a, Node *n) {
-    cut_time = 0.0;
+    cout << "Iteration: " << a.sample_nodes.size() << endl;
+    cut_time = 0.005;
     a.add_sample(n);
     get_boundary(a);
     cout << get_time() << " : begin BSP" << endl;
@@ -38,6 +39,7 @@ void Threader_smc::thread(ARG &a, Node *n) {
 }
 
 void Threader_smc::fast_thread(ARG &a, Node *n) {
+    cout << "Iteration: " << a.sample_nodes.size() << endl;
     cut_time = 0.0;
     a.add_sample(n);
     get_boundary(a);
@@ -59,36 +61,7 @@ void Threader_smc::fast_thread(ARG &a, Node *n) {
     cout << a.recombinations.size() << endl;
 }
 
-/*
-void Threader_smc::internal_rethread(ARG &prev_arg, tuple<int, Branch, float> cut_point) {
-    ARG next_arg = prev_arg;
-    cut_time = get<2>(cut_point);
-    // next_arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/prev_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/prev_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/prev_ts_recombs.txt");
-    next_arg.remove(cut_point);
-    // next_arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/partial_ts_recombs.txt");
-    get_boundary(next_arg);
-    set_check_points(next_arg);
-    run_BSP(next_arg);
-    sample_joining_branches(next_arg);
-    run_TSP(next_arg);
-    sample_joining_points(next_arg);
-    next_arg.add(new_joining_branches, added_branches);
-    next_arg.clear_remove_info();
-    next_arg.smc_sample_recombinations();
-    // next_arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/next_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/next_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/next_ts_recombs.txt");
-    float prev_length = prev_arg.get_arg_length(start, end);
-    float next_length = next_arg.get_arg_length(start, end);
-    float q = random();
-    if (q < prev_length/next_length) {
-        prev_arg = next_arg;
-        prev_arg.clear_memory();
-    } else {
-        prev_arg.clear_memory(added_branches);
-    }
-}
- */
-
-void Threader_smc::internal_rethread(ARG &a, tuple<int, Branch, float> cut_point) {
+void Threader_smc::internal_rethread(ARG &a, tuple<float, Branch, float> cut_point) {
     cut_time = get<2>(cut_point);
     // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/prev_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/prev_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/prev_ts_recombs.txt");
     a.remove(cut_point);
@@ -104,10 +77,8 @@ void Threader_smc::internal_rethread(ARG &a, tuple<int, Branch, float> cut_point
     float q = random();
     if (q < prev_length/next_length) {
         a.add(new_joining_branches, added_branches);
-        // a.clear_memory();
     } else {
         a.add(a.joining_branches, a.removed_branches);
-        // a.clear_memory(added_branches);
     }
     a.smc_sample_recombinations();
     a.clear_remove_info();
@@ -115,7 +86,7 @@ void Threader_smc::internal_rethread(ARG &a, tuple<int, Branch, float> cut_point
 }
 
 
-void Threader_smc::terminal_rethread(ARG &a, tuple<int, Branch, float> cut_point) {
+void Threader_smc::terminal_rethread(ARG &a, tuple<float, Branch, float> cut_point) {
     cut_time = get<2>(cut_point);
     a.remove(cut_point);
     get_boundary(a);
@@ -163,8 +134,6 @@ void Threader_smc::run_BSP(ARG &a) {
     bsp.reserve_memory(end_index - start_index);
     bsp.set_cutoff(cutoff);
     bsp.set_emission(eh);
-    // Tree start_tree = a.get_tree_at(start);
-    // bsp.start(start_tree.branches, cut_time);
     bsp.start(a.start_tree.branches, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);

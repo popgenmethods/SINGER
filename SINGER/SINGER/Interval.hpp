@@ -28,8 +28,8 @@ public:
     Node *node = nullptr;
     float reduction = 1.0;
     
-    // vector<float> source_weights = {};
-    // vector<Interval *> source_intervals = {};
+    vector<float> source_weights = {};
+    vector<Interval *> source_intervals = {};
     
     Interval();
     

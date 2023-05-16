@@ -13,6 +13,7 @@ ARG::ARG(float N, float l) {
     root->set_index(-1);
     Ne = N;
     sequence_length = l;
+    end = l;
     Recombination r = Recombination({}, {});
     r.set_pos(0.0);
     recombinations[0] = r;
@@ -120,7 +121,7 @@ Node *ARG::add_new_node(float t) {
     }
     return new_node;
 }
-
+ 
 Tree ARG::get_tree_at(float x) {
     Tree tree = Tree();
     auto recomb_it = recombinations.begin();
@@ -185,9 +186,6 @@ void ARG::remove(tuple<float, Branch, float> cut_point) {
     cut_node = new Node(cut_time);
     cut_node->set_index(-2);
     add_node(cut_node);
-    // cut_tree.remove(center_branch);
-    // Tree forward_tree = get_tree_at(pos);
-    // Tree backward_tree = forward_tree;
     Tree forward_tree = cut_tree;
     Tree backward_tree = cut_tree;
     auto f_it = recombinations.upper_bound(pos);
@@ -196,7 +194,6 @@ void ARG::remove(tuple<float, Branch, float> cut_point) {
     Branch next_joining_branch;
     Branch prev_removed_branch = center_branch;
     Branch next_removed_branch = center_branch;
-    // pair<Branch, Node *> joining_point = {};
     while (next_removed_branch != Branch()) {
         Recombination &r = f_it->second;
         prev_joining_branch = forward_tree.find_joining_branch(prev_removed_branch);
@@ -206,7 +203,6 @@ void ARG::remove(tuple<float, Branch, float> cut_point) {
             next_removed_branch = Branch();
         }
         next_joining_branch = forward_tree.find_joining_branch(next_removed_branch);
-        // joining_point = {next_joining_branch, next_removed_branch.upper_node};
         r.remove(prev_removed_branch, next_removed_branch, prev_joining_branch, next_joining_branch, cut_node);
         removed_branches[min(r.pos, sequence_length)] = next_removed_branch;
         joining_branches[min(r.pos, sequence_length)] = next_joining_branch;
@@ -297,9 +293,11 @@ float ARG::get_updated_length() {
 }
 
 void ARG::add(map<float, Branch> &new_joining_branches, map<float, Branch> &added_branches) {
+    /*
     for (auto x : added_branches) {
         add_node(x.second.upper_node);
     }
+     */
     auto join_it = new_joining_branches.begin();
     auto add_it = added_branches.begin();
     auto recomb_it = recombinations.lower_bound(start);
@@ -334,6 +332,7 @@ void ARG::add(map<float, Branch> &new_joining_branches, map<float, Branch> &adde
     }
     remove_empty_recombinations();
     impute(new_joining_branches, added_branches);
+    // impute_nodes(0, sequence_length);
     start_tree.add(added_branches.begin()->second, new_joining_branches.begin()->second, cut_node);
 }
 
@@ -401,12 +400,14 @@ void ARG::write(string node_file, string branch_file, string recomb_file) {
 void ARG::read(string node_file, string branch_file) {
     read_nodes(node_file);
     read_branches(branch_file);
+    start_tree = get_tree_at(0);
 }
 
 void ARG::read(string node_file, string branch_file, string recomb_file) {
     read_nodes(node_file);
     read_branches(branch_file);
     read_recombs(recomb_file);
+    start_tree = get_tree_at(0);
 }
 
 // private methods:
@@ -550,6 +551,7 @@ void ARG::map_mutation(Tree tree, float x) {
     mutation_branches[x] = branches;
 }
 
+/*
 void ARG::clear_memory() {
     set<Node*, compare_node> reduced_node_set = {};
     set<Node *> deleted_nodes = {};
@@ -573,6 +575,7 @@ void ARG::clear_memory() {
     node_set.clear();
     node_set = reduced_node_set;
 }
+ */
 
 void ARG::check_mapping() {
     for (Node *n : node_set) {
@@ -598,6 +601,7 @@ void ARG::check_incompatibility() {
     cout << "Number of incompatibilities: " << total_count << endl;
 }
 
+/*
 void ARG::clear_memory(map<float, Branch> added_branches) {
     Node *node = nullptr;
     for (auto x : added_branches) {
@@ -609,6 +613,7 @@ void ARG::clear_memory(map<float, Branch> added_branches) {
         }
     }
 }
+ */
 
 void ARG::clear_remove_info() {
     removed_branches.clear();
@@ -748,7 +753,9 @@ void ARG::new_recombination(float pos, Branch prev_added_branch, Branch prev_joi
 }
 
 float ARG::random() {
-    return (float) rand()/RAND_MAX;
+    // return (float) rand()/RAND_MAX;
+    float p = uniform_random();
+    return p;
 }
 
 void ARG::remove_empty_recombinations() {
@@ -774,12 +781,6 @@ int ARG::count_incompatibility(Tree tree, float x) {
             }
         }
     }
-    /*
-    if (count > 0) {
-        cout << fixed;
-        cout << "Incompatible site at: " << x << endl;
-    }
-     */
     return max(0, count);
 }
 
@@ -810,7 +811,7 @@ void ARG::write_branches(string filename) {
     for (auto x : recombinations) {
         if (x.first < sequence_length) {
             pos = x.first;
-            Recombination r = x.second;
+            Recombination &r = x.second;
             for (Branch b : r.inserted_branches) {
                 branch_map[b] = pos;
             }
@@ -818,7 +819,7 @@ void ARG::write_branches(string filename) {
                 assert((node_set.count(b.lower_node) > 0 and node_set.count(b.upper_node) > 0) or b.upper_node == root);
                 int k1 = b.upper_node->index;
                 int k2 = b.lower_node->index;
-                assert(k1 < 1e4 and k2 < 1e4);
+                assert(k1 < 1e5 and k2 < 1e5);
                 branch_info.push_back({k1, k2, branch_map.at(b), pos});
                 branch_map.erase(b);
             }
@@ -835,9 +836,10 @@ void ARG::write_branches(string filename) {
     sort(branch_info.begin(), branch_info.end(), compare_edge);
     ofstream file;
     file.open(filename);
+    file << std::setprecision(20) << std::fixed;
     for (int i = 0; i < branch_info.size(); i++) {
         auto [k1, k2, x, l] = branch_info[i];
-        assert(k1 < 1e4 and k2 < 1e4);
+        assert(k1 < 1e5 and k2 < 1e5);
         file << x << " " << l << " " << k1 << " " << k2 << "\n";
     }
     file.close();
@@ -847,11 +849,12 @@ void ARG::write_recombs(string filename) {
     ofstream file;
     file.open(filename);
     for (auto x : recombinations) {
-        Recombination r = x.second;
-        if (x.first > 0 and x.first < bin_num) {
+        Recombination &r = x.second;
+        if (x.first > 0 and x.first < sequence_length) {
             file << r.pos << " " << r.source_branch.lower_node->index << " " << r.source_branch.upper_node->index << " " << Ne*r.start_time << endl;
         }
     }
+    file.close();
 }
 
 void ARG::read_nodes(string filename) {
@@ -951,7 +954,7 @@ void ARG::read_recombs(string filename) {
             t = start_times.at(pos);
             b = source_branches.at(pos);
             if (pos > 0 and pos < sequence_length) {
-                x.second.start_time = t;
+                x.second.start_time = t/Ne;
                 x.second.source_branch = b;
                 x.second.find_nodes();
                 x.second.find_target_branch();

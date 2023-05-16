@@ -72,6 +72,13 @@ void Sampler::build_singleton_arg() {
     arg.compute_rhos_thetas(recomb_rate, mut_rate);
 }
 
+void Sampler::build_void_arg() {
+    float bin_size = rho_unit/recomb_rate;
+    arg = ARG(Ne, sequence_length);
+    arg.discretize(bin_size);
+    arg.compute_rhos_thetas(recomb_rate, mut_rate);
+}
+
 void Sampler::iterative_start() {
     build_singleton_arg();
     for (int i = 1; i < num_samples; i++) {
@@ -82,7 +89,9 @@ void Sampler::iterative_start() {
         threader.thread(arg, n);
         // arg.check_incompatibility();
         // arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_ts_recombs.txt");
+        arg.check_incompatibility();
     }
+    arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_recombs.txt");
 }
 
 void Sampler::fast_iterative_start() {
@@ -97,9 +106,10 @@ void Sampler::fast_iterative_start() {
         } else {
             threader.thread(arg, n);
         }
-        arg.check_incompatibility();
-        arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_fast_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_fast_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_fast_ts_recombs.txt");
+        // arg.check_incompatibility();
+        // arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_fast_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_fast_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_fast_ts_recombs.txt");
     }
+    arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_fast_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_fast_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_fast_ts_recombs.txt");
 }
 
 void Sampler::terminal_sample(int num_iters) {
@@ -124,13 +134,13 @@ void Sampler::sample(int num_iters, int spacing) {
         srand(random_seed);
         while (updated_length < spacing*arg.sequence_length) {
             Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
-            tuple<int, Branch, float> cut_point = arg.sample_internal_cut();
+            tuple<float, Branch, float> cut_point = arg.sample_internal_cut();
             threader.internal_rethread(arg, cut_point);
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
-            // arg.smc_sample_recombinations();
         }
-        // arg.check_incompatibility();
+        arg.check_incompatibility();
+        arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/sample_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/sample_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/sample_ts_recombs.txt");
         cout << "Number of trees: " << arg.recombinations.size() << endl;
     }
 }

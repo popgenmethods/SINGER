@@ -62,6 +62,8 @@ void Tree::remove(Branch b, Node *n) {
     Branch parent_branch = Branch(b.upper_node, parent);
     Branch cut_branch = Branch(b.lower_node, n);
     delete_branch(b);
+    assert(branches.count(sibling_branch) > 0);
+    assert(branches.count(parent_branch) > 0);
     delete_branch(sibling_branch);
     delete_branch(parent_branch);
     insert_branch(joining_branch);

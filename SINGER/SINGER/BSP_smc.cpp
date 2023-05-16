@@ -16,8 +16,8 @@ BSP_smc::~BSP_smc() {
         }
     }
     vector<vector<float>>().swap(forward_probs);
-    map<Interval *, vector<float>>().swap(source_weights);
-    map<Interval *, vector<Interval *>>().swap(source_intervals);
+    // map<Interval *, vector<float>>().swap(source_weights);
+    // map<Interval *, vector<Interval *>>().swap(source_intervals);
     map<int, vector<Interval *>>().swap(state_spaces);
 }
 
@@ -299,12 +299,14 @@ void BSP_smc::transfer_helper(Interval_info next_interval) {
     transfer_intervals[next_interval];
 }
 
+/*
 Interval *BSP_smc::duplicate_interval(Interval *interval) {
     Interval *new_interval = new Interval(interval->branch, interval->lb, interval->ub, curr_index);
     source_intervals[new_interval] = {interval};
     source_weights[new_interval] = {1};
     return new_interval;
 }
+ */
 
 void BSP_smc::add_new_branches(Recombination &r) { // add recombined branch and merging branch, if legal
     Interval_info next_interval;
@@ -325,7 +327,10 @@ void BSP_smc::add_new_branches(Recombination &r) { // add recombined branch and 
 }
 
 void BSP_smc::compute_interval_info() {
-    cc->compute(valid_branches);
+    if (states_change) {
+        cc->compute(valid_branches);
+    }
+    states_change = false;
     float t;
     float p;
     for (Interval *i : curr_intervals) {
@@ -337,7 +342,12 @@ void BSP_smc::compute_interval_info() {
 }
 
 void BSP_smc::sanity_check(Recombination &r) {
-    
+    for (int i = 0; i < curr_intervals.size(); i++) {
+        Interval *interval = curr_intervals[i];
+        if (interval->lb == interval->ub and interval->lb == r.inserted_node->time and interval->branch != r.target_branch) {
+            forward_probs[curr_index][i] = 0;
+        }
+    }
 }
 
 void BSP_smc::generate_intervals(Recombination &r) {
@@ -364,25 +374,26 @@ void BSP_smc::generate_intervals(Recombination &r) {
             temp_intervals.push_back(new_interval);
             temp.push_back(p);
             if (weights.size() > 0) {
-                source_weights[new_interval] = std::move(weights);
-                source_intervals[new_interval] = std::move(intervals);
+                new_interval->source_weights = move(weights);
+                new_interval->source_intervals = move(intervals);
+                // source_weights[new_interval] = std::move(weights);
+                // source_intervals[new_interval] = std::move(intervals);
             }
         } else if (p >= cutoff) { // partial intervals
             new_interval = new Interval(b, lb, ub, curr_index);
             temp_intervals.push_back(new_interval);
             temp.push_back(p);
             if (weights.size() > 0) {
-                source_weights[new_interval] = std::move(weights);
-                source_intervals[new_interval] = std::move(intervals);
+                new_interval->source_weights = move(weights);
+                new_interval->source_intervals = move(intervals);
+                // source_weights[new_interval] = std::move(weights);
+                // source_intervals[new_interval] = std::move(intervals);
             }
         }
     }
     forward_probs.push_back(temp);
     curr_intervals = temp_intervals;
-    if (states_change) {
-        compute_interval_info();
-        states_change = false;
-    }
+    compute_interval_info();
     // assert(valid_branches.size() <= curr_intervals.size());
 }
 
@@ -591,7 +602,9 @@ void BSP_smc::process_other_interval(Recombination &r, int i) {
 }
 
 float BSP_smc::random() {
-    return (float) rand()/RAND_MAX;
+    // return (float) rand()/RAND_MAX;
+    float p = uniform_random();
+    return p;
 }
 
 int BSP_smc::get_prev_breakpoint(int x) {
@@ -664,9 +677,11 @@ Interval *BSP_smc::sample_prev_interval(int x) {
 
 Interval *BSP_smc::sample_source_interval(Interval *interval, int x) {
     vector<Interval *> &prev_intervals = get_state_space(x);
-    assert(source_intervals.count(interval) > 0);
-    vector<Interval *> intervals = source_intervals[interval];
-    vector<float> weights = source_weights[interval];
+    // assert(source_intervals.count(interval) > 0);
+    // vector<Interval *> intervals = source_intervals[interval];
+    // vector<float> weights = source_weights[interval];
+    vector<Interval *> &intervals = interval->source_intervals;
+    vector<float> &weights = interval->source_weights;
     float q = random();
     float ws = accumulate(weights.begin(), weights.end(), 0.0);
     float w = ws*q;

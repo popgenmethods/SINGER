@@ -28,13 +28,13 @@ public:
     
     void thread(ARG &a, Node *n);
     
-    void internal_rethread(ARG &a, tuple<int, Branch, float> cut_point);
+    void internal_rethread(ARG &a, tuple<float, Branch, float> cut_point);
     
-    void terminal_rethread(ARG &old_arg, tuple<int, Branch, float> cut_point);
+    void terminal_rethread(ARG &old_arg, tuple<float, Branch, float> cut_point);
     
     void fast_thread(ARG &a, Node *n);
     
-    void internal_fast_rethread(ARG &old_arg, tuple<int, Branch, float> cut_point);
+    void internal_fast_rethread(ARG &old_arg, tuple<float, Branch, float> cut_point);
     
 // private:
     

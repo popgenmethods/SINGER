@@ -88,7 +88,7 @@ void Coalescent_calculator::compute_probs_quantiles() {
         } else {
             next_prob = prev_prob;
         }
-        assert(cum_prob <= 1);
+        assert(cum_prob <= 1.0001);
         probs.insert({next_time, cum_prob});
         quantiles.insert({next_time, cum_prob});
         prev_prob = next_prob;

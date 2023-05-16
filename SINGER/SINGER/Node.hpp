@@ -31,6 +31,8 @@ public:
     
     void set_index(int index);
     
+    static shared_ptr<Node> create_node(float t);
+    
     void print();
     
     void add_mutation(float pos);

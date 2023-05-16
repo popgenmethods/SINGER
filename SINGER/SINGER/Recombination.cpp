@@ -182,6 +182,9 @@ void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Bran
         return;
     }
     assert(deleted_branches.size() == inserted_branches.size());
+    if (deleted_branches.size() == 0) {
+        return;
+    }
     find_nodes();
     // when joining the source branch, depending on whether it joins above the start time or below, determine the new source branch
     if (prev_joining_branch == source_branch) {

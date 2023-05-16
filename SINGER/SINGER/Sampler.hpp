@@ -58,6 +58,8 @@ public:
     
     void build_singleton_arg();
     
+    void build_void_arg();
+    
     void iterative_start();
     
     void fast_iterative_start();

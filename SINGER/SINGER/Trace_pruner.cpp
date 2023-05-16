@@ -188,6 +188,7 @@ float Trace_pruner::find_minimum_match() {
     return x;
 }
 
+/*
 void Trace_pruner::extend_forward(ARG &a, float x) {
     auto recomb_it = a.recombinations.upper_bound(x);
     auto match_it = match_map.lower_bound(x);
@@ -241,6 +242,95 @@ void Trace_pruner::extend_backward(ARG &a, float x) {
     }
     // cout << "Extend backward from " << x << " to " << m << endl;
 }
+ */
+
+void Trace_pruner::extend_forward(ARG &a, float x) {
+    int index = a.get_index(x);
+    float m = x;
+    auto recomb_it = a.recombinations.upper_bound(x);
+    auto match_it = match_map.lower_bound(x);
+    auto used_it = used_seeds.upper_bound(x);
+    match_it++;
+    float ub = *used_it;
+    Node *n;
+    float bin_start;
+    float bin_end;
+    set<float> mutations = {};
+    while (a.coordinates[index] < ub and curr_scores.size() > 0) {
+        for (float y : mutations) {
+            potential_seeds.erase(y);
+        }
+        bin_start = a.coordinates[index];
+        bin_end = a.coordinates[index + 1];
+        while (recomb_it->first <= bin_start) {
+            Recombination &r = recomb_it->second;
+            recomb_it++;
+            recombination_forward(r);
+        }
+        mutations.clear();
+        while (match_it->first < bin_end) {
+            m = match_it->first;
+            n = get_node_at(m);
+            mutation_update(n, m);
+            mutations.insert(m);
+            ++match_it;
+        }
+        if (a.recombinations.count(bin_end) == 0) {
+            forward_prune_states(bin_end);
+        }
+        ++index;
+    }
+    if (curr_scores.size() > 0) {
+        delete_all(ub);
+    }
+    // cout << "Extend forward from " << x << " to " << m << endl;
+}
+
+void Trace_pruner::extend_backward(ARG &a, float x) {
+    int index = a.get_index(x);
+    float m = x;
+    auto recomb_it = a.recombinations.upper_bound(x);
+    auto match_it = match_map.lower_bound(x);
+    auto used_it = used_seeds.upper_bound(x);
+    --recomb_it;
+    --used_it;
+    float lb = *used_it;
+    Node *n;
+    float bin_start;
+    float bin_end;
+    set<float> mutations = {};
+    while (a.coordinates[index + 1] > lb and curr_scores.size() > 0) {
+        for (float y : mutations) {
+            potential_seeds.erase(y);
+        }
+        bin_start = a.coordinates[index];
+        bin_end = a.coordinates[index + 1];
+        while (recomb_it->first > bin_start) {
+            Recombination &r = recomb_it->second;
+            recombination_backward(r);
+            --recomb_it;
+        }
+        mutations.clear();
+        while (match_it->first >= bin_start) {
+            m = match_it->first;
+            n = get_node_at(m);
+            mutation_update(n, m);
+            mutations.insert(m);
+            if (match_it == match_map.begin()) {
+                break;
+            }
+            --match_it;
+        }
+        if (a.recombinations.count(bin_start) == 0) {
+            backward_prune_states(bin_start);
+        }
+        --index;
+    }
+    if (curr_scores.size() > 0) {
+        insert_all(lb);
+    }
+    // cout << "Extend backward from " << x << " to " << m << endl;
+}
 
 void Trace_pruner::extend(ARG &a, float x) {
     start_search(a, x);
@@ -252,6 +342,9 @@ void Trace_pruner::extend(ARG &a, float x) {
 }
 
 void Trace_pruner::mutation_update(Node *n, float m) {
+    if (n == nullptr) {
+        return;
+    }
     float mismatch = 0;
     float penalty = 0;
     for (auto &[i, s] : curr_scores) {
@@ -448,7 +541,12 @@ float Trace_pruner::exp_prop(float l, float u, float x, float y) {
     }
     float sub_prob = exp_prob(x, y);
     float prob = exp_prob(l, u);
-    float prop = sub_prob/prob;
+    float prop;
+    if (sub_prob == 0) {
+        prop = 1e-10;
+    } else {
+        prop = sub_prob/prob;
+    }
     assert(!isnan(prop));
     return prop;
 }

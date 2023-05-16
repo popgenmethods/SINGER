@@ -40,8 +40,8 @@ public:
     shared_ptr<Coalescent_calculator> cc;
     
     // transfer at recombinations
-    map<Interval *, vector<Interval *>> source_intervals = {};
-    map<Interval *, vector<float>> source_weights = {};
+    // map<Interval *, vector<Interval *>> source_intervals = {};
+    // map<Interval *, vector<float>> source_weights = {};
     map<Interval_info, vector<Interval *>> transfer_intervals = {};
     map<Interval_info, vector<float>> transfer_weights = {};
     
