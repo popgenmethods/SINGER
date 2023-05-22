@@ -30,7 +30,7 @@ void Parsimony_pruner::prune_arg(ARG &a) {
 
 void Parsimony_pruner::start_search(ARG &a, float m) {
     seed_match.clear();
-    Node *n = get_node_at(m);
+    Node_ptr n = get_node_at(m);
     float mismatch = 0;
     float x0 = find_closest_reference(m);
     /*
@@ -58,7 +58,7 @@ void Parsimony_pruner::extend(ARG &a, float x) {
     used_seeds.insert(x); // when extending later seeds, don't go beyond previous seeds (to save computation)
 }
 
-void Parsimony_pruner::mutation_forward(Node *n, float m) {
+void Parsimony_pruner::mutation_forward(Node_ptr n, float m) {
     float mismatch = 0;
     Branch branch = Branch();
     set<Branch> bad_branches = {};
@@ -79,7 +79,7 @@ void Parsimony_pruner::mutation_forward(Node *n, float m) {
     }
 }
 
-void Parsimony_pruner::mutation_backward(Node *n, float m) {
+void Parsimony_pruner::mutation_backward(Node_ptr n, float m) {
     float mismatch = 0;
     Branch branch = Branch();
     set<Branch> bad_branches = {};
@@ -104,7 +104,7 @@ void Parsimony_pruner::mutation_backward(Node *n, float m) {
     }
 }
 
-Node *Parsimony_pruner::get_node_at(float x) {
+Node_ptr Parsimony_pruner::get_node_at(float x) {
     auto query_it = queries.upper_bound(x);
     query_it--;
     return query_it->second.lower_node;
@@ -225,7 +225,7 @@ void Parsimony_pruner::build_match_map(ARG &a) {
     float lb = 0;
     float state = 0;
     auto mb_it = a.mutation_branches.lower_bound(start);
-    Node *n = nullptr;
+    Node_ptr n = nullptr;
     while (mb_it->first < end) {
         m = mb_it->first;
         n = get_node_at(m);
@@ -266,7 +266,7 @@ float Parsimony_pruner::find_minimum_match() {
     return x;
 }
 
-float Parsimony_pruner::count_mismatch(Branch branch, Node *n, float m) {
+float Parsimony_pruner::count_mismatch(Branch branch, Node_ptr n, float m) {
     if (private_mutations.count(m) > 0) { // special penalty for singleton mutations
         return 0.5;
     }
@@ -358,7 +358,7 @@ void Parsimony_pruner::extend_forward(ARG &a, float x) {
     auto used_it = used_seeds.upper_bound(x);
     float m = x;
     // float c;
-    Node *n = nullptr;
+    Node_ptr n = nullptr;
     float ub = *used_it;
     while (curr_match.size() > 0 and match_it->first < ub) {
         potential_seeds.erase(m);
@@ -382,7 +382,7 @@ void Parsimony_pruner::extend_backward(ARG &a, float x) {
     recomb_it--;
     used_it--;
     float m = x;
-    Node *n = nullptr;
+    Node_ptr n = nullptr;
     float lb = *used_it;
     while (curr_match.size() > 0 and match_it->first > lb) {
         potential_seeds.erase(m);

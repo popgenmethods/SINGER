@@ -21,8 +21,8 @@ class ARG {
 public:
     
     float Ne = 1;
-    Node *root = new Node(numeric_limits<float>::infinity());
-    Node *cut_node = nullptr;
+    Node_ptr root = new_node(numeric_limits<float>::infinity());
+    Node_ptr cut_node = nullptr;
     float cut_time = 0;
     set<float> mutation_sites = {};
     map<float, set<Branch>> mutation_branches = {};
@@ -32,8 +32,8 @@ public:
     vector<float> coordinates = {};
     vector<float> rhos = {};
     vector<float> thetas = {};
-    set<Node *, compare_node> sample_nodes = {};
-    set<Node *, compare_node> node_set = {};
+    set<Node_ptr, compare_node> sample_nodes = {};
+    set<Node_ptr, compare_node> node_set = {};
     map<float, Branch> joining_branches = {};
     map<float, Branch> removed_branches = {};
     map<float, Tree> tree_map = {};
@@ -56,19 +56,19 @@ public:
     
     void compute_rhos_thetas(float r, float m);
     
-    void build_singleton_arg(Node *n);
+    void build_singleton_arg(Node_ptr n);
     
-    void add_sample(Node *n);
+    void add_sample(Node_ptr n);
     
-    void add_node(Node *n);
+    void add_node(Node_ptr n);
     
-    Node *add_new_node(float t);
+    void add_new_node(float t);
     
     Tree get_tree_at(float x);
     
-    Tree modify_tree_to(float x, Tree &reference_tree, float x0);
+    Node_ptr get_query_node_at(float x);
     
-    Node *get_query_node_at(float x);
+    Tree modify_tree_to(float x, Tree &reference_tree, float x0);
 
     void remove(tuple<float, Branch, float> cut_point);
     
@@ -111,11 +111,7 @@ public:
     void map_mutation(float x, Branch joining_branch, Branch added_branch);
     
     void map_mutation(Tree tree, float x);
-    
-    // void clear_memory();
-    
-    // void clear_memory(map<float, Branch> added_branches);
-    
+
     void check_mapping();
     
     void check_incompatibility();

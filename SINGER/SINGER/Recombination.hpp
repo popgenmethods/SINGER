@@ -25,8 +25,8 @@ public:
     Branch lower_transfer_branch;
     Branch upper_transfer_branch;
     float start_time = -1;
-    Node* deleted_node;
-    Node* inserted_node;
+    Node_ptr deleted_node;
+    Node_ptr inserted_node;
     set<Branch> deleted_branches = {};
     set<Branch> inserted_branches = {};
     
@@ -50,25 +50,25 @@ public:
     
     Branch trace_backward(float t, Branch curr_branch);
     
-    void remove(Branch prev_removed_branch, Branch next_removed_branch, Branch prev_split_branch, Branch next_split_branch, Node *cut_node);
+    void remove(Branch prev_removed_branch, Branch next_removed_branch, Branch prev_split_branch, Branch next_split_branch, Node_ptr cut_node);
     
     void remove(Branch prev_removed_branch, Branch next_removed_branch, Branch prev_split_branch, Branch next_split_branch);
     
-    void add(Branch prev_added_branch, Branch next_added_branch, Branch prev_joining_branch, Branch next_joining_branch, Node *cut_node);
+    void add(Branch prev_added_branch, Branch next_added_branch, Branch prev_joining_branch, Branch next_joining_branch, Node_ptr cut_node);
     
-    void break_front(Branch next_removed_branch, Branch next_split_branch, Node *cut_node);
+    void break_front(Branch next_removed_branch, Branch next_split_branch, Node_ptr cut_node);
     
-    void break_end(Branch next_removed_branch, Branch next_split_branch, Node *cut_node);
+    void break_end(Branch next_removed_branch, Branch next_split_branch, Node_ptr cut_node);
     
     void break_front(Branch next_removed_branch, Branch next_split_branch);
     
     void break_end(Branch next_removed_branch, Branch next_split_branch);
     
-    void fix_front(Branch next_added_branch, Branch next_joining_branch, Node *cut_node);
+    void fix_front(Branch next_added_branch, Branch next_joining_branch, Node_ptr cut_node);
     
-    void fix_end(Branch prev_added_branch, Branch prev_joining_branch, Node *cut_node);
+    void fix_end(Branch prev_added_branch, Branch prev_joining_branch, Node_ptr cut_node);
     
-    Branch next_added_branch(Branch prev_joining_branch, Branch prev_added_branch, Node *base_node);
+    Branch next_added_branch(Branch prev_joining_branch, Branch prev_added_branch, Node_ptr base_node);
     
 // private:
     
@@ -78,9 +78,9 @@ public:
     
     void add_inserted_branch(Branch b);
     
-    Branch search_upper_node(Node *n); // search in the deleted branches a non-source branch with n as upper node
+    Branch search_upper_node(Node_ptr n); // search in the deleted branches a non-source branch with n as upper node
     
-    Branch search_lower_node(Node *n); // search in the deleted branches a non-source branch with n as lower node
+    Branch search_lower_node(Node_ptr n); // search in the deleted branches a non-source branch with n as lower node
     
 };
 

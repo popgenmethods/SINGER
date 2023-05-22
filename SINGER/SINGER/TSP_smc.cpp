@@ -232,7 +232,7 @@ void TSP_smc::forward(float rho) {
     }
 }
 
-void TSP_smc::null_emit(float theta, Node *query_node) {
+void TSP_smc::null_emit(float theta, Node_ptr query_node) {
     compute_null_emit_probs(theta, query_node);
     prev_theta = theta;
     prev_node = query_node;
@@ -255,7 +255,7 @@ void TSP_smc::null_emit(float theta, Node *query_node) {
     }
 }
 
-void TSP_smc::mut_emit(float theta, float bin_size, set<float> &mut_set, Node *query_node) {
+void TSP_smc::mut_emit(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node) {
     compute_mut_emit_probs(theta, bin_size, mut_set, query_node);
     float ws = 0;
     for (int i = 0; i < dim; i++) {
@@ -268,13 +268,13 @@ void TSP_smc::mut_emit(float theta, float bin_size, set<float> &mut_set, Node *q
     }
 }
 
-map<float, Node *> TSP_smc::sample_joining_nodes(int start_index, vector<float> &coordinates) {
+map<float, Node_ptr > TSP_smc::sample_joining_nodes(int start_index, vector<float> &coordinates) {
     prev_rho = -1;
-    map<float, Node *> joining_nodes = {};
+    map<float, Node_ptr > joining_nodes = {};
     int x = curr_index;
     float pos = coordinates[x + start_index + 1];
     Interval *interval = sample_curr_interval(x);
-    Node *n = sample_joining_node(interval);
+    Node_ptr n = sample_joining_node(interval);
     joining_nodes[pos] = nullptr;
     while (x >= 0) {
         x = trace_back_helper(interval, x);
@@ -481,7 +481,7 @@ float TSP_smc::get_prop(float lb1, float ub1, float lb2, float ub2) {
     return p;
 }
 
-void TSP_smc::compute_null_emit_probs(float theta, Node *query_node) {
+void TSP_smc::compute_null_emit_probs(float theta, Node_ptr query_node) {
     if (theta == prev_theta and query_node == prev_node) {
         return;
     }
@@ -490,7 +490,7 @@ void TSP_smc::compute_null_emit_probs(float theta, Node *query_node) {
     }
 }
 
-void TSP_smc::compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node *query_node) {
+void TSP_smc::compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node) {
     compute_emissions(mut_set, curr_branch, query_node);
     for (int i = 0; i < dim; i++) {
         // mut_emit_probs[i] = eh->mut_emit(curr_branch, curr_intervals[i]->time, theta, bin_size, mut_set, query_node);
@@ -573,7 +573,7 @@ void TSP_smc::compute_factors() {
     }
 }
 
-void TSP_smc::compute_emissions(set<float> &mut_set, Branch branch, Node *node) {
+void TSP_smc::compute_emissions(set<float> &mut_set, Branch branch, Node_ptr node) {
     fill(emissions.begin(), emissions.end(), 0);
     float sl, su, s0, sm = 0;
     for (float x : mut_set) {
@@ -837,15 +837,15 @@ float TSP_smc::sample_time(float lb, float ub) {
 }
 
 
-Node *TSP_smc::sample_joining_node(Interval *interval) {
-    Node *n = nullptr;
+Node_ptr TSP_smc::sample_joining_node(Interval *interval) {
+    Node_ptr n = nullptr;
     float t;
     if (interval->node != nullptr) {
         n = interval->node;
         interval->node = nullptr;
     } else {
         t = sample_time(interval->lb, interval->ub);
-        n = new Node(t);
+        n = new_node(t);
     }
     assert(n != nullptr);
     return n;

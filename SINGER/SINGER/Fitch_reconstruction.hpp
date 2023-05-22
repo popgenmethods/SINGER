@@ -25,11 +25,11 @@ public:
 private:
     
     Tree base_tree = Tree();
-    set<Node*> node_set = {};
-    map<Node*, pair<Node*, Node*>> children_nodes = {};
-    map<Node*, Node*> parent_node = {};
-    map<Node*, float> pruning_node_states = {};
-    map<Node*, float> peeling_node_states = {};
+    set<Node_ptr> node_set = {};
+    map<Node_ptr, pair<Node_ptr, Node_ptr>> children_nodes = {};
+    map<Node_ptr, Node_ptr> parent_node = {};
+    map<Node_ptr, float> pruning_node_states = {};
+    map<Node_ptr, float> peeling_node_states = {};
     float recon_pos = 0.0f;
     
     void fill_tree_info(Tree tree);
@@ -38,13 +38,13 @@ private:
     
     void fill_node_states();
     
-    void Fitch_up(Node *c1, Node *c2, Node *p);
+    void Fitch_up(Node_ptr c1, Node_ptr c2, Node_ptr p);
     
-    void Fitch_down(Node *u, Node *l);
+    void Fitch_down(Node_ptr u, Node_ptr l);
     
-    void pruning_pass(Node *n);
+    void pruning_pass(Node_ptr n);
     
-    void peeling_pass(Node *n);
+    void peeling_pass(Node_ptr n);
     
 };
 

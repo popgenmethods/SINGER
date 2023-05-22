@@ -16,7 +16,7 @@ Threader_smc::Threader_smc(float c, float q, shared_ptr<Emission> e) {
 Threader_smc::~Threader_smc() {
 }
 
-void Threader_smc::thread(ARG &a, Node *n) {
+void Threader_smc::thread(ARG &a, Node_ptr n) {
     cout << "Iteration: " << a.sample_nodes.size() << endl;
     cut_time = 0.005;
     a.add_sample(n);
@@ -38,7 +38,7 @@ void Threader_smc::thread(ARG &a, Node *n) {
     cout << a.recombinations.size() << endl;
 }
 
-void Threader_smc::fast_thread(ARG &a, Node *n) {
+void Threader_smc::fast_thread(ARG &a, Node_ptr n) {
     cout << "Iteration: " << a.sample_nodes.size() << endl;
     cut_time = 0.0;
     a.add_sample(n);
@@ -82,7 +82,7 @@ void Threader_smc::internal_rethread(ARG &a, tuple<float, Branch, float> cut_poi
     }
     a.smc_sample_recombinations();
     a.clear_remove_info();
-    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/next_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/next_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/next_ts_recombs.txt");
+    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/full_ts_recombs.txt");
 }
 
 
@@ -142,7 +142,7 @@ void Threader_smc::run_BSP(ARG &a) {
     set<float> mut_set = {};
     set<Branch> deletions = {};
     set<Branch> insertions = {};
-    Node *query_node = nullptr;
+    Node_ptr query_node = nullptr;
     for (int i = start_index; i < end_index; i++) {
         if (a.coordinates[i] == query_it->first) {
             query_node = query_it->second.lower_node;
@@ -180,7 +180,7 @@ void Threader_smc::run_fast_BSP(ARG &a) {
     auto reduction_it = pruner.reductions.begin();
     vector<float> mutations;
     set<float> mut_set = {};
-    Node *query_node = nullptr;
+    Node_ptr query_node = nullptr;
     for (int i = start_index; i < end_index; i++) {
         if (a.coordinates[i] == query_it->first) {
             query_node = query_it->second.lower_node;
@@ -222,7 +222,7 @@ void Threader_smc::run_TSP(ARG &a) {
     auto query_it = a.removed_branches.lower_bound(start);
     Branch prev_branch = start_branch;
     Branch next_branch = start_branch;
-    Node *query_node = nullptr;
+    Node_ptr query_node = nullptr;
     set<float> mut_set = {};
     for (int i = start_index; i < end_index; i++) {
         if (a.coordinates[i] == query_it->first) {
@@ -267,11 +267,11 @@ void Threader_smc::sample_joining_branches(ARG &a) {
 }
 
 void Threader_smc::sample_joining_points(ARG &a) {
-    map<float, Node *> added_nodes = tsp.sample_joining_nodes(start_index, a.coordinates);
+    map<float, Node_ptr> added_nodes = tsp.sample_joining_nodes(start_index, a.coordinates);
     auto add_it = added_nodes.begin();
     auto end_it = added_nodes.end();
-    Node *query_node = nullptr;
-    Node *added_node = nullptr;
+    Node_ptr query_node = nullptr;
+    Node_ptr added_node = nullptr;
     float x;
     while (add_it != end_it) {
         x = add_it->first;

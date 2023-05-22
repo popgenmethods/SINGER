@@ -113,7 +113,7 @@ float BSP_smc::get_recomb_prob(float rho, float t) {
     return p;
 }
 
-void BSP_smc::null_emit(float theta, Node *query_node) {
+void BSP_smc::null_emit(float theta, Node_ptr query_node) {
     compute_null_emit_prob(theta, query_node);
     prev_theta = theta;
     prev_node = query_node;
@@ -128,7 +128,7 @@ void BSP_smc::null_emit(float theta, Node *query_node) {
     }
 }
 
-void BSP_smc::mut_emit(float theta, float bin_size, set<float> &mut_set, Node *query_node) {
+void BSP_smc::mut_emit(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node) {
     compute_mut_emit_probs(theta, bin_size, mut_set, query_node);
     float ws = 0;
     for (int i = 0; i < dim; i++) {
@@ -259,7 +259,7 @@ void BSP_smc::compute_recomb_weights(float rho) {
     }
 }
 
-void BSP_smc::compute_null_emit_prob(float theta, Node *query_node) {
+void BSP_smc::compute_null_emit_prob(float theta, Node_ptr query_node) {
     if (theta == prev_theta and query_node == prev_node) {
         return;
     }
@@ -268,45 +268,21 @@ void BSP_smc::compute_null_emit_prob(float theta, Node *query_node) {
     }
 }
 
-void BSP_smc::compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node *query_node) {
+void BSP_smc::compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node) {
     for (int i = 0; i < dim; i++) {
         mut_emit_probs[i] = eh->mut_emit(curr_intervals[i]->branch, curr_intervals[i]->time, theta, bin_size, mut_set, query_node);
     }
 }
 
 void BSP_smc::transfer_helper(Interval_info next_interval, Interval *prev_interval, float w) {
-    /*
-    if (transfer_weights.count(next_interval) > 0) {
-        transfer_weights[next_interval].push_back(w);
-        transfer_intervals[next_interval].push_back(prev_interval);
-    } else {
-        transfer_weights[next_interval] = {w};
-        transfer_intervals[next_interval] = {prev_interval};
-    }
-     */
     transfer_weights[next_interval].push_back(w);
     transfer_intervals[next_interval].push_back(prev_interval);
 }
 
 void BSP_smc::transfer_helper(Interval_info next_interval) {
-    /*
-    if (transfer_weights.count(next_interval) == 0) {
-        transfer_weights[next_interval] = {};
-        transfer_intervals[next_interval] = {};
-    }
-     */
     transfer_weights[next_interval];
     transfer_intervals[next_interval];
 }
-
-/*
-Interval *BSP_smc::duplicate_interval(Interval *interval) {
-    Interval *new_interval = new Interval(interval->branch, interval->lb, interval->ub, curr_index);
-    source_intervals[new_interval] = {interval};
-    source_weights[new_interval] = {1};
-    return new_interval;
-}
- */
 
 void BSP_smc::add_new_branches(Recombination &r) { // add recombined branch and merging branch, if legal
     Interval_info next_interval;
@@ -455,7 +431,8 @@ void BSP_smc::fast_generate_intervals(Recombination &r) {
  */
 
 float BSP_smc::get_overwrite_prob(Recombination &r, float lb, float ub) {
-    if (check_points.count(curr_index) > 0) {
+    if (check_points.count(r.pos) > 0) {
+        // cout << "check point" << endl;
         return 0.0;
     }
     float join_time = r.inserted_node->time;

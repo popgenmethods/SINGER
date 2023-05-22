@@ -21,7 +21,7 @@ class Tree {
 public:
     
     set<Branch> branches = {};
-    unordered_map<Node *, Node *> parents = {};
+    unordered_map<Node_ptr , Node_ptr > parents = {};
     
     Tree();
     
@@ -35,11 +35,11 @@ public:
     
     void backward_update(Recombination &r);
     
-    void remove(Branch b, Node *n);
+    void remove(Branch b, Node_ptr n);
     
-    void add(Branch added_branch, Branch joining_branch, Node *n);
+    void add(Branch added_branch, Branch joining_branch, Node_ptr n);
     
-    Node *find_sibling(Node *n);
+    Node_ptr find_sibling(Node_ptr n);
     
     Branch find_joining_branch(Branch removed_branch);
     
@@ -61,11 +61,11 @@ public:
     
     float log_exp(float lambda, float x);
     
-    int depth(Node *n);
+    int depth(Node_ptr n);
     
-    Node *LCA(Node *n1, Node *n2);
+    Node_ptr LCA(Node_ptr n1, Node_ptr n2);
     
-    int distance(Node *n1, Node *n2);
+    int distance(Node_ptr n1, Node_ptr n2);
     
     float random();
     

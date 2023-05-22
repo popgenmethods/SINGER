@@ -62,7 +62,7 @@ void Coalescent_calculator::compute_rate_changes(set<Branch> &branches) {
 void Coalescent_calculator::compute_rates() {
     rates.clear();
     int curr_rate = 0;
-    for (auto x : rate_changes) {
+    for (auto &x : rate_changes) {
         curr_rate += x.second;
         rates[x.first] = curr_rate;
     }

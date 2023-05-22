@@ -55,8 +55,8 @@ void Sampler::set_num_samples(int n) {
     num_samples = n;
 }
 
-Node *Sampler::build_node(int index, float time) {
-    Node *n = new Node(time);
+Node_ptr Sampler::build_node(int index, float time) {
+    Node_ptr n = new_node(time);
     n->index = index;
     string mutation_file = input_prefix + "_" + to_string(index) + ".txt";
     n->read_mutation(mutation_file);
@@ -65,7 +65,7 @@ Node *Sampler::build_node(int index, float time) {
 
 void Sampler::build_singleton_arg() {
     float bin_size = rho_unit/recomb_rate;
-    Node *n = build_node(0, 0.0);
+    Node_ptr n = build_node(0, 0.0);
     arg = ARG(Ne, sequence_length);
     arg.discretize(bin_size);
     arg.build_singleton_arg(n);
@@ -85,7 +85,7 @@ void Sampler::iterative_start() {
         random_seed = rand();
         srand(random_seed);
         Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
-        Node *n = build_node(i, 0.0);
+        Node_ptr n = build_node(i, 0.0);
         threader.thread(arg, n);
         // arg.check_incompatibility();
         // arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_ts_recombs.txt");
@@ -100,14 +100,14 @@ void Sampler::fast_iterative_start() {
         random_seed = rand();
         srand(random_seed);
         Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
-        Node *n = build_node(i, 0.0);
+        Node_ptr n = build_node(i, 0.0);
         if (arg.sample_nodes.size() > 1) {
             threader.fast_thread(arg, n);
         } else {
             threader.thread(arg, n);
         }
         // arg.check_incompatibility();
-        // arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_fast_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_fast_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_fast_ts_recombs.txt");
+        arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_fast_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_fast_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_fast_ts_recombs.txt");
     }
     arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_fast_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_fast_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/debug_fast_ts_recombs.txt");
 }
@@ -140,7 +140,11 @@ void Sampler::sample(int num_iters, int spacing) {
             arg.clear_remove_info();
         }
         arg.check_incompatibility();
-        arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/sample_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/sample_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/sample_ts_recombs.txt");
+        // arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/sample_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/sample_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/sample_ts_recombs.txt");
+        string node_file = output_prefix + "_nodes_" + to_string(i) + ".txt";
+        string branch_file= output_prefix + "_branches_" + to_string(i) + ".txt";
+        string recomb_file = output_prefix + "_recombs_" + to_string(i) + ".txt";
+        arg.write(node_file, branch_file, recomb_file);
         cout << "Number of trees: " << arg.recombinations.size() << endl;
     }
 }

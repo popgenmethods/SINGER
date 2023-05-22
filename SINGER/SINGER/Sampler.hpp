@@ -54,7 +54,7 @@ public:
     
     void set_num_samples(int n);
     
-    Node *build_node(int index, float time);
+    Node_ptr build_node(int index, float time);
     
     void build_singleton_arg();
     

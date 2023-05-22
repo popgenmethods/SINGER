@@ -15,6 +15,7 @@ Interval::Interval(Branch b, float tl, float tu, int init_pos) {
     ub = tu;
     assert(lb <= ub);
     // assert(ub >= 0.001);
+    assert(b.lower_node->time <= tl and b.upper_node->time >= tu);
     start_pos = init_pos;
 }
 
@@ -95,6 +96,10 @@ bool Interval::operator!=(const Interval &other) const {
         return true;
     }
     return false;
+}
+
+shared_ptr<Interval> create_interval(Branch b, float tl, float tu, int init_pos) {
+    return make_shared<Interval>(b, tl, tu, init_pos);
 }
 
 Interval_info::Interval_info() {

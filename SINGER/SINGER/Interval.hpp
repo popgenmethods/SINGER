@@ -25,11 +25,12 @@ public:
     float weight = 0.0;
     float time = 0.0;
     int start_pos = 0;
-    Node *node = nullptr;
+    Node_ptr node = nullptr;
     float reduction = 1.0;
     
     vector<float> source_weights = {};
     vector<Interval *> source_intervals = {};
+    vector<shared_ptr<Interval>> intervals = {};
     
     Interval();
     
@@ -49,6 +50,8 @@ public:
     
     bool operator!=(const Interval &other) const;
 };
+
+shared_ptr<Interval> create_interval(Branch b, float tl, float tu, int init_pos);
 
 struct compare_interval {
     

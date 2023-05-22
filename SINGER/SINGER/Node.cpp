@@ -15,10 +15,6 @@ void Node::set_index(int index) {
     this->index = index;
 }
 
-shared_ptr<Node> Node::create_node(float t) {
-    return make_shared<Node>(t);
-}
-
 void Node::add_mutation(float pos) {
     mutation_sites.insert(pos);
 }
@@ -58,4 +54,8 @@ void Node::read_mutation(string filename) {
     while (fin >> x) {
         add_mutation(x);
     }
+}
+
+shared_ptr<Node> new_node(float t) {
+    return make_shared<Node>(t);
 }

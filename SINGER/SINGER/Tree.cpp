@@ -52,12 +52,12 @@ void Tree::backward_update(Recombination &r) {
     }
 }
 
-void Tree::remove(Branch b, Node *n) {
+void Tree::remove(Branch b, Node_ptr n) {
     assert(branches.count(b) > 0);
     assert(b.upper_node->index >= 0);
     Branch joining_branch = find_joining_branch(b);
-    Node *sibling = find_sibling(b.lower_node);
-    Node *parent = parents[b.upper_node];
+    Node_ptr sibling = find_sibling(b.lower_node);
+    Node_ptr parent = parents[b.upper_node];
     Branch sibling_branch = Branch(sibling, b.upper_node);
     Branch parent_branch = Branch(b.upper_node, parent);
     Branch cut_branch = Branch(b.lower_node, n);
@@ -70,7 +70,7 @@ void Tree::remove(Branch b, Node *n) {
     insert_branch(cut_branch);
 }
 
-void Tree::add(Branch added_branch, Branch joining_branch, Node *n) {
+void Tree::add(Branch added_branch, Branch joining_branch, Node_ptr n) {
     Branch lower_branch = Branch(joining_branch.lower_node, added_branch.upper_node);
     Branch upper_branch = Branch(added_branch.upper_node, joining_branch.upper_node);
     delete_branch(joining_branch);
@@ -83,8 +83,8 @@ void Tree::add(Branch added_branch, Branch joining_branch, Node *n) {
     }
 }
 
-Node *Tree::find_sibling(Node *n) {
-    Node *p = parents[n];
+Node_ptr Tree::find_sibling(Node_ptr n) {
+    Node_ptr p = parents[n];
     Branch b = Branch(n, p);
     set<Branch>::iterator branch_it = branches.find(b);
     branch_it++;
@@ -92,7 +92,7 @@ Node *Tree::find_sibling(Node *n) {
         branch_it--;
         branch_it--;
     }
-    Node *s = (*branch_it).lower_node;
+    Node_ptr s = (*branch_it).lower_node;
     return s;
 }
 
@@ -100,8 +100,8 @@ Branch Tree::find_joining_branch(Branch removed_branch) {
     if (removed_branch == Branch()) {
         return Branch();
     }
-    Node *p = parents[removed_branch.upper_node];
-    Node *c = find_sibling(removed_branch.lower_node);
+    Node_ptr p = parents[removed_branch.upper_node];
+    Node_ptr c = find_sibling(removed_branch.lower_node);
     return Branch(c, p);
 }
 
@@ -206,7 +206,7 @@ float Tree::log_exp(float lambda, float x) {
     return -lambda*x + log(lambda);
 }
 
-int Tree::depth(Node *n) {
+int Tree::depth(Node_ptr n) {
     int depth = 0;
     while (!isinf(n->time)) {
         depth += 1;
@@ -215,8 +215,8 @@ int Tree::depth(Node *n) {
     return depth;
 }
 
-Node *Tree::LCA(Node *n1, Node *n2) {
-    set<Node *> ancestors = {};
+Node_ptr Tree::LCA(Node_ptr n1, Node_ptr n2) {
+    set<Node_ptr > ancestors = {};
     while (!isinf(n1->time)) {
         ancestors.insert(n1);
         n1 = parents[n1];
@@ -230,11 +230,11 @@ Node *Tree::LCA(Node *n1, Node *n2) {
     return n1;
 }
 
-int Tree::distance(Node *n1, Node *n2) {
+int Tree::distance(Node_ptr n1, Node_ptr n2) {
     if (n1 == n2) {
         return 0;
     }
-    Node *lca = LCA(n1, n2);
+    Node_ptr lca = LCA(n1, n2);
     int depth1 = depth(n1) - depth(lca);
     int depth2 = depth(n2) - depth(lca);
     return depth1 + depth2;

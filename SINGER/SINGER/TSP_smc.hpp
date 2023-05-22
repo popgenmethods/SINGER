@@ -51,11 +51,11 @@ public:
     
     void forward(float rho);
     
-    void null_emit(float theta, Node *query_node);
+    void null_emit(float theta, Node_ptr query_node);
     
-    void mut_emit(float theta, float bin_size, set<float> &mut_set, Node *query_node);
+    void mut_emit(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node);
     
-    map<float, Node *> sample_joining_nodes(int start_index, vector<float> &coordinates);
+    map<float, Node_ptr > sample_joining_nodes(int start_index, vector<float> &coordinates);
     
 // private:
 
@@ -77,7 +77,7 @@ public:
     
     float prev_rho = -1;
     float prev_theta = -1;
-    Node *prev_node = nullptr;
+    Node_ptr prev_node = nullptr;
     
     int dim = 0;
     vector<float> temp = {};
@@ -110,9 +110,9 @@ public:
     
     void set_dimensions();
     
-    void compute_null_emit_probs(float theta, Node *query_node);
+    void compute_null_emit_probs(float theta, Node_ptr query_node);
     
-    void compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node *query_node);
+    void compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node);
     
     void compute_diagonals(float rho);
     
@@ -126,7 +126,7 @@ public:
     
     void compute_factors();
     
-    void compute_emissions(set<float> &mut_set, Branch branch, Node *node);
+    void compute_emissions(set<float> &mut_set, Branch branch, Node_ptr node);
     
     void compute_trace_back_probs(float rho, Interval *interval, vector<Interval *> &intervals);
     
@@ -154,7 +154,7 @@ public:
     
     float sample_time(float lb, float ub);
     
-    Node *sample_joining_node(Interval *interval);
+    Node_ptr sample_joining_node(Interval *interval);
     
 };
 

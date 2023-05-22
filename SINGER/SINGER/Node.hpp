@@ -31,8 +31,6 @@ public:
     
     void set_index(int index);
     
-    static shared_ptr<Node> create_node(float t);
-    
     void print();
     
     void add_mutation(float pos);
@@ -44,9 +42,11 @@ public:
     void read_mutation(string filename);
 };
 
+shared_ptr<Node> new_node(float t);
+
 struct compare_node {
     
-    bool operator() (const Node *n1, const Node *n2) const {
+    bool operator() (const shared_ptr<Node> n1, const shared_ptr<Node> n2) const {
         if (n1->time != n2->time) {
             return n1->time < n2->time;
         } else if (n1->index != n2->index) {

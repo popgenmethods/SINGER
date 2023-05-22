@@ -12,6 +12,7 @@
 #include <chrono>
 #include <sstream>
 #include "ARG.hpp"
+#include "succint_BSP.hpp"
 #include "BSP_smc.hpp"
 #include "fast_BSP_smc.hpp"
 #include "TSP_smc.hpp"
@@ -26,13 +27,13 @@ public:
     
     ~Threader_smc();
     
-    void thread(ARG &a, Node *n);
+    void thread(ARG &a, Node_ptr n);
     
     void internal_rethread(ARG &a, tuple<float, Branch, float> cut_point);
     
     void terminal_rethread(ARG &old_arg, tuple<float, Branch, float> cut_point);
     
-    void fast_thread(ARG &a, Node *n);
+    void fast_thread(ARG &a, Node_ptr n);
     
     void internal_fast_rethread(ARG &old_arg, tuple<float, Branch, float> cut_point);
     
@@ -44,7 +45,8 @@ public:
     int start_index = 0;
     int end_index = 0;
     Trace_pruner pruner = Trace_pruner();
-    BSP_smc bsp = BSP_smc();
+    // BSP_smc bsp = BSP_smc();
+    succint_BSP bsp = succint_BSP();
     fast_BSP_smc fbsp = fast_BSP_smc();
     TSP_smc tsp = TSP_smc();
     float gap;

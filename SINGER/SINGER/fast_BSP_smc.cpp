@@ -164,7 +164,7 @@ float fast_BSP_smc::get_recomb_prob(float rho, float t) {
     return p;
 }
 
-void fast_BSP_smc::null_emit(float theta, Node *query_node) {
+void fast_BSP_smc::null_emit(float theta, Node_ptr query_node) {
     compute_null_emit_prob(theta, query_node);
     prev_theta = theta;
     prev_node = query_node;
@@ -179,7 +179,7 @@ void fast_BSP_smc::null_emit(float theta, Node *query_node) {
     }
 }
 
-void fast_BSP_smc::mut_emit(float theta, float bin_size, set<float> &mut_set, Node *query_node) {
+void fast_BSP_smc::mut_emit(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node) {
     compute_mut_emit_probs(theta, bin_size, mut_set, query_node);
     float ws = 0;
     for (int i = 0; i < dim; i++) {
@@ -304,7 +304,7 @@ void fast_BSP_smc::compute_recomb_weights(float rho) {
     }
 }
 
-void fast_BSP_smc::compute_null_emit_prob(float theta, Node *query_node) {
+void fast_BSP_smc::compute_null_emit_prob(float theta, Node_ptr query_node) {
     if (theta == prev_theta and query_node == prev_node) {
         return;
     }
@@ -313,7 +313,7 @@ void fast_BSP_smc::compute_null_emit_prob(float theta, Node *query_node) {
     }
 }
 
-void fast_BSP_smc::compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node *query_node) {
+void fast_BSP_smc::compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node) {
     for (int i = 0; i < dim; i++) {
         mut_emit_probs[i] = eh->mut_emit(curr_intervals[i]->branch, curr_intervals[i]->time, theta, bin_size, mut_set, query_node);
     }

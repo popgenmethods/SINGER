@@ -45,9 +45,9 @@ public:
     
     void extend(ARG &a, float x);
 
-    void mutation_forward(Node *n, float m);
+    void mutation_forward(Node_ptr n, float m);
     
-    void mutation_backward(Node *n, float m);
+    void mutation_backward(Node_ptr n, float m);
 
     void recombination_forward(Recombination &r);
     
@@ -59,7 +59,7 @@ public:
 
 // private:
     
-    Node *get_node_at(float x);
+    Node_ptr get_node_at(float x);
     
     void build_match_map(ARG &a);
     
@@ -67,7 +67,7 @@ public:
     
     float find_minimum_match();
     
-    float count_mismatch(Branch branch, Node *n, float m);
+    float count_mismatch(Branch branch, Node_ptr n, float m);
     
     void transition_helper(Branch sb, Branch tb);
     

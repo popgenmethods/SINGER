@@ -28,7 +28,7 @@ void Trace_pruner::prune_arg(ARG &a) {
 
 void Trace_pruner::start_search(ARG &a, float m) {
     seed_scores.clear();
-    Node *n = get_node_at(m);
+    Node_ptr n = get_node_at(m);
     float mismatch = 0;
     float lb, ub;
     Interval_info interval;
@@ -124,13 +124,13 @@ void Trace_pruner::write_reductions(ARG &a) {
 void Trace_pruner::write_changes(ARG &a) {
 }
 
-Node *Trace_pruner::get_node_at(float x) {
+Node_ptr Trace_pruner::get_node_at(float x) {
     auto query_it = queries.upper_bound(x);
     query_it--;
     return query_it->second.lower_node;
 }
 
-float Trace_pruner::count_mismatch(Branch branch, Node *n, float m) {
+float Trace_pruner::count_mismatch(Branch branch, Node_ptr n, float m) {
     float s0 = n->get_state(m);
     float sl = branch.lower_node->get_state(m);
     float su = branch.upper_node->get_state(m);
@@ -147,7 +147,7 @@ void Trace_pruner::build_match_map(ARG &a) {
     float lb = 0;
     float state = 0;
     auto mb_it = a.mutation_branches.lower_bound(start);
-    Node *n = nullptr;
+    Node_ptr n = nullptr;
     while (mb_it->first < end) {
         m = mb_it->first;
         n = get_node_at(m);
@@ -194,7 +194,7 @@ void Trace_pruner::extend_forward(ARG &a, float x) {
     auto match_it = match_map.lower_bound(x);
     auto used_it = used_seeds.upper_bound(x);
     float m = x;
-    Node *n = nullptr;
+    Node_ptr n = nullptr;
     float ub = *used_it;
     while (curr_scores.size() > 0 and match_it->first < ub) {
         potential_seeds.erase(m);
@@ -222,7 +222,7 @@ void Trace_pruner::extend_backward(ARG &a, float x) {
     recomb_it--;
     used_it--;
     float m = x;
-    Node *n = nullptr;
+    Node_ptr n = nullptr;
     float lb = *used_it;
     while (curr_scores.size() > 0 and match_it->first > lb) {
         potential_seeds.erase(m);
@@ -252,7 +252,7 @@ void Trace_pruner::extend_forward(ARG &a, float x) {
     auto used_it = used_seeds.upper_bound(x);
     match_it++;
     float ub = *used_it;
-    Node *n;
+    Node_ptr n;
     float bin_start;
     float bin_end;
     set<float> mutations = {};
@@ -295,7 +295,7 @@ void Trace_pruner::extend_backward(ARG &a, float x) {
     --recomb_it;
     --used_it;
     float lb = *used_it;
-    Node *n;
+    Node_ptr n;
     float bin_start;
     float bin_end;
     set<float> mutations = {};
@@ -341,7 +341,7 @@ void Trace_pruner::extend(ARG &a, float x) {
     used_seeds.insert(x); // when extending later seeds, don't go beyond previous seeds (to save computation)
 }
 
-void Trace_pruner::mutation_update(Node *n, float m) {
+void Trace_pruner::mutation_update(Node_ptr n, float m) {
     if (n == nullptr) {
         return;
     }
