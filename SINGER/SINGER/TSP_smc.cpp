@@ -131,7 +131,7 @@ void TSP_smc::recombine(Branch &prev_branch, Branch &next_branch) {
                 new_prob = recomb_prob(prev_intervals[i]->time, curr_intervals[j]->lb, curr_intervals[j]->ub)*forward_probs[curr_index-1][i]/base;
             }
             assert(new_prob >= 0);
-            forward_probs[curr_index][j] += new_prob;
+            forward_probs[curr_index][j] += new_prob + epsilon;
         }
     }
     for (int i = 0; i < forward_probs[curr_index].size(); i++) {
@@ -229,6 +229,11 @@ void TSP_smc::forward(float rho) {
     for (int i = 0; i < dim; i++) {
         assert(forward_probs[curr_index][i] >= 0);
         forward_probs[curr_index][i] += diagonals[i]*forward_probs[curr_index-1][i] + lower_diagonals[i]*upper_sums[i];
+        /*
+        if (curr_intervals[i]->lb != curr_intervals[i]->ub) {
+            forward_probs[curr_index][i] += epsilon;
+        }
+         */
     }
 }
 
@@ -568,6 +573,7 @@ void TSP_smc::compute_factors() {
             factors[i] = 0;
         } else {
             factors[i] = (exp(-curr_intervals[i]->lb) - exp(-curr_intervals[i]->ub))/(exp(-curr_intervals[i-1]->lb) - exp(-curr_intervals[i-1]->ub));
+            factors[i] = min(factors[i], 5.0f);
         }
         assert(!isnan(factors[i]) and !isinf(factors[i]));
     }
@@ -598,6 +604,11 @@ void TSP_smc::compute_trace_back_probs(float rho, Interval *interval, vector<Int
     }
     for (int i = 0; i < trace_back_probs.size(); i++) {
         trace_back_probs[i] = psmc_prob(rho, intervals[i]->time, interval->lb, interval->ub);
+        /*
+        if (intervals[i]->lb < intervals[i]->ub) {
+            trace_back_probs[i] = max(epsilon, trace_back_probs[i]);
+        }
+         */
     }
 }
 
@@ -649,9 +660,10 @@ Interval *TSP_smc::sample_prev_interval(Interval *interval, int x) {
     float ws = 0;
     float rho = rhos[x];
     compute_trace_back_probs(rho, interval, intervals);
+    vector<float> &probs = forward_probs[x];
     for (int i = 0; i < intervals.size(); i++) {
         if (intervals[i] != interval) {
-            ws += trace_back_probs[i]*forward_probs[x][i];
+            ws += trace_back_probs[i]*probs[i];
         }
     }
     float q = random();
@@ -722,13 +734,15 @@ int TSP_smc::trace_back_helper(Interval *interval, int x) {
         all_prob = inner_product(trace_back_probs.begin(), trace_back_probs.end(), forward_probs[x-1].begin(), 0.0);
         non_recomb_prob = trace_back_probs[sample_index]*forward_probs[x-1][sample_index];
         shrinkage = non_recomb_prob/all_prob;
+        assert(!isnan(shrinkage));
         p *= shrinkage;
         if (p <= q) {
             return x;
         }
         x -= 1;
     }
-    return x;
+    assert(forward_probs[y][sample_index] > 0);
+    return y;
 }
 
 void TSP_smc::set_interval_constraint(Recombination &r) {

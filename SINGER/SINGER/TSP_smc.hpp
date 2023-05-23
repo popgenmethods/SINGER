@@ -21,7 +21,7 @@ public:
     float lower_bound = 0;
     float gap = 0;
     int min_num = 1;
-    float epsilon = 1e-3;
+    float epsilon = 1e-4;
     set<float> check_points = {};
     shared_ptr<Emission> eh;
     

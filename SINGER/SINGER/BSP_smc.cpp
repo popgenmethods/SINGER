@@ -352,8 +352,6 @@ void BSP_smc::generate_intervals(Recombination &r) {
             if (weights.size() > 0) {
                 new_interval->source_weights = move(weights);
                 new_interval->source_intervals = move(intervals);
-                // source_weights[new_interval] = std::move(weights);
-                // source_intervals[new_interval] = std::move(intervals);
             }
         } else if (p >= cutoff) { // partial intervals
             new_interval = new Interval(b, lb, ub, curr_index);
@@ -362,15 +360,12 @@ void BSP_smc::generate_intervals(Recombination &r) {
             if (weights.size() > 0) {
                 new_interval->source_weights = move(weights);
                 new_interval->source_intervals = move(intervals);
-                // source_weights[new_interval] = std::move(weights);
-                // source_intervals[new_interval] = std::move(intervals);
             }
         }
     }
     forward_probs.push_back(temp);
     curr_intervals = temp_intervals;
     compute_interval_info();
-    // assert(valid_branches.size() <= curr_intervals.size());
 }
 
 /*

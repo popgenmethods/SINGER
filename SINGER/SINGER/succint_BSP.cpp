@@ -347,7 +347,6 @@ void succint_BSP::generate_intervals(Recombination &r) {
         }
     }
     forward_probs.push_back(temp);
-    // curr_intervals = move(temp_intervals);
     curr_intervals = temp_intervals;
 }
 

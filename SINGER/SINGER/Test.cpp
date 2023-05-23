@@ -117,8 +117,8 @@ void test_iterative_start() {
 
 void test_fast_iterative_start() {
     srand(38);
-    set_seed(38);
-    // set_seed(93723823);
+    // set_seed(38);
+    set_seed(93723823);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_num_samples(50);

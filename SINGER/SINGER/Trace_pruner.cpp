@@ -188,62 +188,6 @@ float Trace_pruner::find_minimum_match() {
     return x;
 }
 
-/*
-void Trace_pruner::extend_forward(ARG &a, float x) {
-    auto recomb_it = a.recombinations.upper_bound(x);
-    auto match_it = match_map.lower_bound(x);
-    auto used_it = used_seeds.upper_bound(x);
-    float m = x;
-    Node_ptr n = nullptr;
-    float ub = *used_it;
-    while (curr_scores.size() > 0 and match_it->first < ub) {
-        potential_seeds.erase(m);
-        match_it++;
-        m = match_it->first;
-        while (recomb_it->first <= m) {
-            Recombination &r = recomb_it->second;
-            recomb_it++;
-            recombination_forward(r);
-        }
-        n = get_node_at(m);
-        mutation_update(n, m);
-        forward_prune_states(m);
-    }
-    if (curr_scores.size() > 0) {
-        delete_all(ub);
-    }
-    // cout << "Extend forward from " << x << " to " << m << endl;
-}
-
-void Trace_pruner::extend_backward(ARG &a, float x) {
-    auto recomb_it = a.recombinations.upper_bound(x);
-    auto match_it = match_map.find(x);
-    auto used_it = used_seeds.upper_bound(x);
-    recomb_it--;
-    used_it--;
-    float m = x;
-    Node_ptr n = nullptr;
-    float lb = *used_it;
-    while (curr_scores.size() > 0 and match_it->first > lb) {
-        potential_seeds.erase(m);
-        match_it--;
-        m = match_it->first;
-        while (recomb_it->first > m) {
-            Recombination &r = recomb_it->second;
-            recomb_it--;
-            recombination_backward(r);
-        }
-        n = get_node_at(m);
-        mutation_update(n, m);
-        backward_prune_states(m);
-    }
-    if (curr_scores.size() > 0) {
-        insert_all(lb);
-    }
-    // cout << "Extend backward from " << x << " to " << m << endl;
-}
- */
-
 void Trace_pruner::extend_forward(ARG &a, float x) {
     int index = a.get_index(x);
     float m = x;
@@ -281,7 +225,14 @@ void Trace_pruner::extend_forward(ARG &a, float x) {
         ++index;
     }
     if (curr_scores.size() > 0) {
-        delete_all(ub);
+        // delete_all(ub);
+        if (ub == a.sequence_length) {
+            bin_end = ub;
+        } else {
+            index = a.get_index(ub);
+            bin_end = a.coordinates[index + 1];
+        }
+        delete_all(bin_end);
     }
     // cout << "Extend forward from " << x << " to " << m << endl;
 }
@@ -327,7 +278,10 @@ void Trace_pruner::extend_backward(ARG &a, float x) {
         --index;
     }
     if (curr_scores.size() > 0) {
-        insert_all(lb);
+        // insert_all(lb);
+        index = a.get_index(lb);
+        bin_start = a.coordinates[index];
+        insert_all(bin_start);
     }
     // cout << "Extend backward from " << x << " to " << m << endl;
 }
@@ -502,15 +456,6 @@ void Trace_pruner::backward_prune_states(float x) {
         }
     }
 }
-
-/*
-void Trace_pruner::write_init_set() {
-    for (auto &[i, s] : curr_scores) {
-        deletions[start];
-        insertions[start].insert(i);
-    }
-}
- */
 
 void Trace_pruner::delete_all(float x) {
     for (auto &[i, s] : curr_scores) {

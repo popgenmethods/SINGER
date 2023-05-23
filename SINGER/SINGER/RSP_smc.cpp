@@ -39,7 +39,7 @@ float RSP_smc::sample_start_time(Branch b, int density, float join_time, float c
             break;
         }
     }
-    assert(start_time > 0);
+    assert(start_time > cut_time);
     return start_time;
 }
 
@@ -93,7 +93,7 @@ pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density
         }
     }
     assert(weight_sum <= 0);
-    assert(start_time > 0);
+    assert(start_time > cut_time);
     return {source_branch, start_time};
 }
 
@@ -133,7 +133,7 @@ void RSP_smc::sample_recombination(Recombination &r, float cut_time, Tree &tree)
     assert(r.target_branch != Branch());
     assert(r.merging_branch != Branch());
     assert(r.start_time < r.inserted_node->time);
-    assert(r.start_time > 0);
+    assert(r.start_time > cut_time);
 }
 
 // private methods:

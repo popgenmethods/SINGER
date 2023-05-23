@@ -21,6 +21,7 @@ public:
     // basic setup
     float cut_time = 0.0;
     float cutoff = 0.0;
+    float epsilon = 1e-3;
     shared_ptr<Emission> eh;
     set<float> check_points = {};
     equal_interval ei = equal_interval();
@@ -41,8 +42,6 @@ public:
     shared_ptr<Coalescent_calculator> cc;
     
     // transfer at recombinations
-    // map<Interval *, vector<Interval *>> source_intervals = {};
-    // map<Interval *, vector<float>> source_weights = {};
     map<Interval_info, vector<Interval *>> transfer_intervals = {};
     map<Interval_info, vector<float>> transfer_weights = {};
     

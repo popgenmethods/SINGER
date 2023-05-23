@@ -16,8 +16,6 @@ fast_BSP_smc::~fast_BSP_smc() {
         }
     }
     vector<vector<float>>().swap(forward_probs);
-    // map<Interval *, vector<float>>().swap(source_weights);
-    // map<Interval *, vector<Interval *>>().swap(source_intervals);
     map<int, vector<Interval *>>().swap(state_spaces);
 }
 
@@ -35,7 +33,6 @@ void fast_BSP_smc::start(set<Branch> &branches, float t) {
     Interval *new_interval = nullptr;
     cc = make_shared<Coalescent_calculator>(cut_time);
     cc->compute(valid_branches);
-    // states_change = true;
     for (Branch b : branches) {
         if (b.upper_node->time > cut_time) {
             lb = max(b.lower_node->time, cut_time);
@@ -428,8 +425,6 @@ void fast_BSP_smc::generate_intervals(Recombination &r) {
             if (weights.size() > 0) {
                 new_interval->source_weights = move(weights);
                 new_interval->source_intervals = move(intervals);
-                // source_weights[new_interval] = std::move(weights);
-                // source_intervals[new_interval] = std::move(intervals);
             }
             covered_branches.insert(b);
         } else if (p >= cutoff*p0) { // partial intervals
@@ -439,8 +434,6 @@ void fast_BSP_smc::generate_intervals(Recombination &r) {
             if (weights.size() > 0) {
                 new_interval->source_weights = move(weights);
                 new_interval->source_intervals = move(intervals);
-                // source_weights[new_interval] = std::move(weights);
-                // source_intervals[new_interval] = std::move(intervals);
             }
         }
     }
@@ -487,18 +480,7 @@ void fast_BSP_smc::process_interval(Recombination &r, int i) {
 
 void fast_BSP_smc::process_interval(Recombination &r, int i) {
     Interval *prev_interval = curr_intervals[i];
-    // Interval *next_interval;
     Branch prev_branch = prev_interval->branch;
-    /*
-    if (!r.affect(prev_branch)) {
-        next_interval = duplicate_interval(prev_interval);
-        temp_intervals.emplace_back(next_interval);
-        temp_probs.emplace_back(forward_probs[curr_index - 1][i]);
-        source_intervals[next_interval] = {prev_interval};
-        source_weights[next_interval] = {1};
-        return;
-    }
-     */
     if (prev_branch == r.source_branch) {
         process_source_interval(r, i);
     } else if (prev_branch == r.target_branch) {
@@ -703,12 +685,10 @@ Interval *fast_BSP_smc::sample_prev_interval(int x) {
 }
 
 Interval *fast_BSP_smc::sample_source_interval(Interval *interval, int x) {
-    // assert(source_intervals.count(interval) > 0);
     vector<Interval *> &prev_intervals = get_state_space(x);
-    // vector<Interval *> intervals = source_intervals[interval];
-    // vector<float> weights = source_weights[interval];
     vector<Interval *> &intervals = interval->source_intervals;
     vector<float> &weights = interval->source_weights;
+    assert(intervals.size() > 0);
     float q = random();
     float ws = accumulate(weights.begin(), weights.end(), 0.0);
     float w = ws*q;

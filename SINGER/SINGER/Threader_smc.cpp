@@ -19,6 +19,7 @@ Threader_smc::~Threader_smc() {
 void Threader_smc::thread(ARG &a, Node_ptr n) {
     cout << "Iteration: " << a.sample_nodes.size() << endl;
     cut_time = 0.005;
+    a.cut_time = cut_time;
     a.add_sample(n);
     get_boundary(a);
     cout << get_time() << " : begin BSP" << endl;
@@ -40,7 +41,9 @@ void Threader_smc::thread(ARG &a, Node_ptr n) {
 
 void Threader_smc::fast_thread(ARG &a, Node_ptr n) {
     cout << "Iteration: " << a.sample_nodes.size() << endl;
-    cut_time = 0.0;
+    // cut_time = 0.0;
+    cut_time = 0.005;
+    a.cut_time = cut_time;
     a.add_sample(n);
     get_boundary(a);
     cout << get_time() << " : begin pruner" << endl;

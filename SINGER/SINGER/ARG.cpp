@@ -1108,7 +1108,6 @@ tuple<float, Branch, float> ARG::sample_internal_cut() {
         tree_length = cut_tree.length();
         l -= tree_length*(next_pos - prev_pos);
         if (l < 0) {
-            // pos = next_pos + l/tree_length;
             pos = 0.5*(prev_pos + next_pos);
             tie(branch, time) = cut_tree.sample_cut_point();
             cut_pos = pos;
@@ -1121,6 +1120,56 @@ tuple<float, Branch, float> ARG::sample_internal_cut() {
     cerr << "sample internal cut failed" << endl;
     exit(1);
 }
+
+/*
+tuple<float, Branch, float> ARG::sample_internal_cut() {
+    auto recomb_it = recombinations.begin();
+    float p = uniform_random();
+    int dist = (recombinations.size() - 2)*p;
+    dist = max(dist, 1);
+    advance(recomb_it, dist);
+    Recombination &r = recomb_it->second;
+    assert(r.pos > 0 and r.pos < sequence_length);
+    float x = r.pos + 1;
+    float t = (r.start_time + r.recombined_branch.lower_node->time)/2;
+    cut_pos = x;
+    cut_tree = get_tree_at(x);
+    return {x, r.recombined_branch, t};
+}
+ */
+
+/*
+tuple<float, Branch, float> ARG::sample_internal_cut() {
+    float p = 0;
+    float replace_prob = 0;
+    int mapping_size = 0;
+    int count = 0;
+    auto mb_it = mutation_branches.begin();
+    Branch b;
+    float x = 0, t = 0;
+    while (mb_it->first < sequence_length) {
+        mapping_size = (int) mb_it->second.size();
+        replace_prob = 0;
+        if (mapping_size > 1) {
+            replace_prob = (float) mapping_size/(mapping_size + count);
+            count += mb_it->second.size();
+        }
+        p = uniform_random();
+        if (p < replace_prob) {
+            auto b_it = mb_it->second.begin();
+            advance(b_it, (mapping_size - 1)*uniform_random());
+            b = *b_it;
+            x = mb_it->first;
+            t = b.lower_node->time + 1e-3;
+        }
+        mb_it++;
+    }
+    cut_pos = x;
+    cut_tree = get_tree_at(x);
+    // cout << x << " " << b.lower_node->time << " " << b.upper_node->time << " " << t << endl;
+    return {x, b, t};
+}
+ */
 
 tuple<float, Branch, float> ARG::sample_terminal_cut() {
     Branch branch;
