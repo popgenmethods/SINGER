@@ -24,8 +24,10 @@ float RSP_smc::sample_start_time(Branch b, int density, float join_time, float c
     vector<float> weights = {};
     float weight_sum = 0;
     for (int i = 0; i < density; i++) {
-        t = random()*(ub - lb) + lb;
-        w = recomb_pdf(t, join_time);
+        // t = random()*(ub - lb) + lb;
+        t = random_time(lb, ub);
+        w = recomb_pdf(t, ub);
+        // w = recomb_pdf(t, join_time)*exp(- ub + t);
         start_times.push_back(t);
         weights.push_back(w);
         weight_sum += w;
@@ -63,16 +65,20 @@ pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density
     vector<int> branch_indices(0);
     float weight_sum = 0;
     for (int i = 0; i < n1; i++) {
-        t = random()*(ub1 - lb1) + lb1;
-        w = recomb_pdf(t, join_time);
+        // t = random()*(ub1 - lb1) + lb1;
+        t = random_time(lb1, ub1);
+        w = recomb_pdf(t, ub1);
+        // w = recomb_pdf(t, join_time)*exp(- ub1 + t);
         start_times.push_back(t);
         weights.push_back(w);
         weight_sum += w;
         branch_indices.push_back(1);
     }
     for (int i = 0; i < n2; i++) {
-        t = random()*(ub2 - lb2) + lb2;
-        w = recomb_pdf(t, join_time);
+        // t = random()*(ub2 - lb2) + lb2;
+        t = random_time(lb2, ub2);
+        w = recomb_pdf(t, ub2);
+        // w = recomb_pdf(t, join_time)*exp(- ub2 + t);
         start_times.push_back(t);
         weights.push_back(w);
         weight_sum += w;
@@ -173,6 +179,26 @@ void RSP_smc::get_coalescence_rate(Tree &tree, Recombination &r, float cut_time)
 
 float RSP_smc::random() {
     float p = uniform_random();
-    p = 0.01 + 0.98*p;
+    p = 0.1 + 0.9*p;
     return p;
+}
+
+float RSP_smc::random_time(float lb, float ub) {
+    /*
+    float t = 0;
+    float p = random();
+    float q = p + (1 - p)*exp(lb - ub);
+    float delta_t = -log(q);
+    t = ub - delta_t;
+    assert(t > lb);
+    return t;
+     */
+    float t = random()*(ub - lb) + lb;
+    /*
+    if (t <= lb) {
+        t = ub - 1e-12;
+    }
+    assert(t > lb);
+     */
+    return t;
 }

@@ -40,6 +40,8 @@ private:
     
     float random();
     
+    float random_time(float lb, float ub);
+    
 };
 
 #endif /* RSP_smc_hpp */

@@ -100,6 +100,10 @@ public:
     
     tuple<float, Branch, float> sample_terminal_cut();
     
+    tuple<float, Branch, float> sample_recombination_cut();
+    
+    tuple<float, Branch, float> sample_mutation_cut();
+    
     void impute_nodes(float x, float y);
     
     void impute(map<float, Branch> &new_joining_branches, map<float, Branch> &added_branches);

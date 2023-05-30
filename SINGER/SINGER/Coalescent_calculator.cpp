@@ -99,47 +99,6 @@ void Coalescent_calculator::compute_probs_quantiles() {
     assert(quantiles.size() == rates.size());
 }
 
-/*
-
-float Coalescent_calculator::prob(float x) {
-    if (x > max_time) {
-        x = max_time;
-    } else if (x < min_time) {
-        x = min_time;
-    }
-    if (probs.count(x) > 0) {
-        return probs[x];
-    }
-    auto u_it = probs.upper_bound(x);
-    auto l_it = probs.upper_bound(x);
-    l_it--;
-    int rate = rates[l_it->first];
-    float delta_t = u_it->first - l_it->first;
-    float delta_p = u_it->second - l_it->second;
-    float new_delta_t = x - l_it->first;
-    float new_delta_p = delta_p*(1 - exp(-rate*new_delta_t))/(1 - exp(-rate*delta_t));
-    return l_it->second + new_delta_p;
-}
-
-float Coalescent_calculator::quantile(float p) {
-    if (quantiles.count(p) > 0) {
-        return quantiles[p];
-    }
-    auto u_it = quantiles.upper_bound(p);
-    auto l_it = quantiles.upper_bound(p);
-    l_it--;
-    int rate = rates[l_it->second];
-    float delta_t = u_it->second - l_it->second;
-    float delta_p = u_it->first - l_it->first;
-    float new_delta_p = p - l_it->first;
-    float new_delta_t = 1 - new_delta_p/delta_p*(1 - exp(-rate*delta_t));
-    new_delta_t = -log(new_delta_t)/rate;
-    assert(!isnan(new_delta_t));
-    return l_it->second + new_delta_t;
-}
-
-*/
-
 float Coalescent_calculator::prob(float x) {
     if (x > max_time) {
         x = max_time;
@@ -162,7 +121,8 @@ float Coalescent_calculator::prob(float x) {
     float delta_t = u_it->first - l_it->first;
     float delta_p = u_it->second - l_it->second;
     float new_delta_t = x - l_it->first;
-    float new_delta_p = delta_p*(1 - exp(-rate*new_delta_t))/(1 - exp(-rate*delta_t));
+    // float new_delta_p = delta_p*(1 - exp(-rate*new_delta_t))/(1 - exp(-rate*delta_t));
+    float new_delta_p = delta_p*expm1(-rate*new_delta_t)/expm1(-rate*delta_t);
     assert(!isnan(new_delta_p));
     return base_prob + new_delta_p;
 }

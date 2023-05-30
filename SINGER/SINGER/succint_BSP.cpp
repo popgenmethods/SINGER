@@ -561,13 +561,13 @@ Interval_ptr succint_BSP::sample_curr_interval(int x) {
 
 Interval_ptr succint_BSP::sample_prev_interval(int x) {
     vector<Interval_ptr > &intervals = get_state_space(x);
-    vector<float> &ts = get_time_points(x);
+    vector<float> &prev_times = get_time_points(x);
     float rho = rhos[x];
     float ws = recomb_sums[x];
     float q = random();
     float w = ws*q;
     for (int i = 0; i < intervals.size(); i++) {
-        w -= get_recomb_prob(rho, ts[i])*forward_probs[x][i];
+        w -= get_recomb_prob(rho, prev_times[i])*forward_probs[x][i];
         if (w <= 0) {
             sample_index = i;
             return intervals[i];
@@ -595,7 +595,6 @@ Interval_ptr succint_BSP::sample_source_interval(Interval_ptr interval, int x) {
         cerr << "sampling failed" << endl;
         exit(1);
     } else {
-        // assert(interval->start_pos - 1 > x);
         sample_index = get_interval_index(interval, prev_intervals);
         assert(prev_intervals[sample_index] == interval);
         return interval;
@@ -637,4 +636,18 @@ int succint_BSP::trace_back_helper(Interval_ptr interval, int x) {
         x -= 1;
     }
     return y;
+}
+
+float succint_BSP::avg_num_states() {
+    int span = 0;
+    float count = 0;
+    auto x = state_spaces.begin();
+    ++x;
+    while (x->first != INT_MAX) {
+        count += x->second.size()*(x->first - prev(x)->first);
+        span = x->first;
+        ++x;
+    }
+    float avg = (float) count/span;
+    return avg;
 }

@@ -208,6 +208,20 @@ void BSP_smc::write_forward_probs(string filename) {
     file.close();
 }
 
+float BSP_smc::avg_num_states() {
+    int span = 0;
+    float count = 0;
+    auto x = state_spaces.begin();
+    ++x;
+    while (x->first != INT_MAX) {
+        count += x->second.size()*(x->first - prev(x)->first);
+        span = x->first;
+        ++x;
+    }
+    float avg = (float) count/span;
+    return avg;
+}
+
 // private methods:
 
 void BSP_smc::update_states(set<Branch> &deletions, set<Branch> &insertions) {

@@ -10,6 +10,7 @@
 Trace_pruner::Trace_pruner() {}
 
 void Trace_pruner::prune_arg(ARG &a) {
+    cut_time = a.cut_time;
     queries = a.removed_branches;
     start = a.removed_branches.begin()->first;
     end = a.removed_branches.rbegin()->first;
@@ -23,7 +24,7 @@ void Trace_pruner::prune_arg(ARG &a) {
         x = find_minimum_match();
         extend(a, x);
     }
-    write_reductions(a);
+    // write_reductions(a);
 }
 
 void Trace_pruner::start_search(ARG &a, float m) {
@@ -35,13 +36,15 @@ void Trace_pruner::start_search(ARG &a, float m) {
     float x0 = find_closest_reference(m);
     seed_trees[m] = a.modify_tree_to(m, seed_trees[x0], x0);
     for (Branch b : seed_trees[m].branches) {
-        mismatch = count_mismatch(b, n, m);
-        if (mismatch == 0) {
-            lb = max(cut_time, b.lower_node->time);
-            ub = b.upper_node->time;
-            interval = Interval_info(b, lb, ub);
-            interval.seed_pos = m;
-            seed_scores[interval] = 1;
+        if (b.upper_node->time > cut_time) {
+            mismatch = count_mismatch(b, n, m);
+            if (mismatch == 0) {
+                lb = max(cut_time, b.lower_node->time);
+                ub = b.upper_node->time;
+                interval = Interval_info(b, lb, ub);
+                interval.seed_pos = m;
+                seed_scores[interval] = 1;
+            }
         }
     }
     potential_seeds.erase(m);
@@ -154,11 +157,12 @@ void Trace_pruner::build_match_map(ARG &a) {
         state = n->get_state(m);
         lb = -1;
         for (Branch b : mb_it->second) {
-            if (b.upper_node->time < n->time) {
+            if (b.upper_node->time < n->time or b.upper_node->time < cut_time) {
                 continue; // don't search if the mutation is absolutely below the query node
             }
             if (b.lower_node->get_state(m) == state) {
-                lb = max(lb, max(b.lower_node->time, n->time));
+                // lb = max(lb, max(b.lower_node->time, n->time));
+                lb = max(lb, max(b.lower_node->time, cut_time));
             } else if (b.upper_node->index == -1) {
                 lb = max(lb, 0.0f);
             } else {
@@ -166,7 +170,8 @@ void Trace_pruner::build_match_map(ARG &a) {
             }
         }
         if (lb >= 0) { // when negative, no mutation is legal, thus no match was found
-            match_map[m] = lb - n->time;
+            // match_map[m] = lb - n->time;
+            match_map[m] = lb - cut_time;
         }
         mb_it++;
     }
@@ -357,7 +362,7 @@ void Trace_pruner::forward_transition(Recombination &r, const Interval_info &int
         w2 = exp_prop(l, u, lb, ub);
         new_interval = Interval_info(r.upper_transfer_branch, lb, ub);
         forward_transition_helper(interval, new_interval, r.pos, (1 - w0)*w2*p);
-        lb = r.start_time;
+        lb = max(cut_time, r.start_time);
         ub = r.inserted_node->time;
         new_interval = Interval_info(r.recombined_branch, lb, ub);
         forward_transition_helper(interval, new_interval, r.pos, w0*p);
@@ -401,7 +406,7 @@ void Trace_pruner::backward_transition(Recombination &r, const Interval_info &in
         w2 = exp_prop(l, u, lb, ub);
         new_interval = Interval_info(r.source_parent_branch, lb, ub);
         backward_transition_helper(interval, new_interval, r.pos, (1 - w0)*w2*p);
-        lb = r.start_time;
+        lb = max(cut_time, r.start_time);
         ub = r.deleted_node->time;
         new_interval = Interval_info(r.source_branch, lb, ub);
         backward_transition_helper(interval, new_interval, r.pos, w0*p);
@@ -415,6 +420,7 @@ void Trace_pruner::forward_transition_helper(Interval_info prev_interval, Interv
     if (p == 0) {
         return;
     }
+    assert(prev_interval.lb >= cut_time and next_interval.lb >= cut_time);
     next_interval.seed_pos = prev_interval.seed_pos;
     transition_scores[next_interval] += p;
     deletions[x].insert(prev_interval);
@@ -425,6 +431,7 @@ void Trace_pruner::backward_transition_helper(Interval_info next_interval, Inter
     if (p == 0) {
         return;
     }
+    assert(prev_interval.lb >= cut_time and next_interval.lb >= cut_time);
     prev_interval.seed_pos = next_interval.seed_pos;
     transition_scores[prev_interval] += p;
     deletions[x].insert(prev_interval);

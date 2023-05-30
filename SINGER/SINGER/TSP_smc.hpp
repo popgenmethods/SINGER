@@ -21,7 +21,7 @@ public:
     float lower_bound = 0;
     float gap = 0;
     int min_num = 1;
-    float epsilon = 1e-4;
+    float epsilon = 1e-7;
     set<float> check_points = {};
     shared_ptr<Emission> eh;
     
@@ -154,7 +154,11 @@ public:
     
     float sample_time(float lb, float ub);
     
+    float sample_time(float lb, float ub, float t);
+    
     Node_ptr sample_joining_node(Interval *interval);
+    
+    Node_ptr sample_joining_node(Interval *interval, Node_ptr n);
     
 };
 

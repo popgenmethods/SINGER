@@ -24,11 +24,11 @@ public:
     
     ~Binary_emission();
     
-    float null_emit(Branch branch, float time, float theta, Node_ptr node) override;
+    float null_emit(Branch &branch, float time, float theta, Node_ptr node) override;
     
-    float mut_emit(Branch branch, float time, float theta, float bin_size, set<float> &mut_set, Node_ptr node) override;
+    float mut_emit(Branch &branch, float time, float theta, float bin_size, set<float> &mut_set, Node_ptr node) override;
     
-    float emit(Branch branch, float time, float theta, float bin_size, vector<float> &emissions, Node_ptr node) override;
+    float emit(Branch &branch, float time, float theta, float bin_size, vector<float> &emissions, Node_ptr node) override;
     
     float calculate_prob(float theta, float bin_size, float ll, float lu, float l0, int sl, int su, int s0);
     

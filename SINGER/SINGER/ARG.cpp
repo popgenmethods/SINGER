@@ -329,11 +329,6 @@ float ARG::get_updated_length() {
 }
 
 void ARG::add(map<float, Branch> &new_joining_branches, map<float, Branch> &added_branches) {
-    /*
-    for (auto x : added_branches) {
-        add_node(x.second.upper_node);
-    }
-     */
     auto join_it = new_joining_branches.begin();
     auto add_it = added_branches.begin();
     auto recomb_it = recombinations.lower_bound(start);
@@ -535,7 +530,7 @@ void ARG::map_mutation(float x, Branch joining_branch, Branch added_branch) {
         new_branch = Branch(joining_branch.lower_node, added_branch.upper_node);
         mutation_branches[x].insert(new_branch);
     }
-    if (sm != su) {
+    if (sm != su and joining_branch.upper_node != root) {
         new_branch = Branch(added_branch.upper_node, joining_branch.upper_node);
         mutation_branches[x].insert(new_branch);
     }
@@ -625,11 +620,13 @@ void ARG::check_mapping() {
     }
 }
 
+/*
 void ARG::check_incompatibility() {
     Tree tree = Tree();
     auto recomb_it = recombinations.begin();
     auto mut_it = mutation_sites.begin();
     int total_count = 0;
+    int count = 0;
     while (mut_it != prev(mutation_sites.end())) {
         float m = *mut_it;
         while (recomb_it->first < m) {
@@ -637,25 +634,25 @@ void ARG::check_incompatibility() {
             tree.forward_update(r);
             recomb_it++;
         }
-        total_count += count_incompatibility(tree, m);
+        count = count_incompatibility(tree, m);
+        set<Branch> &mapping = mutation_branches[m];
+        assert(count + 1 >= mapping.size());
+        total_count += count;
         mut_it++;
     }
     cout << "Number of incompatibilities: " << total_count << endl;
 }
+ */
 
-/*
-void ARG::clear_memory(map<float, Branch> added_branches) {
-    Node_ptr node = nullptr;
-    for (auto x : added_branches) {
-        if (x.second.upper_node != node) {
-            node = x.second.upper_node;
-            if (node != nullptr and node_set.count(node) == 0) {
-                delete node;
-            }
+void ARG::check_incompatibility() {
+    int count = 0;
+    for (auto &x : mutation_branches) {
+        if (x.second.size() > 1) {
+            count += x.second.size() - 1;
         }
     }
+    cout << "Number of incompatibilities: " << count << endl;
 }
- */
 
 void ARG::clear_remove_info() {
     removed_branches.clear();
@@ -1121,8 +1118,7 @@ tuple<float, Branch, float> ARG::sample_internal_cut() {
     exit(1);
 }
 
-/*
-tuple<float, Branch, float> ARG::sample_internal_cut() {
+tuple<float, Branch, float> ARG::sample_recombination_cut() {
     auto recomb_it = recombinations.begin();
     float p = uniform_random();
     int dist = (recombinations.size() - 2)*p;
@@ -1136,10 +1132,8 @@ tuple<float, Branch, float> ARG::sample_internal_cut() {
     cut_tree = get_tree_at(x);
     return {x, r.recombined_branch, t};
 }
- */
 
-/*
-tuple<float, Branch, float> ARG::sample_internal_cut() {
+tuple<float, Branch, float> ARG::sample_mutation_cut() {
     float p = 0;
     float replace_prob = 0;
     int mapping_size = 0;
@@ -1169,7 +1163,6 @@ tuple<float, Branch, float> ARG::sample_internal_cut() {
     // cout << x << " " << b.lower_node->time << " " << b.upper_node->time << " " << t << endl;
     return {x, b, t};
 }
- */
 
 tuple<float, Branch, float> ARG::sample_terminal_cut() {
     Branch branch;

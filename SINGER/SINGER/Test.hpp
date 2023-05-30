@@ -12,8 +12,6 @@
 #include "Sampler.hpp"
 #include "Trace_pruner.hpp"
 
-string get_time();
-
 void test_read_arg();
 
 void test_parsimony_pruner();

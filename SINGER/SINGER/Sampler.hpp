@@ -35,10 +35,9 @@ public:
     double tsp_q;
     int random_seed = 0;
     shared_ptr<Emission> eh = make_shared<Binary_emission>();
+    int sample_index = 0;
     
     Sampler(float pop_size, float r, float m);
-    
-    string get_time();
     
     void set_pop_size(float n);
     
@@ -64,9 +63,13 @@ public:
     
     void fast_iterative_start();
     
+    void recombination_climb(int num_iters, int spacing);
+    
     void terminal_sample(int num_iters);
     
-    void sample(int num_iters, int spacing);
+    void internal_sample(int num_iters, int spacing);
+    
+    void fast_internal_sample(int num_iters, int spacing);
     
 };
 

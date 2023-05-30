@@ -99,8 +99,6 @@ public:
     
     void write_forward_probs(string filename);
     
-    // void check_recomb_sums();
-    
     void update_states(set<Branch> &deletions, set<Branch> &insertions);
     
     void set_dimensions();
@@ -159,6 +157,7 @@ public:
     
     int trace_back_helper(Interval_ptr interval, int x);
     
+    float avg_num_states();
 };
 
 #endif /* succint_BSP_hpp */

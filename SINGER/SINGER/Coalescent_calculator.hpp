@@ -37,7 +37,6 @@ class Coalescent_calculator {
 public:
     
     float cut_time;
-    // set<Branch> branches = {};
     float min_time, max_time;
     map<float, int> rate_changes = {};
     map<float, int> rates = {};
@@ -47,10 +46,6 @@ public:
     Coalescent_calculator(float t);
     
     ~Coalescent_calculator();
-    
-    // void start(set<Branch> &inserted_branches);
-    
-    // void update(set<Branch> &deleted_branches, set<Branch> &inserted_branches);
     
     void compute(set<Branch> &branches);
     

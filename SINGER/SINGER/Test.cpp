@@ -7,19 +7,6 @@
 
 #include "Test.hpp"
 
-string get_time() {
-    using namespace std::chrono;
-    auto now = system_clock::now();
-    auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
-    auto timer = system_clock::to_time_t(now);
-
-    std::tm bt = *std::localtime(&timer);
-    std::ostringstream oss;
-    oss << "[" << std::put_time(&bt, "%H:%M:%S"); // HH:MM:SS
-    oss << '.' << std::setfill('0') << std::setw(3) << ms.count() << "]";
-    return oss.str();
-}
-
 void test_read_arg() {
     ARG a = ARG(2e4, 1e6);
     a.read("/Users/yun_deng/Desktop/SINGER/arg_files/continuous_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/continuous_ts_branches.txt");
@@ -72,9 +59,9 @@ void test_pruner_efficiency() {
     Node_ptr n = sampler.build_node(1, 0.0);
     sampler.arg.add_sample(n);
     Parsimony_pruner pp = Parsimony_pruner();
-    cout << sampler.get_time() << endl;
+    cout << get_time() << endl;
     pp.prune_arg(sampler.arg);
-    cout << sampler.get_time() << endl;
+    cout << get_time() << endl;
 }
 
 void test_trace_pruner() {
@@ -104,8 +91,8 @@ void test_trace_pruner() {
 
 void test_iterative_start() {
     srand(93723823);
-    // set_seed(93723823);
-    set_seed(3);
+    set_seed(93723823);
+    // set_seed(31);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_num_samples(50);
@@ -143,17 +130,33 @@ void test_terminal_sampling() {
 
 void test_internal_sampling() {
     srand(93723823);
-    set_seed(93723823);
-    // set_seed(15);
-    Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
+    // set_seed(93723823);
+    set_seed(15);
+    Sampler sampler = Sampler(2e4, 1.9e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_num_samples(50);
     sampler.set_sequence_length(1e6);
     sampler.set_input_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_hap0");
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/sample_ts");
     sampler.iterative_start();
-    sampler.sample(500, 1);
+    sampler.recombination_climb(300, 1);
+    sampler.internal_sample(500, 1);
 }
+
+void test_fast_internal_sampling() {
+    srand(93723823);
+    // set_seed(93723823);
+    set_seed(38);
+    Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
+    sampler.set_precision(0.01, 0.05);
+    sampler.set_num_samples(50);
+    sampler.set_sequence_length(1e6);
+    sampler.set_input_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_hap0");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/sample_ts");
+    sampler.fast_iterative_start();
+    sampler.fast_internal_sample(50, 1);
+}
+
 
 void test_succint_bsp() {
     srand(93723823);

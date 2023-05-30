@@ -14,6 +14,7 @@
 #include "ARG.hpp"
 #include "succint_BSP.hpp"
 #include "BSP_smc.hpp"
+#include "fast_BSP.hpp"
 #include "fast_BSP_smc.hpp"
 #include "TSP_smc.hpp"
 #include "Parsimony_pruner.hpp"
@@ -31,11 +32,11 @@ public:
     
     void internal_rethread(ARG &a, tuple<float, Branch, float> cut_point);
     
-    void terminal_rethread(ARG &old_arg, tuple<float, Branch, float> cut_point);
+    void terminal_rethread(ARG &a, tuple<float, Branch, float> cut_point);
     
     void fast_thread(ARG &a, Node_ptr n);
     
-    void internal_fast_rethread(ARG &old_arg, tuple<float, Branch, float> cut_point);
+    void fast_internal_rethread(ARG &a, tuple<float, Branch, float> cut_point);
     
 // private:
     
@@ -47,16 +48,14 @@ public:
     Trace_pruner pruner = Trace_pruner();
     // BSP_smc bsp = BSP_smc();
     succint_BSP bsp = succint_BSP();
-    fast_BSP_smc fbsp = fast_BSP_smc();
+    // fast_BSP_smc fbsp = fast_BSP_smc();
+    fast_BSP fbsp = fast_BSP();
     TSP_smc tsp = TSP_smc();
     float gap;
     float cutoff;
     shared_ptr<Emission> eh;
-    std::chrono::system_clock::time_point time = std::chrono::system_clock::now();
     map<float, Branch> new_joining_branches = {};
     map<float, Branch> added_branches = {};
-    
-    string get_time();
     
     void get_boundary(ARG &a);
     

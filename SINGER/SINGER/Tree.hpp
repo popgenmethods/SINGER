@@ -21,7 +21,7 @@ class Tree {
 public:
     
     set<Branch> branches = {};
-    unordered_map<Node_ptr , Node_ptr > parents = {};
+    unordered_map<Node_ptr, Node_ptr> parents = {};
     
     Tree();
     
