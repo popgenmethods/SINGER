@@ -69,6 +69,8 @@ public:
     Node_ptr get_query_node_at(float x);
     
     Tree modify_tree_to(float x, Tree &reference_tree, float x0);
+    
+    Tree internal_modify_tree_to(float x, Tree &reference_tree, float x0);
 
     void remove(tuple<float, Branch, float> cut_point);
     

@@ -155,6 +155,30 @@ Tree ARG::modify_tree_to(float x, Tree &reference_tree, float x0) {
     }
 }
 
+Tree ARG::internal_modify_tree_to(float x, Tree &reference_tree, float x0) {
+    Tree tree = reference_tree;
+    if (x == x0) {
+        return tree;
+    } else if (x > x0) {
+        auto recomb_it = recombinations.upper_bound(x0);
+        while (recomb_it->first <= x) {
+            Recombination &r = recomb_it->second;
+            tree.internal_forward_update(r, cut_time);
+            ++recomb_it;
+        }
+        return tree;
+    } else {
+        auto recomb_it = recombinations.upper_bound(x0);
+        --recomb_it;
+        while (recomb_it->first > x) {
+            Recombination &r = recomb_it->second;
+            tree.internal_backward_update(r, cut_time);
+            --recomb_it;
+        }
+        return tree;
+    }
+}
+
 void ARG::remove(tuple<float, Branch, float> cut_point) {
     float pos;
     Branch center_branch;
@@ -693,7 +717,7 @@ set<float> ARG::get_check_points() {
     map<Node_ptr , float> deleted_nodes = {};
     vector<tuple<Node_ptr , float, float>> node_span = {};
     while (recomb_it->first <= end_pos) {
-        Recombination r = recomb_it->second;
+        Recombination &r = recomb_it->second;
         deleted_nodes[r.deleted_node] = r.pos;
         Node_ptr inserted_node = r.inserted_node;
         if (deleted_nodes.count(inserted_node) > 0 and inserted_node != root) {

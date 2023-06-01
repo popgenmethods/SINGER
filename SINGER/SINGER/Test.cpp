@@ -170,6 +170,7 @@ void test_optimal_ordering() {
     sampler.optimal_ordering();
 }
 
+/*
 void test_succint_bsp() {
     srand(93723823);
     // set_seed(93723823);
@@ -239,3 +240,4 @@ void test_succint_bsp() {
         assert(bsp_null_probs == sbsp_null_probs);
     }
 }
+*/

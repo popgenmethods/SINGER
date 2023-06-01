@@ -15,8 +15,8 @@ void Trace_pruner::prune_arg(ARG &a) {
     start = a.removed_branches.begin()->first;
     end = a.removed_branches.rbegin()->first;
     used_seeds = {start, end};
-    // seed_trees[start] = a.get_tree_at(start);
     seed_trees[start] = a.start_tree;
+    seed_trees[start].internal_cut(cut_time);
     deletions[end] = {};
     insertions[end] = {};
     build_match_map(a);
@@ -35,7 +35,9 @@ void Trace_pruner::start_search(ARG &a, float m) {
     float lb, ub;
     Interval_info interval;
     float x0 = find_closest_reference(m);
-    seed_trees[m] = a.modify_tree_to(m, seed_trees[x0], x0);
+    // seed_trees[m] = a.modify_tree_to(m, seed_trees[x0], x0);
+    seed_trees[m] = a.internal_modify_tree_to(m, seed_trees[x0], x0);
+    // seed_trees[m].internal_cut(cut_time);
     for (Branch b : seed_trees[m].branches) {
         if (b.upper_node->time > cut_time) {
             mismatch = count_mismatch(b, n, m);

@@ -69,6 +69,7 @@ public:
     vector<vector<float>> forward_probs = {};
     
     // states after pruning:
+    float valid_prob = 0.0;
     bool branch_change = false;
     bool interval_change = false;
     set<Branch> covered_branches = {};
@@ -126,8 +127,6 @@ public:
     void compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node);
     
     void transfer_helper(Interval_info &next_interval, Interval_ptr prev_interval, float w);
-    
-    void transfer_helper(Interval_info &next_interval);
     
     float compute_transfer_prob();
     

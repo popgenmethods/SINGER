@@ -31,6 +31,10 @@ public:
     
     void delete_branch(Branch b);
     
+    void internal_insert_branch(const Branch &b, float cut_time);
+    
+    void internal_delete_branch(const Branch &b, float cut_time);
+    
     void forward_update(Recombination &r);
     
     void backward_update(Recombination &r);
@@ -44,6 +48,12 @@ public:
     Branch find_joining_branch(Branch removed_branch);
     
     pair<Branch, float> sample_cut_point();
+    
+    void internal_cut(float cut_time);
+    
+    void internal_forward_update(Recombination &r, float cut_time);
+    
+    void internal_backward_update(Recombination &r, float cut_time);
     
     float prior_likelihood();
     

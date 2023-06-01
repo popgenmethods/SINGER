@@ -20,6 +20,13 @@ float Tree::length() {
     return l;
 }
 
+void Tree::delete_branch(Branch b) {
+    assert(b.upper_node != nullptr and b.lower_node != nullptr);
+    assert(branches.count(b) > 0);
+    branches.erase(b);
+    parents.erase(b.lower_node);
+}
+
 void Tree::insert_branch(Branch b) {
     assert(b.upper_node != nullptr and b.lower_node != nullptr);
     assert(branches.count(b) == 0);
@@ -27,8 +34,19 @@ void Tree::insert_branch(Branch b) {
     parents[b.lower_node] = b.upper_node;
 }
 
-void Tree::delete_branch(Branch b) {
-    assert(b.upper_node != nullptr and b.lower_node != nullptr);
+void Tree::internal_insert_branch(const Branch &b, float cut_time) {
+    if (b.upper_node->time < cut_time) {
+        return;
+    }
+    assert(branches.count(b) == 0);
+    branches.insert(b);
+    parents[b.lower_node] = b.upper_node;
+}
+
+void Tree::internal_delete_branch(const Branch &b, float cut_time) {
+    if (b.upper_node->time < cut_time) {
+        return;
+    }
     assert(branches.count(b) > 0);
     branches.erase(b);
     parents.erase(b.lower_node);
@@ -123,6 +141,35 @@ pair<Branch, float> Tree::sample_cut_point() {
     }
     assert(branch != Branch());
     return {branch, time};
+}
+
+void Tree::internal_cut(float cut_time) {
+    for (auto it = branches.begin(); it != branches.end();) {
+        if (it->upper_node->time < cut_time) {
+            parents.erase(it->lower_node);
+            it = branches.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void Tree::internal_forward_update(Recombination &r, float cut_time) {
+    for (const Branch &b : r.deleted_branches) {
+        internal_delete_branch(b, cut_time);
+    }
+    for (const Branch &b : r.inserted_branches) {
+        internal_insert_branch(b, cut_time);
+    }
+}
+
+void Tree::internal_backward_update(Recombination &r, float cut_time) {
+    for (const Branch &b : r.deleted_branches) {
+        internal_insert_branch(b, cut_time);
+    }
+    for (const Branch &b : r.inserted_branches) {
+        internal_delete_branch(b, cut_time);
+    }
 }
 
 float Tree::prior_likelihood() {
