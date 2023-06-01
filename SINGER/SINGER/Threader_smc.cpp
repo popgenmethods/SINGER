@@ -126,6 +126,7 @@ void Threader_smc::fast_internal_rethread(ARG &a, tuple<float, Branch, float> cu
     } else {
         a.add(a.joining_branches, a.removed_branches);
     }
+    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_branches.txt");
     a.smc_sample_recombinations();
     a.clear_remove_info();
     // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/full_ts_recombs.txt");

@@ -84,6 +84,8 @@ public:
     
     int count_incompatibility();
     
+    void write(string node_file, string branch_file);
+    
     void write(string node_file, string branch_file, string recomb_file);
     
     void read(string node_file, string branch_file);
@@ -142,7 +144,7 @@ public:
     
     int count_incompatibility(Tree tree, float x);
     
-    void sort_nodes();
+    // void sort_nodes();
     
     void write_nodes(string filename);
     

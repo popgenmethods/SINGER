@@ -87,6 +87,9 @@ void Recombination::remove(Branch prev_removed_branch, Branch next_removed_branc
     if (deleted_branches.size() == 0 and inserted_branches.size() == 0) {
         return;
     }
+    if (prev_removed_branch == next_removed_branch and prev_split_branch == next_split_branch) {
+        return;
+    }
     if (prev_removed_branch == Branch()) {
         break_front(next_removed_branch, next_split_branch, cut_node);
         return;
@@ -184,7 +187,7 @@ void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Bran
     for (Branch b : inserted_branches) {
         assert(b.upper_node->time > b.lower_node->time);
     }
-    assert(start_time < inserted_node->time);
+    assert(start_time <= inserted_node->time);
     assert(merging_branch != Branch());
     assert(deleted_branches.count(source_branch) > 0);
     assert(deleted_branches.size() == 3 or deleted_branches.size() == 4);

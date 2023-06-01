@@ -117,15 +117,15 @@ void test_fast_iterative_start() {
 
 void test_terminal_sampling() {
     srand(93723823);
-    Sampler sampler = Sampler(2e4, 2e-9, 2e-8);
+    set_seed(15);
+    Sampler sampler = Sampler(2e4, 1.9e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
-    sampler.set_num_samples(8);
-    sampler.set_sequence_length(1e7);
-    sampler.set_input_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_hap0");
-    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/low_rho_smc_sample0");
-    sampler.set_log_file_prefix("/Users/yun_deng/Desktop/conditional-coalescent/arg_files/check");
+    sampler.set_num_samples(50);
+    sampler.set_sequence_length(1e6);
+    sampler.set_input_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_hap0");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/sample_ts");
     sampler.iterative_start();
-    sampler.terminal_sample(10);
+    sampler.terminal_sample(50);
 }
 
 void test_internal_sampling() {
@@ -139,14 +139,14 @@ void test_internal_sampling() {
     sampler.set_input_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_hap0");
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/sample_ts");
     sampler.iterative_start();
-    sampler.recombination_climb(300, 1);
-    sampler.internal_sample(500, 1);
+    // sampler.recombination_climb(300, 1);
+    sampler.internal_sample(50, 1);
 }
 
 void test_fast_internal_sampling() {
     srand(93723823);
-    // set_seed(93723823);
-    set_seed(38);
+    set_seed(93723823);
+    // set_seed(38);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_num_samples(50);
@@ -157,6 +157,18 @@ void test_fast_internal_sampling() {
     sampler.fast_internal_sample(50, 1);
 }
 
+void test_optimal_ordering() {
+    srand(93723823);
+    set_seed(93723823);
+    // set_seed(38);
+    Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
+    sampler.set_precision(0.01, 0.05);
+    sampler.set_num_samples(50);
+    sampler.set_sequence_length(1e6);
+    sampler.set_input_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_hap0");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/sample_ts");
+    sampler.optimal_ordering();
+}
 
 void test_succint_bsp() {
     srand(93723823);

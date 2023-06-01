@@ -155,65 +155,6 @@ Tree ARG::modify_tree_to(float x, Tree &reference_tree, float x0) {
     }
 }
 
-/*
-void ARG::remove(tuple<float, Branch, float> cut_point) {
-    float pos;
-    Branch center_branch;
-    float t;
-    tie(pos, center_branch, t) = cut_point;
-    cut_time = t;
-    cut_node = new Node(cut_time);
-    cut_node->set_index(-2);
-    add_node(cut_node);
-    Tree forward_tree = cut_tree;
-    Tree backward_tree = cut_tree;
-    auto f_it = recombinations.upper_bound(pos);
-    auto b_it = recombinations.upper_bound(pos);
-    Branch prev_joining_branch;
-    Branch next_joining_branch;
-    Branch prev_removed_branch = center_branch;
-    Branch next_removed_branch = center_branch;
-    while (next_removed_branch != Branch()) {
-        Recombination &r = f_it->second;
-        prev_joining_branch = forward_tree.find_joining_branch(prev_removed_branch);
-        forward_tree.forward_update(r);
-        next_removed_branch = r.trace_forward(t, prev_removed_branch);
-        if (next_removed_branch.upper_node == root) {
-            next_removed_branch = Branch();
-        }
-        next_joining_branch = forward_tree.find_joining_branch(next_removed_branch);
-        r.remove(prev_removed_branch, next_removed_branch, prev_joining_branch, next_joining_branch, cut_node);
-        removed_branches[min(r.pos, sequence_length)] = next_removed_branch;
-        joining_branches[min(r.pos, sequence_length)] = next_joining_branch;
-        f_it++;
-        prev_removed_branch = next_removed_branch;
-    }
-    next_removed_branch = center_branch;
-    prev_removed_branch = center_branch;
-    while (prev_removed_branch != Branch()) {
-        b_it--;
-        Recombination &r = b_it->second;
-        removed_branches[r.pos] = prev_removed_branch;
-        next_joining_branch = backward_tree.find_joining_branch(next_removed_branch);
-        joining_branches[r.pos] = next_joining_branch;
-        backward_tree.backward_update(r);
-        prev_removed_branch = r.trace_backward(t, next_removed_branch);
-        if (prev_removed_branch.upper_node == root) {
-            prev_removed_branch = Branch();
-        }
-        prev_joining_branch = backward_tree.find_joining_branch(prev_removed_branch);
-        r.remove(prev_removed_branch, next_removed_branch, prev_joining_branch, next_joining_branch, cut_node);
-        next_removed_branch = prev_removed_branch;
-    }
-    remove_empty_recombinations();
-    remap_mutations();
-    start = removed_branches.begin()->first;
-    end = removed_branches.rbegin()->first;
-    cut_tree.remove(center_branch, cut_node);
-    start_tree = modify_tree_to(start, cut_tree, cut_pos);
-}
- */
-
 void ARG::remove(tuple<float, Branch, float> cut_point) {
     float pos;
     Branch center_branch;
@@ -427,8 +368,14 @@ int ARG::count_incompatibility() {
     return count;
 }
 
+void ARG::write(string node_file, string branch_file) {
+    // sort_nodes();
+    write_nodes(node_file);
+    write_branches(branch_file);
+}
+
 void ARG::write(string node_file, string branch_file, string recomb_file) {
-    sort_nodes();
+    // sort_nodes();
     write_nodes(node_file);
     write_branches(branch_file);
     write_recombs(recomb_file);
@@ -537,6 +484,9 @@ void ARG::map_mutation(float x, Branch joining_branch, Branch added_branch) {
     if (sm != s0) {
         mutation_branches[x].insert(added_branch);
     }
+    for (const Branch &b : mutation_branches[x]) {
+        assert(b.lower_node->get_state(x) != b.upper_node->get_state(x));
+    }
 }
 
 void ARG::remap_mutations() {
@@ -568,7 +518,16 @@ void ARG::remap_mutations() {
         if (mut_it->second.count(lower_branch) > 0 or mut_it->second.count(upper_branch) > 0) {
             mut_it->second.erase(lower_branch);
             mut_it->second.erase(upper_branch);
+            // mut_it->second.insert(joining_branch);
+        }
+        float sl = lower_branch.lower_node->get_state(mut_it->first);
+        float su = upper_branch.upper_node->get_state(mut_it->first);
+        if (sl != su and joining_branch.upper_node != root) {
             mut_it->second.insert(joining_branch);
+        }
+        for (const Branch &b : mut_it->second) {
+            float m = mut_it->first;
+            assert(b.lower_node->get_state(m) != b.upper_node->get_state(m));
         }
         mut_it++;
     }
@@ -659,6 +618,7 @@ void ARG::clear_remove_info() {
     joining_branches.clear();
     start = 0;
     end = 0;
+    cut_node = nullptr;
 }
  
 float ARG::smc_prior_likelihood(float r) {
@@ -823,6 +783,7 @@ int ARG::count_incompatibility(Tree tree, float x) {
     return max(0, count);
 }
 
+/*
 void ARG::sort_nodes() {
     int index = 0;
     for (Node_ptr n : node_set) {
@@ -830,21 +791,19 @@ void ARG::sort_nodes() {
         index += 1;
     }
 }
+ */
 
 void ARG::write_nodes(string filename) {
     node_set.clear();
     for (auto x : recombinations) {
-        if (x.second.pos > 0 and x.second.pos < sequence_length) {
-            add_node(x.second.inserted_node);
-        } else {
-            for (Branch b : x.second.inserted_branches) {
-                add_node(b.upper_node);
-            }
+        for (Branch b : x.second.inserted_branches) {
+            add_node(b.upper_node);
         }
     }
     for (Node_ptr n : sample_nodes) {
         add_node(n);
     }
+    assert(cut_node == nullptr or node_set.count(cut_node) > 0);
     ofstream file;
     file.open(filename);
     int index = 0;

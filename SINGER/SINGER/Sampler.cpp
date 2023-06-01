@@ -42,12 +42,40 @@ void Sampler::set_num_samples(int n) {
     num_samples = n;
 }
 
+void Sampler::optimal_ordering() {
+    build_all_nodes();
+    unordered_map<float, set<Node_ptr>> carriers = {};
+    for (Node_ptr n : sample_nodes) {
+        for (float m : n->mutation_sites) {
+            carriers[m].insert(n);
+        }
+    }
+    while (carriers.size() > 0) {
+        cout << "Curr number of nodes: " << ordered_sample_nodes.size() << endl;
+        cout << "Curr number of mutations: " << carriers.size() << endl;
+        auto it = max_element(carriers.begin(), carriers.end(), [](const auto& l, const auto& r) {return l.second.size() < r.second.size();});
+        Node_ptr n = *(it->second.begin());
+        for (float m : n->mutation_sites) {
+            carriers.erase(m);
+        }
+        ordered_sample_nodes.push_back(n);
+    }
+    cout << "Finished ordering" << endl;
+}
+
 Node_ptr Sampler::build_node(int index, float time) {
     Node_ptr n = new_node(time);
     n->index = index;
     string mutation_file = input_prefix + "_" + to_string(index) + ".txt";
     n->read_mutation(mutation_file);
     return n;
+}
+
+void Sampler::build_all_nodes() {
+    for (int i = 0; i < num_samples; i++) {
+        Node_ptr n = build_node(i, 0.0);
+        sample_nodes.insert(n);
+    }
 }
 
 void Sampler::build_singleton_arg() {

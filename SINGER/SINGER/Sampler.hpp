@@ -36,6 +36,8 @@ public:
     int random_seed = 0;
     shared_ptr<Emission> eh = make_shared<Binary_emission>();
     int sample_index = 0;
+    set<Node_ptr> sample_nodes = {};
+    vector<Node_ptr> ordered_sample_nodes = {};
     
     Sampler(float pop_size, float r, float m);
     
@@ -53,7 +55,11 @@ public:
     
     void set_num_samples(int n);
     
+    void optimal_ordering();
+    
     Node_ptr build_node(int index, float time);
+    
+    void build_all_nodes();
     
     void build_singleton_arg();
     
