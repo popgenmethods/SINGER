@@ -24,7 +24,7 @@ void Threader_smc::thread(ARG &a, Node_ptr n) {
     get_boundary(a);
     cout << get_time() << " : begin BSP" << endl;
     run_BSP(a);
-    // cout << "BSP avg num of states: " << bsp.avg_num_states() << endl;
+    cout << "BSP avg num of states: " << bsp.avg_num_states() << endl;
     cout << get_time() << " : begin sampling branches" << endl;
     sample_joining_branches(a);
     cout << get_time() << " : begin TSP" << endl;

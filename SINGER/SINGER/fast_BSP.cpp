@@ -342,6 +342,7 @@ void fast_BSP::update_states(set<Interval_info> &deletions, set<Interval_info> &
         set<Interval_info> &intervals = valid_intervals[b];
         intervals.insert(ii);
     }
+    assert(valid_branches.size() == valid_intervals.size() and valid_branches.size() > 0);
 }
 
 void fast_BSP::set_dimensions() {

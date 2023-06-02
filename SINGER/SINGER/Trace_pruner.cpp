@@ -9,11 +9,13 @@
 
 Trace_pruner::Trace_pruner() {}
 
+/*
 void Trace_pruner::prune_arg(ARG &a) {
     cut_time = a.cut_time;
     queries = a.removed_branches;
     start = a.removed_branches.begin()->first;
     end = a.removed_branches.rbegin()->first;
+    segments.insert({start, end});
     used_seeds = {start, end};
     seed_trees[start] = a.start_tree;
     seed_trees[start].internal_cut(cut_time);
@@ -26,6 +28,35 @@ void Trace_pruner::prune_arg(ARG &a) {
         extend(a, x);
     }
     write_reductions(a);
+}
+ */
+
+void Trace_pruner::prune_arg(ARG &a) {
+    cut_time = a.cut_time;
+    queries = a.removed_branches;
+    start = a.removed_branches.begin()->first;
+    end = a.removed_branches.rbegin()->first;
+    segments.insert({start, end});
+    used_seeds = {start, end};
+    seed_trees[start] = a.start_tree;
+    seed_trees[start].internal_cut(cut_time);
+    deletions[end] = {};
+    insertions[end] = {};
+    build_match_map(a);
+    float x = 0;
+    while (potential_seeds.size() > 2 or segments.size() > 0) {
+        // assert(segments.size() > 0);
+        x = find_minimum_match();
+        extend(a, x);
+    }
+    assert(segments.size() == 0);
+    /*
+    while (segments.size() > 0) {
+        x = find_minimum_match();
+        extend(a, x);
+    }
+     */
+    // write_reductions(a);
 }
 
 void Trace_pruner::start_search(ARG &a, float m) {
@@ -98,6 +129,7 @@ void Trace_pruner::write_reduction_size(string filename) {
 }
 
 void Trace_pruner::write_reductions(ARG &a) {
+    assert(segments.size() == 0);
     auto delete_it = deletions.begin();
     auto insert_it = insertions.begin();
     int start_index = a.get_index(start);
@@ -176,13 +208,16 @@ void Trace_pruner::build_match_map(ARG &a) {
         }
         mb_it++;
     }
+    /*
     if (match_map.size() == 0) {
         float mid = 0.5*(start + end);
         match_map[mid] = 0;
     }
+     */
     match_map[end] = inf;
     match_map[start] = inf;
     potential_seeds = match_map;
+    // assert(match_map.size() > 2);
 }
 
 float Trace_pruner::find_closest_reference(float x) {
@@ -190,11 +225,27 @@ float Trace_pruner::find_closest_reference(float x) {
     tree_it--;
     return tree_it->first;
 }
-
+ 
+ /*
 float Trace_pruner::find_minimum_match() {
     auto it = min_element(potential_seeds.begin(), potential_seeds.end(),
                           [](const auto& l, const auto& r) { return l.second < r.second;});
     float x = it->first;
+    return x;
+}
+ */
+
+float Trace_pruner::find_minimum_match() {
+    float x = 0;
+    if (potential_seeds.size() == 2) {
+        auto it = segments.begin();
+        x = 0.5*(it->first + it->second);
+        match_map[x] = 0.0;
+    } else {
+        auto it = min_element(potential_seeds.begin(), potential_seeds.end(),
+                              [](const auto& l, const auto& r) { return l.second < r.second;});
+        x = it->first;
+    }
     return x;
 }
 
@@ -207,8 +258,8 @@ void Trace_pruner::extend_forward(ARG &a, float x) {
     match_it++;
     float ub = *used_it;
     Node_ptr n;
-    float bin_start;
-    float bin_end;
+    float bin_start = 0;
+    float bin_end = 0;
     set<float> mutations = {};
     while (a.coordinates[index] < ub and curr_scores.size() > 0) {
         for (float y : mutations) {
@@ -235,7 +286,6 @@ void Trace_pruner::extend_forward(ARG &a, float x) {
         ++index;
     }
     if (curr_scores.size() > 0) {
-        // delete_all(ub);
         if (ub == a.sequence_length) {
             bin_end = ub;
         } else {
@@ -244,6 +294,7 @@ void Trace_pruner::extend_forward(ARG &a, float x) {
         }
         delete_all(bin_end);
     }
+    remove_segment(x, bin_end);
     // cout << "Extend forward from " << x << " to " << m << endl;
 }
 
@@ -257,8 +308,8 @@ void Trace_pruner::extend_backward(ARG &a, float x) {
     --used_it;
     float lb = *used_it;
     Node_ptr n;
-    float bin_start;
-    float bin_end;
+    float bin_start = 0;
+    float bin_end = 0;
     set<float> mutations = {};
     while (a.coordinates[index + 1] > lb and curr_scores.size() > 0) {
         for (float y : mutations) {
@@ -293,6 +344,7 @@ void Trace_pruner::extend_backward(ARG &a, float x) {
         bin_start = a.coordinates[index];
         insert_all(bin_start);
     }
+    remove_segment(bin_start, x);
     // cout << "Extend backward from " << x << " to " << m << endl;
 }
 
@@ -564,4 +616,35 @@ float Trace_pruner::backward_overwrite_prob(Recombination &r, float lb, float ub
     float p = p2/(p1 + p2);
     assert(!isnan(p));
     return p;
+}
+
+void Trace_pruner::remove_segment(float x, float y) {
+    assert(x < y);
+    auto it = segments.begin();
+    set<pair<float, float>> overlaps = {};
+    set<pair<float, float>> new_segments = {};
+    while (it != segments.end() and it->first < y) {
+        float start = it->first;
+        float end = it->second;
+        if (start >= x and end <= y) {
+            overlaps.insert(*it);
+        }
+        if (start <= x and end > x) {
+            new_segments.insert({start, x});
+            overlaps.insert(*it);
+        }
+        if (end >= y) {
+            new_segments.insert({y, end});
+            overlaps.insert(*it);
+        }
+        ++it;
+    }
+    for (auto &x : overlaps) {
+        segments.erase(x);
+    }
+    for (auto &x : new_segments) {
+        if (x.second > x.first) {
+            segments.insert(x);
+        }
+    }
 }

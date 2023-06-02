@@ -46,6 +46,8 @@ public:
     
     map<Interval_info, float> transition_scores = {};
     
+    set<pair<float, float>> segments = {};
+    
     Trace_pruner();
     
     void prune_arg(ARG &a);
@@ -107,6 +109,8 @@ public:
     float forward_overwrite_prob(Recombination &r, float lb, float ub);
     
     float backward_overwrite_prob(Recombination &r, float lb, float ub);
+    
+    void remove_segment(float x, float y);
 };
 
 #endif /* Trace_pruner_hpp */
