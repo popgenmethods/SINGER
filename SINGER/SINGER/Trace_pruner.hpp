@@ -76,6 +76,8 @@ public:
     
     Node_ptr get_node_at(float x);
     
+    float get_match_time(set<Branch> &branches, float m, Node_ptr n);
+    
     void build_match_map(ARG &a);
     
     float find_closest_reference(float x);

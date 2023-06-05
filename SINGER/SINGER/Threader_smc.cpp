@@ -74,6 +74,8 @@ void Threader_smc::internal_rethread(ARG &a, tuple<float, Branch, float> cut_poi
     get_boundary(a);
     set_check_points(a);
     run_BSP(a);
+    cout << "Cut time: " << a.cut_time << endl;
+    cout << "BSP avg num of states: " << bsp.avg_num_states() << endl;
     sample_joining_branches(a);
     run_TSP(a);
     sample_joining_points(a);
@@ -97,13 +99,13 @@ void Threader_smc::terminal_rethread(ARG &a, tuple<float, Branch, float> cut_poi
     get_boundary(a);
     set_check_points(a);
     run_BSP(a);
+    cout << "BSP avg num states: " << bsp.avg_num_states() << endl;
     sample_joining_branches(a);
     run_TSP(a);
     sample_joining_points(a);
     a.add(new_joining_branches, added_branches);
     a.smc_sample_recombinations();
     a.clear_remove_info();
-    // a.clear_memory();
 }
 
 void Threader_smc::fast_internal_rethread(ARG &a, tuple<float, Branch, float> cut_point) {
@@ -115,6 +117,9 @@ void Threader_smc::fast_internal_rethread(ARG &a, tuple<float, Branch, float> cu
     set_check_points(a);
     run_pruner(a);
     run_fast_BSP(a);
+    float avg = fbsp.avg_num_states();
+    cout << "Cut time: " << a.cut_time << endl;
+    cout << "BSP avg number of states: " << avg << endl;
     sample_joining_branches(a);
     run_TSP(a);
     sample_joining_points(a);
@@ -130,6 +135,22 @@ void Threader_smc::fast_internal_rethread(ARG &a, tuple<float, Branch, float> cu
     a.smc_sample_recombinations();
     a.clear_remove_info();
     // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/full_ts_recombs.txt");
+}
+
+void Threader_smc::fast_terminal_rethread(ARG &a, tuple<float, Branch, float> cut_point) {
+    cut_time = get<2>(cut_point);
+    a.remove(cut_point);
+    get_boundary(a);
+    set_check_points(a);
+    run_pruner(a);
+    run_fast_BSP(a);
+    cout << "BSP avg number of states: " << fbsp.avg_num_states() << endl;
+    sample_joining_branches(a);
+    run_TSP(a);
+    sample_joining_points(a);
+    a.add(new_joining_branches, added_branches);
+    a.smc_sample_recombinations();
+    a.clear_remove_info();
 }
 
 void Threader_smc::get_boundary(ARG &a) {

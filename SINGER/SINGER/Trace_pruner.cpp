@@ -9,28 +9,6 @@
 
 Trace_pruner::Trace_pruner() {}
 
-/*
-void Trace_pruner::prune_arg(ARG &a) {
-    cut_time = a.cut_time;
-    queries = a.removed_branches;
-    start = a.removed_branches.begin()->first;
-    end = a.removed_branches.rbegin()->first;
-    segments.insert({start, end});
-    used_seeds = {start, end};
-    seed_trees[start] = a.start_tree;
-    seed_trees[start].internal_cut(cut_time);
-    deletions[end] = {};
-    insertions[end] = {};
-    build_match_map(a);
-    float x = 0;
-    while (potential_seeds.size() > 2) {
-        x = find_minimum_match();
-        extend(a, x);
-    }
-    write_reductions(a);
-}
- */
-
 void Trace_pruner::prune_arg(ARG &a) {
     cut_time = a.cut_time;
     queries = a.removed_branches;
@@ -45,18 +23,11 @@ void Trace_pruner::prune_arg(ARG &a) {
     build_match_map(a);
     float x = 0;
     while (potential_seeds.size() > 2 or segments.size() > 0) {
-        // assert(segments.size() > 0);
         x = find_minimum_match();
         extend(a, x);
     }
     assert(segments.size() == 0);
-    /*
-    while (segments.size() > 0) {
-        x = find_minimum_match();
-        extend(a, x);
-    }
-     */
-    // write_reductions(a);
+    write_reductions(a);
 }
 
 void Trace_pruner::start_search(ARG &a, float m) {
@@ -82,6 +53,7 @@ void Trace_pruner::start_search(ARG &a, float m) {
         }
     }
     potential_seeds.erase(m);
+    assert(seed_scores.size() > 0);
 }
 
 void Trace_pruner::write_reduction_distance(ARG &a, string filename) {
@@ -183,41 +155,20 @@ void Trace_pruner::build_match_map(ARG &a) {
     float m = 0;
     float inf = INT_MAX;
     float lb = 0;
-    float state = 0;
     auto mb_it = a.mutation_branches.lower_bound(start);
     Node_ptr n = nullptr;
     while (mb_it->first < end) {
         m = mb_it->first;
         n = get_node_at(m);
-        state = n->get_state(m);
-        lb = -1;
-        for (Branch b : mb_it->second) {
-            if (b.upper_node->time < n->time or b.upper_node->time < cut_time) {
-                continue; // don't search if the mutation is absolutely below the query node
-            }
-            if (b.lower_node->get_state(m) == state) {
-                lb = max(lb, max(b.lower_node->time, cut_time));
-            } else if (b.upper_node->index == -1) {
-                lb = max(lb, cut_time);
-            } else {
-                lb = max(lb, max_time - b.lower_node->time);
-            }
-        }
-        if (lb >= 0) { // when negative, no mutation is legal, thus no match was found
-            match_map[m] = lb - cut_time;
+        lb = get_match_time(mb_it->second, m, n);
+        if (lb >= 0) { // when negative, this site is uninformative and not suitable for checking either
+            match_map[m] = lb;
         }
         mb_it++;
     }
-    /*
-    if (match_map.size() == 0) {
-        float mid = 0.5*(start + end);
-        match_map[mid] = 0;
-    }
-     */
     match_map[end] = inf;
     match_map[start] = inf;
     potential_seeds = match_map;
-    // assert(match_map.size() > 2);
 }
 
 float Trace_pruner::find_closest_reference(float x) {
@@ -339,7 +290,6 @@ void Trace_pruner::extend_backward(ARG &a, float x) {
         --index;
     }
     if (curr_scores.size() > 0) {
-        // insert_all(lb);
         index = a.get_index(lb);
         bin_start = a.coordinates[index];
         insert_all(bin_start);
@@ -646,5 +596,37 @@ void Trace_pruner::remove_segment(float x, float y) {
         if (x.second > x.first) {
             segments.insert(x);
         }
+    }
+}
+
+float Trace_pruner::get_match_time(set<Branch> &branches, float m, Node_ptr n) {
+    float state = n->get_state(m);
+    assert(state == 0 or state == 1);
+    /*
+    if (state == 0.5) { // this is an ambiguous site thus uninformative
+        return -1;
+    }
+     */
+    if (branches.size() == 0) {
+        return -1; // private mutation, not that informative
+    }
+    assert(branches.size() >= 1);
+    bool mutation_above = false;
+    for (const Branch &b : branches) {
+        if (b.upper_node->time > cut_time) {
+            mutation_above = true; // needs at least one mutation above cut_time
+        }
+    }
+    if (!mutation_above) { // no mutation above cut time, then uninformative site
+        return -1;
+    }
+    if (branches.size() > 1) {
+        return max_time; // multiple mutations but at least one above cut_time, still for checking
+    }
+    const Branch &b = *branches.begin(); // the single mutation branch
+    if (b.lower_node->get_state(m) == state) { // a matching branch
+        return max(b.lower_node->time, cut_time) - cut_time;
+    } else { // non-matching branch
+        return max_time - max(cut_time, b.lower_node->time) - cut_time;
     }
 }

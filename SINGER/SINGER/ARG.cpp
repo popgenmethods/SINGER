@@ -31,7 +31,6 @@ void ARG::discretize(float s) {
     auto recomb_it = recombinations.upper_bound(0);
     float curr_pos = 0;
     while (curr_pos < sequence_length) {
-        // coordinates.push_back(max(curr_pos - 0.1f, 0.0f));
         coordinates.push_back(curr_pos);
         if (recomb_it->first < curr_pos + s) {
             curr_pos = recomb_it->first;
@@ -501,7 +500,7 @@ void ARG::map_mutation(float x, Branch joining_branch, Branch added_branch) {
         new_branch = Branch(joining_branch.lower_node, added_branch.upper_node);
         mutation_branches[x].insert(new_branch);
     }
-    if (sm != su and joining_branch.upper_node != root) {
+    if (sm != su) {
         new_branch = Branch(added_branch.upper_node, joining_branch.upper_node);
         mutation_branches[x].insert(new_branch);
     }
@@ -542,11 +541,10 @@ void ARG::remap_mutations() {
         if (mut_it->second.count(lower_branch) > 0 or mut_it->second.count(upper_branch) > 0) {
             mut_it->second.erase(lower_branch);
             mut_it->second.erase(upper_branch);
-            // mut_it->second.insert(joining_branch);
         }
         float sl = lower_branch.lower_node->get_state(mut_it->first);
         float su = upper_branch.upper_node->get_state(mut_it->first);
-        if (sl != su and joining_branch.upper_node != root) {
+        if (sl != su) {
             mut_it->second.insert(joining_branch);
         }
         for (const Branch &b : mut_it->second) {
@@ -597,10 +595,42 @@ void ARG::clear_memory() {
 }
  */
 
+/*
 void ARG::check_mapping() {
     for (Node_ptr n : node_set) {
         assert(n->ambiguous_sites.size() == 0);
     }
+}
+ */
+
+void ARG::check_mapping() {
+    int total_count = 0;
+    int count = 0;
+    Tree tree = Tree();
+    auto recomb_it = recombinations.begin();
+    auto mut_it = mutation_sites.begin();
+    while (mut_it != prev(mutation_sites.end())) {
+        float m = *mut_it;
+        set<Branch> &mapped_branches = mutation_branches[m];
+        while (recomb_it->first < m) {
+            Recombination &r = recomb_it->second;
+            tree.forward_update(r);
+            recomb_it++;
+        }
+        count = -1;
+        for (const Branch &b : tree.branches) {
+            if (b.upper_node->get_state(m) != b.lower_node->get_state(m)) {
+                assert(mapped_branches.count(b) > 0);
+                if (b.upper_node != root) {
+                    count += 1;
+                }
+            }
+        }
+        count = max(0, count);
+        total_count += count;
+        mut_it++;
+    }
+    cout << "Number of incompatibilities: " << total_count << endl;
 }
 
 /*
@@ -630,8 +660,13 @@ void ARG::check_incompatibility() {
 void ARG::check_incompatibility() {
     int count = 0;
     for (auto &x : mutation_branches) {
-        if (x.second.size() > 1) {
-            count += x.second.size() - 1;
+        set<Branch> &branches = x.second;
+        if (branches.size() > 1) {
+            if (branches.rbegin()->upper_node == root) {
+                count += branches.size() - 2;
+            } else {
+                count += branches.size() - 1;
+            }
         }
     }
     cout << "Number of incompatibilities: " << count << endl;
@@ -806,16 +841,6 @@ int ARG::count_incompatibility(Tree tree, float x) {
     }
     return max(0, count);
 }
-
-/*
-void ARG::sort_nodes() {
-    int index = 0;
-    for (Node_ptr n : node_set) {
-        n->set_index(index);
-        index += 1;
-    }
-}
- */
 
 void ARG::write_nodes(string filename) {
     node_set.clear();

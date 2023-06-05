@@ -157,62 +157,6 @@ void fast_BSP::update(float rho) {
     branch_change = false;
 }
 
-/*
-void fast_BSP::update(float rho) {
-    float lb, ub, p;
-    Interval_ptr prev_interval, new_interval;
-    Branch prev_branch;
-    rhos.emplace_back(rho);
-    compute_recomb_probs(rho);
-    prev_rho = -1;
-    prev_theta = -1;
-    curr_index += 1;
-    recomb_sum = inner_product(recomb_probs.begin(), recomb_probs.end(), forward_probs[curr_index - 1].begin(), 0.0);
-    temp_probs.clear();
-    temp_intervals.clear();
-    covered_branches.clear();
-    for (int i = 0; i < dim; i++) {
-        prev_interval = curr_intervals[i];
-        prev_branch = prev_interval->branch;
-        if (valid_branches.count(prev_branch) > 0) {
-            p = forward_probs[curr_index - 1][i]*(1 - recomb_probs[i]);
-            if (p >= 0) {
-                temp_intervals.emplace_back(prev_interval);
-                temp_probs.emplace_back(p);
-            } else if (prev_interval->full(cut_time)) {
-                temp_intervals.emplace_back(prev_interval);
-                temp_probs.emplace_back(p);
-                covered_branches.insert(prev_branch);
-            }
-        }
-    }
-    for (Branch b : valid_branches) {
-        if (covered_branches.count(b) == 0) {
-            lb = max(cut_time, b.lower_node->time);
-            ub = b.upper_node->time;
-            new_interval = create_interval(b, lb, ub, curr_index);
-            temp_intervals.emplace_back(new_interval);
-            temp_probs.emplace_back(0);
-        }
-    }
-    forward_probs.emplace_back(temp_probs);
-    curr_intervals = temp_intervals;
-    state_spaces[curr_index] = curr_intervals;
-    set_dimensions();
-    interval_change = true;
-    compute_interval_info();
-    compute_recomb_probs(rho);
-    compute_recomb_weights(rho);
-    for (int i = 0; i < dim; i++) {
-        forward_probs[curr_index][i] += recomb_sum*recomb_weights[i];
-        assert(!isnan(forward_probs[curr_index][i]));
-    }
-    recomb_sums.emplace_back(recomb_sum);
-    weight_sums.emplace_back(weight_sum);
-    branch_change = false;
-}
- */
-
 float fast_BSP::get_recomb_prob(float rho, float t) {
     float p = rho*(t - cut_time)*exp(-rho*(t - cut_time));
     return p;
@@ -372,6 +316,7 @@ void fast_BSP::compute_recomb_weights(float rho) {
     weight_sum = accumulate(recomb_weights.begin(), recomb_weights.end(), 0.0);
     for (int i = 0; i < dim; i++) {
         recomb_weights[i] /= weight_sum;
+        assert(!isnan(recomb_weights[i]));
     }
 }
 

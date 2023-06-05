@@ -77,6 +77,8 @@ public:
     
     void fast_internal_sample(int num_iters, int spacing);
     
+    void fast_terminal_sample(int num_iters, int spacing);
+    
 };
 
 #endif /* Sampler_hpp */

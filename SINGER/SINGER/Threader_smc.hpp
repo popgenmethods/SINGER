@@ -38,6 +38,8 @@ public:
     
     void fast_internal_rethread(ARG &a, tuple<float, Branch, float> cut_point);
     
+    void fast_terminal_rethread(ARG &a, tuple<float, Branch, float> cut_point);
+    
 // private:
     
     float cut_time = 0;
