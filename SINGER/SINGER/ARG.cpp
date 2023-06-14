@@ -109,7 +109,11 @@ void ARG::add_node(Node_ptr n) {
 void ARG::add_new_node(float t) {
     if (!isinf(t)) {
         Node_ptr n = new_node(t);
+        n->index = (int) node_set.size();
         node_set.insert(n);
+        if (t == 0) {
+            sample_nodes.insert(n);
+        }
     }
 }
  
@@ -285,6 +289,7 @@ void ARG::remove_leaf(int index) {
         removed_branches[r.pos] = removed_branch;
     }
     remove(removed_branches);
+    start_tree = get_tree_at(0);
 }
 
 float ARG::get_updated_length() {
@@ -386,6 +391,17 @@ int ARG::count_incompatibility() {
             x = *mut_it;
             count += count_incompatibility(tree, x);
             mut_it++;
+        }
+    }
+    return count;
+}
+
+int ARG::count_flipping() {
+    int count = 0;
+    for (auto x : mutation_branches) {
+        set<Branch> &branches = x.second;
+        if (branches.rbegin()->upper_node == root) {
+            count += 1;
         }
     }
     return count;
@@ -711,7 +727,7 @@ float ARG::smc_prior_likelihood(float r) {
 }
 
 float ARG::data_likelihood(float m) {
-    impute_nodes(0, bin_num);
+    // impute_nodes(0, bin_num);
     float theta = 0;
     float log_likelihood = 0;
     Tree tree = get_tree_at(0);
@@ -729,13 +745,14 @@ float ARG::data_likelihood(float m) {
             recomb_it++;
             tree.forward_update(r);
         }
-        while (*mut_it < bin_end) {
-            next_mut_pos = *mut_it;
+        while (mut_it != mutation_sites.end()) {
+            next_mut_pos = min(sequence_length, *mut_it);
             theta = m*Ne;
             log_likelihood += tree.data_likelihood(theta, next_mut_pos);
             theta = (next_mut_pos - prev_mut_pos - 1)*m*Ne;
             log_likelihood += tree.null_likelihood(theta);
             prev_mut_pos = next_mut_pos;
+            mut_it++;
         }
     }
     return log_likelihood;

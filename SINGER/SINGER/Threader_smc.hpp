@@ -16,6 +16,7 @@
 #include "BSP_smc.hpp"
 #include "fast_BSP.hpp"
 #include "fast_BSP_smc.hpp"
+#include "reduced_BSP.hpp"
 #include "TSP_smc.hpp"
 #include "Parsimony_pruner.hpp"
 #include "Trace_pruner.hpp"
@@ -51,7 +52,8 @@ public:
     // BSP_smc bsp = BSP_smc();
     succint_BSP bsp = succint_BSP();
     // fast_BSP_smc fbsp = fast_BSP_smc();
-    fast_BSP fbsp = fast_BSP();
+    // fast_BSP fbsp = fast_BSP();
+    reduced_BSP fbsp = reduced_BSP();
     TSP_smc tsp = TSP_smc();
     float gap;
     float cutoff;

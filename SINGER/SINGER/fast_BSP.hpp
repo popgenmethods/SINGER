@@ -72,6 +72,7 @@ public:
     float valid_prob = 0.0;
     bool branch_change = false;
     bool interval_change = false;
+    set<Branch> full_branches = {};
     set<Branch> covered_branches = {};
     set<Branch> valid_branches = {};
     map<Branch, set<Interval_info>> valid_intervals = {};
@@ -133,6 +134,8 @@ public:
     void compute_interval_info();
     
     void sanity_check(Recombination &r);
+    
+    void get_full_branches(Recombination &r);
     
     void generate_intervals(Recombination &r);
     

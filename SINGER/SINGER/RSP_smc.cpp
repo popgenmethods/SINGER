@@ -131,6 +131,7 @@ void RSP_smc::sample_recombination(Recombination &r, float cut_time, Tree &tree)
         r.source_branch = breakpoint.first;
         r.start_time = breakpoint.second;
     } else {
+        cout << r.pos << " " << source_candidates.size() << endl;
         cerr << "no candidates in smc sampling" << endl;
         exit(1);
     }

@@ -67,6 +67,7 @@ void test_pruner_efficiency() {
 void test_trace_pruner() {
     Sampler sampler = Sampler(1, 1, 1);
     srand(23491256);
+    set_seed(23491256);
     ARG a = ARG(2e4, 1e6);
     a.read("/Users/yun_deng/Desktop/SINGER/arg_files/continuous_ts_100_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/continuous_ts_100_branches.txt");
     a.discretize(100);
@@ -79,7 +80,7 @@ void test_trace_pruner() {
     }
     a.impute_nodes(0, 1e6);
     a.map_mutations(0, 1e6);
-    a.remove_leaf(9);
+    a.remove_leaf(99);
     Trace_pruner trace_pruner = Trace_pruner();
     cout << get_time() << endl;
     trace_pruner.prune_arg(a);
@@ -103,9 +104,12 @@ void test_iterative_start() {
 }
 
 void test_fast_iterative_start() {
-    srand(38);
-    set_seed(38);
-    // set_seed(93723823);
+    // srand(38);
+    // set_seed(38);
+    // set_seed(75);
+    set_seed(93723823);
+    // set_seed(23235223);
+    // set_seed(72348235);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_num_samples(50);
@@ -117,7 +121,7 @@ void test_fast_iterative_start() {
 
 void test_terminal_sampling() {
     srand(93723823);
-    set_seed(15);
+    set_seed(38);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_num_samples(50);
@@ -125,27 +129,10 @@ void test_terminal_sampling() {
     sampler.set_input_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_hap0");
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50");
     sampler.iterative_start();
-    sampler.terminal_sample(100);
+    sampler.terminal_sample(200);
 }
 
-void test_internal_sampling() {
-    srand(93723823);
-    // set_seed(93723823);
-    set_seed(15);
-    Sampler sampler = Sampler(2e4, 1.9e-8, 2e-8);
-    sampler.set_precision(0.01, 0.05);
-    sampler.set_num_samples(50);
-    sampler.set_sequence_length(1e6);
-    sampler.set_input_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_hap0");
-    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50");
-    sampler.iterative_start();
-    // sampler.recombination_climb(300, 1);
-    sampler.internal_sample(50, 1);
-}
-
-void test_fast_internal_sampling() {
-    srand(93723823);
-    // set_seed(93723823);
+void test_fast_terminal_sampling() {
     set_seed(38);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
@@ -154,8 +141,40 @@ void test_fast_internal_sampling() {
     sampler.set_input_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_hap0");
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50");
     sampler.fast_iterative_start();
-    sampler.fast_internal_sample(10, 1);
-    // sampler.internal_sample(10, 1);
+    sampler.fast_terminal_sample(100);
+}
+
+void test_internal_sampling() {
+    srand(93723823);
+    // set_seed(93723823);
+    set_seed(15);
+    Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
+    sampler.set_precision(0.01, 0.05);
+    sampler.set_num_samples(50);
+    sampler.set_sequence_length(1e6);
+    sampler.set_input_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_hap0");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50");
+    sampler.iterative_start();
+    // sampler.recombination_climb(300, 1);
+    sampler.internal_sample(1000, 1);
+}
+
+void test_fast_internal_sampling() {
+    srand(93723823);
+    // set_seed(93723823);
+    // set_seed(38);
+    set_seed(15);
+    // set_seed(423596);
+    Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
+    sampler.set_precision(0.01, 0.05);
+    sampler.set_num_samples(50);
+    sampler.set_sequence_length(1e6);
+    sampler.set_input_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_hap0");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50");
+    sampler.fast_iterative_start();
+    // sampler.fast_recombination_climb(200, 1);
+    // sampler.fast_mutation_climb(200, 1);
+    sampler.fast_internal_sample(1000, 1);
 }
 
 void test_optimal_ordering() {

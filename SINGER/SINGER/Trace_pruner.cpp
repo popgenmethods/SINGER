@@ -131,15 +131,13 @@ void Trace_pruner::write_reductions(ARG &a) {
     reductions[a.sequence_length] = {};
 }
 
-void Trace_pruner::write_changes(ARG &a) {
-}
-
 Node_ptr Trace_pruner::get_node_at(float x) {
     auto query_it = queries.upper_bound(x);
     query_it--;
     return query_it->second.lower_node;
 }
 
+/*
 float Trace_pruner::count_mismatch(Branch branch, Node_ptr n, float m) {
     float s0 = n->get_state(m);
     float sl = branch.lower_node->get_state(m);
@@ -148,6 +146,26 @@ float Trace_pruner::count_mismatch(Branch branch, Node_ptr n, float m) {
         return 1;
     } else {
         return 0;
+    }
+}
+ */
+
+float Trace_pruner::count_mismatch(Branch branch, Node_ptr n, float m) {
+    float s0 = n->get_state(m);
+    float sl = branch.lower_node->get_state(m);
+    float su = branch.upper_node->get_state(m);
+    if (branch.upper_node->index != -1 or sl == su) {
+        if (abs(sl - s0) > 0.5 and abs(su - s0) > 0.5) {
+            return 1;
+        } else {
+            return 0;
+        }
+    } else { // root branch mutation case
+        if (s0 == sl) { // must be a match
+            return 0;
+        } else { // still creates one more mismatch
+            return 1;
+        }
     }
 }
 
@@ -599,14 +617,10 @@ void Trace_pruner::remove_segment(float x, float y) {
     }
 }
 
+/*
 float Trace_pruner::get_match_time(set<Branch> &branches, float m, Node_ptr n) {
     float state = n->get_state(m);
     assert(state == 0 or state == 1);
-    /*
-    if (state == 0.5) { // this is an ambiguous site thus uninformative
-        return -1;
-    }
-     */
     if (branches.size() == 0) {
         return -1; // private mutation, not that informative
     }
@@ -624,6 +638,32 @@ float Trace_pruner::get_match_time(set<Branch> &branches, float m, Node_ptr n) {
         return max_time; // multiple mutations but at least one above cut_time, still for checking
     }
     const Branch &b = *branches.begin(); // the single mutation branch
+    if (b.lower_node->get_state(m) == state) { // a matching branch
+        return max(b.lower_node->time, cut_time) - cut_time;
+    } else { // non-matching branch
+        return max_time - max(cut_time, b.lower_node->time) - cut_time;
+    }
+}
+*/
+
+float Trace_pruner::get_match_time(set<Branch> &branches, float m, Node_ptr n) {
+    float state = n->get_state(m);
+    assert(state == 0 or state == 1);
+    set<Branch> valid_branches = {};
+    for (const Branch &b : branches) {
+        if (b.upper_node->time > cut_time and b.upper_node->index != -1) {
+            valid_branches.insert(b); // needs at least one mutation above cut_time (excluding root mutations)
+        }
+    }
+    if (valid_branches.size() == 0) {
+        return -1; // essentially a private mutation, not that informative
+    }
+    if (valid_branches.size() > 1) {
+        return max_time; // multiple mutations but at least one above cut_time, still for checking
+    }
+    assert(valid_branches.size() == 1);
+    const Branch &b = *valid_branches.begin(); // the single valid mutation branch, which must be the highest branch
+    assert(b.upper_node->index != -1);
     if (b.lower_node->get_state(m) == state) { // a matching branch
         return max(b.lower_node->time, cut_time) - cut_time;
     } else { // non-matching branch

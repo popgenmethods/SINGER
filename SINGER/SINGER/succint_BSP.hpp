@@ -111,11 +111,9 @@ public:
     
     void compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node);
     
-    void transfer_helper(Interval_info next_interval, Interval_ptr prev_interval, float w);
+    void transfer_helper(Interval_info &next_interval, Interval_ptr &prev_interval, float w);
     
-    void transfer_helper(Interval_info next_interval);
-    
-    Interval_ptr duplicate_interval(Interval_ptr interval);
+    void transfer_helper(Interval_info &next_interval);
     
     void add_new_branches(Recombination &r);
     

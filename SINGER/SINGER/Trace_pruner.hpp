@@ -41,8 +41,8 @@ public:
     map<float, set<Branch>> reductions = {};
     map<float, set<Interval_info>> deletions = {};
     map<float, set<Interval_info>> insertions = {};
-    map<float, set<Branch>> deleted_branches = {};
-    map<float, set<Branch>> inserted_branches = {};
+    // map<float, set<Branch>> deleted_branches = {};
+    // map<float, set<Branch>> inserted_branches = {};
     
     map<Interval_info, float> transition_scores = {};
     
@@ -70,7 +70,7 @@ public:
     
     void write_reduction_size(string filename);
     
-    void write_changes(ARG &a);
+    // void write_changes(ARG &a);
     
     void write_reductions(ARG &a);
     

@@ -68,14 +68,10 @@ void Threader_smc::fast_thread(ARG &a, Node_ptr n) {
 
 void Threader_smc::internal_rethread(ARG &a, tuple<float, Branch, float> cut_point) {
     cut_time = get<2>(cut_point);
-    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/prev_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/prev_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/prev_ts_recombs.txt");
     a.remove(cut_point);
-    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/partial_ts_recombs.txt");
     get_boundary(a);
     set_check_points(a);
     run_BSP(a);
-    cout << "Cut time: " << a.cut_time << endl;
-    cout << "BSP avg num of states: " << bsp.avg_num_states() << endl;
     sample_joining_branches(a);
     run_TSP(a);
     sample_joining_points(a);
@@ -89,7 +85,6 @@ void Threader_smc::internal_rethread(ARG &a, tuple<float, Branch, float> cut_poi
     }
     a.smc_sample_recombinations();
     a.clear_remove_info();
-    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/full_ts_recombs.txt");
 }
 
 
@@ -110,16 +105,11 @@ void Threader_smc::terminal_rethread(ARG &a, tuple<float, Branch, float> cut_poi
 
 void Threader_smc::fast_internal_rethread(ARG &a, tuple<float, Branch, float> cut_point) {
     cut_time = get<2>(cut_point);
-    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/prev_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/prev_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/prev_ts_recombs.txt");
     a.remove(cut_point);
-    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/partial_ts_recombs.txt");
     get_boundary(a);
     set_check_points(a);
     run_pruner(a);
     run_fast_BSP(a);
-    float avg = fbsp.avg_num_states();
-    cout << "Cut time: " << a.cut_time << endl;
-    cout << "BSP avg number of states: " << avg << endl;
     sample_joining_branches(a);
     run_TSP(a);
     sample_joining_points(a);
@@ -131,10 +121,8 @@ void Threader_smc::fast_internal_rethread(ARG &a, tuple<float, Branch, float> cu
     } else {
         a.add(a.joining_branches, a.removed_branches);
     }
-    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_branches.txt");
     a.smc_sample_recombinations();
     a.clear_remove_info();
-    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/arg_files/full_ts_recombs.txt");
 }
 
 void Threader_smc::fast_terminal_rethread(ARG &a, tuple<float, Branch, float> cut_point) {
@@ -252,12 +240,59 @@ void Threader_smc::run_fast_BSP(ARG &a) {
 }
  */
 
+/*
 void Threader_smc::run_fast_BSP(ARG &a) {
     fbsp.reserve_memory(end_index - start_index);
     fbsp.set_cutoff(cutoff);
     fbsp.set_emission(eh);
     set<Interval_info> start_intervals = pruner.insertions.begin()->second;
     fbsp.start(start_intervals, cut_time);
+    auto recomb_it = a.recombinations.upper_bound(start);
+    auto mut_it = a.mutation_sites.lower_bound(start);
+    auto query_it = a.removed_branches.begin();
+    auto delete_it = pruner.deletions.upper_bound(start);
+    auto insert_it = pruner.insertions.upper_bound(start);
+    vector<float> mutations;
+    set<float> mut_set = {};
+    Node_ptr query_node = nullptr;
+    for (int i = start_index; i < end_index; i++) {
+        if (a.coordinates[i] == query_it->first) {
+            query_node = query_it->second.lower_node;
+            query_it++;
+        }
+        while (delete_it->first <= a.coordinates[i]) {
+            fbsp.update_states(delete_it->second, insert_it->second);
+            delete_it++;
+            insert_it++;
+        }
+        if (a.coordinates[i] == recomb_it->first) {
+            Recombination &r = recomb_it->second;
+            recomb_it++;
+            fbsp.transfer(r);
+        } else if (a.coordinates[i] != start) {
+            fbsp.forward(a.rhos[i - 1]);
+        }
+        mut_set = {};
+        while (*mut_it < a.coordinates[i+1]) {
+            mut_set.insert(*mut_it);
+            mut_it++;
+        }
+        if (mut_set.size() > 0) {
+            fbsp.mut_emit(a.thetas[i], a.coordinates[i+1] - a.coordinates[i], mut_set, query_node);
+        } else {
+            fbsp.null_emit(a.thetas[i], query_node);
+        }
+    }
+}
+ */
+
+void Threader_smc::run_fast_BSP(ARG &a) {
+    fbsp.reserve_memory(end_index - start_index);
+    fbsp.set_cutoff(cutoff);
+    fbsp.set_emission(eh);
+    set<Interval_info> start_intervals = pruner.insertions.begin()->second;
+    fbsp.start(a.start_tree.branches, start_intervals, cut_time);
+    // fbsp.start(start_intervals, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
     auto query_it = a.removed_branches.begin();

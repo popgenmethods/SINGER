@@ -356,7 +356,7 @@ void fast_BSP::compute_interval_info() {
     if (branch_change) {
         cc->compute(valid_branches);
     }
-    if (interval_change) {
+    if (true) {
         dim = (int) curr_intervals.size();
         raw_times.resize(dim);
         raw_times.assign(dim, 0);
@@ -386,7 +386,29 @@ void fast_BSP::compute_interval_info() {
 void fast_BSP::sanity_check(Recombination &r) {
 }
 
+void fast_BSP::get_full_branches(Recombination &r) {
+    float lb, ub, p;
+    for (auto &x : transfer_weights) {
+        const Branch &b = x.first.branch;
+        lb = x.first.lb;
+        ub = x.first.ub;
+        p = accumulate(x.second.begin(), x.second.end(), 0.0f);
+        if (lb == max(cut_time, b.lower_node->time) and ub == b.upper_node->time and p > 0) {
+            full_branches.insert(b);
+        }
+    }
+    for (int i = 0; i < curr_intervals.size(); i++) {
+        p = forward_probs[curr_index - 1][i];
+        Interval_ptr prev_interval = curr_intervals[i];
+        if (prev_interval->full(cut_time) and p > 0) {
+            full_branches.insert(prev_interval->branch);
+        }
+    }
+}
+
 void fast_BSP::generate_intervals(Recombination &r) {
+    full_branches.clear();
+    get_full_branches(r);
     Branch b;
     float lb;
     float ub;
@@ -414,7 +436,7 @@ void fast_BSP::generate_intervals(Recombination &r) {
                 new_interval->intervals = move(intervals);
             }
             covered_branches.insert(b);
-        } else {
+        } else if (full_branches.count(b) == 0 or p > cutoff) {
             new_interval = create_interval(b, lb, ub, curr_index);
             temp_intervals.emplace_back(new_interval);
             temp_probs.emplace_back(p);
@@ -428,10 +450,13 @@ void fast_BSP::generate_intervals(Recombination &r) {
         p = forward_probs[curr_index - 1][i];
         Interval_ptr prev_interval = curr_intervals[i];
         if (!r.affect(prev_interval->branch)) {
-            temp_intervals.emplace_back(prev_interval);
-            temp_probs.emplace_back(p);
             if (prev_interval->full(cut_time)) {
+                temp_intervals.emplace_back(prev_interval);
+                temp_probs.emplace_back(p);
                 covered_branches.insert(prev_interval->branch);
+            } else if (full_branches.count(prev_interval->branch) == 0 or p > cutoff) {
+                temp_intervals.emplace_back(prev_interval);
+                temp_probs.emplace_back(p);
             }
         }
     }

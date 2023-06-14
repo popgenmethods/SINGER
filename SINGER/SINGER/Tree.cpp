@@ -35,7 +35,7 @@ void Tree::insert_branch(Branch b) {
 }
 
 void Tree::internal_insert_branch(const Branch &b, float cut_time) {
-    if (b.upper_node->time < cut_time) {
+    if (b.upper_node->time <= cut_time) {
         return;
     }
     assert(branches.count(b) == 0);
@@ -44,7 +44,7 @@ void Tree::internal_insert_branch(const Branch &b, float cut_time) {
 }
 
 void Tree::internal_delete_branch(const Branch &b, float cut_time) {
-    if (b.upper_node->time < cut_time) {
+    if (b.upper_node->time <= cut_time) {
         return;
     }
     assert(branches.count(b) > 0);
@@ -145,7 +145,7 @@ pair<Branch, float> Tree::sample_cut_point() {
 
 void Tree::internal_cut(float cut_time) {
     for (auto it = branches.begin(); it != branches.end();) {
-        if (it->upper_node->time < cut_time) {
+        if (it->upper_node->time <= cut_time) {
             parents.erase(it->lower_node);
             it = branches.erase(it);
         } else {

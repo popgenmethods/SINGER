@@ -86,6 +86,8 @@ public:
     
     int count_incompatibility();
     
+    int count_flipping();
+    
     void write(string node_file, string branch_file);
     
     void write(string node_file, string branch_file, string recomb_file);

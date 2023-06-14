@@ -36,9 +36,9 @@ public:
     
     void set_pos(float x);
     
-    bool affect(Branch b);
+    bool affect(const Branch &b);
     
-    bool create(Branch b);
+    bool create(const Branch &b);
     
     void find_nodes(); // find deleted/inserted nodes;
     

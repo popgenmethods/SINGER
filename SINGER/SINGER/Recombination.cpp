@@ -21,14 +21,14 @@ void Recombination::set_pos(float x) {
     pos = x;
 }
 
-bool Recombination::affect(Branch b) {
+bool Recombination::affect(const Branch &b) {
     if (deleted_branches.count(b) > 0) {
         return true;
     }
     return false;
 }
 
-bool Recombination::create(Branch b) {
+bool Recombination::create(const Branch &b) {
     if (inserted_branches.count(b) > 0) {
         return true;
     }

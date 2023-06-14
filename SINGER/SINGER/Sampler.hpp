@@ -69,15 +69,23 @@ public:
     
     void fast_iterative_start();
     
+    void multiple_iterative_start(int num_iters);
+    
+    void multiple_fast_iterative_start(int num_iters);
+    
     void recombination_climb(int num_iters, int spacing);
+    
+    void fast_recombination_climb(int num_iters, int spacing);
+    
+    void fast_mutation_climb(int num_iters, int spacing);
     
     void terminal_sample(int num_iters);
     
     void internal_sample(int num_iters, int spacing);
     
-    void fast_internal_sample(int num_iters, int spacing);
+    void fast_terminal_sample(int num_iters);
     
-    void fast_terminal_sample(int num_iters, int spacing);
+    void fast_internal_sample(int num_iters, int spacing);
     
 };
 
