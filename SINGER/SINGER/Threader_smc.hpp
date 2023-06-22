@@ -17,6 +17,7 @@
 #include "fast_BSP.hpp"
 #include "fast_BSP_smc.hpp"
 #include "reduced_BSP.hpp"
+#include "sub_BSP.hpp"
 #include "TSP_smc.hpp"
 #include "Parsimony_pruner.hpp"
 #include "Trace_pruner.hpp"
@@ -53,11 +54,13 @@ public:
     succint_BSP bsp = succint_BSP();
     // fast_BSP_smc fbsp = fast_BSP_smc();
     // fast_BSP fbsp = fast_BSP();
-    reduced_BSP fbsp = reduced_BSP();
+    // reduced_BSP fbsp = reduced_BSP();
+    sub_BSP fbsp = sub_BSP();
     TSP_smc tsp = TSP_smc();
     float gap;
     float cutoff;
     shared_ptr<Emission> eh;
+    shared_ptr<Emission> e = make_shared<Polar_emission>();
     map<float, Branch> new_joining_branches = {};
     map<float, Branch> added_branches = {};
     
@@ -74,6 +77,8 @@ public:
     void run_TSP(ARG &a);
     
     void sample_joining_branches(ARG &a);
+    
+    void sample_fast_joining_branches(ARG &a);
     
     void sample_joining_points(ARG &a);
     

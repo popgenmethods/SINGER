@@ -9,5 +9,40 @@
 #define Polar_emission_hpp
 
 #include <stdio.h>
+#include <math.h>
+#include "Emission.hpp"
+
+using namespace std;
+
+class Polar_emission : public Emission {
+    
+public:
+    
+    float root_prob = 0.999;
+    float reverse_penalty = 0.01;
+    
+    vector<float> diff = vector<float>(4);
+    
+    Polar_emission();
+    
+    ~Polar_emission();
+    
+    float null_emit(Branch &branch, float time, float theta, Node_ptr node) override;
+    
+    float mut_emit(Branch &branch, float time, float theta, float bin_size, set<float> &mut_set, Node_ptr node) override;
+    
+    float emit(Branch &branch, float time, float theta, float bin_size, vector<float> &emissions, Node_ptr node) override;
+    
+    float mut_prob(float theta, float bin_size, float ll, float lu, float l0, int sl, int su, int s0);
+    
+    float null_prob(float theta, float ll, float lu, float l0);
+    
+    float mut_prob(float theta, float bin_size, int s);
+    
+    float null_prob(float theta);
+    
+    void get_diff(float m, Branch branch, Node_ptr node);
+};
+
 
 #endif /* Polar_emission_hpp */

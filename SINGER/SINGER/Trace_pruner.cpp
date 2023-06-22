@@ -100,6 +100,30 @@ void Trace_pruner::write_reduction_size(string filename) {
     }
 }
 
+float Trace_pruner::min_reduction_error() {
+    float error = 0;
+    set<Branch> &reduced_set = reductions.begin()->second;
+    Node_ptr node;
+    auto reduced_it = reductions.begin();
+    for (auto x : match_map) {
+        float m = x.first;
+        while (reduced_it->first <= m) {
+            reduced_it++;
+            reduced_set = reduced_it->second;
+        }
+        node = get_node_at(m);
+        float min_mismatch = 1;
+        for (const Branch &b : reduced_set) {
+            float mismatch = count_mismatch(b, node, m);
+            min_mismatch = min(min_mismatch, mismatch);
+        }
+        if (min_mismatch > 0) {
+            error += 1;
+        }
+    }
+    return error;
+}
+
 void Trace_pruner::write_reductions(ARG &a) {
     assert(segments.size() == 0);
     auto delete_it = deletions.begin();
@@ -154,16 +178,18 @@ float Trace_pruner::count_mismatch(Branch branch, Node_ptr n, float m) {
     float s0 = n->get_state(m);
     float sl = branch.lower_node->get_state(m);
     float su = branch.upper_node->get_state(m);
-    if (branch.upper_node->index != -1 or sl == su) {
+    if (branch.upper_node->index != -1) {
         if (abs(sl - s0) > 0.5 and abs(su - s0) > 0.5) {
             return 1;
         } else {
             return 0;
         }
     } else { // root branch mutation case
-        if (s0 == sl) { // must be a match
+        if (sl == 1 or sl == 0.5) { // you can join the root as 1-0
             return 0;
-        } else { // still creates one more mismatch
+        } else if (s0 == sl) { // else must be a zero
+            return 0;
+        } else {
             return 1;
         }
     }
@@ -649,23 +675,25 @@ float Trace_pruner::get_match_time(set<Branch> &branches, float m, Node_ptr n) {
 float Trace_pruner::get_match_time(set<Branch> &branches, float m, Node_ptr n) {
     float state = n->get_state(m);
     assert(state == 0 or state == 1);
-    set<Branch> valid_branches = {};
+    int valid_count = 0;
     for (const Branch &b : branches) {
-        if (b.upper_node->time > cut_time and b.upper_node->index != -1) {
-            valid_branches.insert(b); // needs at least one mutation above cut_time (excluding root mutations)
+        if (b.upper_node->time > cut_time) {
+            valid_count += 1; // needs at least one mutation above cut_time (excluding root mutations)
         }
     }
-    if (valid_branches.size() == 0) {
+    if (valid_count == 0) {
         return -1; // essentially a private mutation, not that informative
     }
-    if (valid_branches.size() > 1) {
+    if (valid_count > 1) {
         return max_time; // multiple mutations but at least one above cut_time, still for checking
     }
-    assert(valid_branches.size() == 1);
-    const Branch &b = *valid_branches.begin(); // the single valid mutation branch, which must be the highest branch
-    assert(b.upper_node->index != -1);
+    assert(valid_count == 1);
+    const Branch &b = *branches.rbegin(); // the single valid mutation branch, which must be the highest branch
+    // assert(b.upper_node->index != -1);
     if (b.lower_node->get_state(m) == state) { // a matching branch
         return max(b.lower_node->time, cut_time) - cut_time;
+    } else if (b.upper_node->index == -1) {
+        return 0.0;
     } else { // non-matching branch
         return max_time - max(cut_time, b.lower_node->time) - cut_time;
     }

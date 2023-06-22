@@ -70,6 +70,8 @@ public:
     
     void write_reduction_size(string filename);
     
+    float min_reduction_error();
+    
     // void write_changes(ARG &a);
     
     void write_reductions(ARG &a);

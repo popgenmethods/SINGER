@@ -400,7 +400,7 @@ int ARG::count_flipping() {
     int count = 0;
     for (auto x : mutation_branches) {
         set<Branch> &branches = x.second;
-        if (branches.rbegin()->upper_node == root) {
+        if (branches.rbegin()->upper_node == root and branches.size() > 1) {
             count += 1;
         }
     }

@@ -106,10 +106,12 @@ Node_ptr Tree::find_sibling(Node_ptr n) {
     Branch b = Branch(n, p);
     set<Branch>::iterator branch_it = branches.find(b);
     branch_it++;
-    if ((*branch_it).upper_node != p) {
+    Branch candidate = *branch_it;
+    if (candidate.upper_node != p) {
         branch_it--;
         branch_it--;
     }
+    candidate = *branch_it;
     Node_ptr s = (*branch_it).lower_node;
     return s;
 }
@@ -120,6 +122,7 @@ Branch Tree::find_joining_branch(Branch removed_branch) {
     }
     Node_ptr p = parents[removed_branch.upper_node];
     Node_ptr c = find_sibling(removed_branch.lower_node);
+    assert(parents[c] == removed_branch.upper_node);
     return Branch(c, p);
 }
 

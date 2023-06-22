@@ -103,6 +103,7 @@ void Sampler::iterative_start() {
         Node_ptr n = build_node(i, 0.0);
         threader.thread(arg, n);
         arg.check_incompatibility();
+        cout << "Number of flippings: " << arg.count_flipping() << endl;
     }
     string node_file = output_prefix + "_start_nodes_" + to_string(sample_index) + ".txt";
     string branch_file= output_prefix + "_start_branches_" + to_string(sample_index) + ".txt";
@@ -122,8 +123,9 @@ void Sampler::fast_iterative_start() {
         } else {
             threader.thread(arg, n);
         }
-        arg.write(output_prefix + "_fast_debug_nodes.txt", output_prefix + "_fast_debug_branches.txt", output_prefix + "_fast_debug_recomb.txt");
+        // arg.write(output_prefix + "_fast_debug_nodes.txt", output_prefix + "_fast_debug_branches.txt", output_prefix + "_fast_debug_recomb.txt");
         arg.check_mapping();
+        cout << "Number of flippings: " << arg.count_flipping() << endl;
     }
     string node_file = output_prefix + "_fast_start_nodes_" + to_string(sample_index) + ".txt";
     string branch_file= output_prefix + "_fast_start_branches_" + to_string(sample_index) + ".txt";

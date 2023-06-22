@@ -14,6 +14,8 @@
 #include "Coalescent_calculator.hpp"
 #include "Interval.hpp"
 #include "Emission.hpp"
+#include "Binary_emission.hpp"
+#include "Polar_emission.hpp"
 
 class BSP_smc {
     
