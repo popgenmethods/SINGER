@@ -79,6 +79,8 @@ public:
     
     void start(set<Branch> &branches, float t);
     
+    void start(unordered_set<Branch, branch_hash> &branches, float t);
+    
     void set_cutoff(float x);
     
     void set_emission(shared_ptr<Emission> e);

@@ -40,4 +40,13 @@ public:
     bool operator!=(const Branch &other) const;
 };
 
+struct branch_hash {
+    std::size_t operator()(const Branch& b) const {
+        std::hash<Node_ptr> hasher;
+        std::size_t h1 = hasher(b.lower_node);
+        std::size_t h2 = hasher(b.upper_node);
+        return h1 ^ (h2 << 1);
+    }
+};
+
 #endif /* Branch_hpp */

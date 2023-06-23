@@ -82,6 +82,8 @@ public:
     
     void sample_joining_points(ARG &a);
     
+    float acceptance_ratio(ARG &a);
+    
     float random();
     
 };

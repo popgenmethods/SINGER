@@ -315,11 +315,13 @@ void ARG::add(map<float, Branch> &new_joining_branches, map<float, Branch> &adde
             }
             next_added_branch = add_it->second;
             add_it++;
+            /*
             if (prev_added_branch.upper_node == r.inserted_node) {
                 if (joining_branches.begin()->first != r.pos and joining_branches.rbegin()->first != r.pos) {
                     assert(prev_joining_branch == r.target_branch);
                 }
             }
+             */
             r.add(prev_added_branch, next_added_branch, prev_joining_branch, next_joining_branch, cut_node);
             prev_joining_branch = next_joining_branch;
             prev_added_branch = next_added_branch;
@@ -337,8 +339,6 @@ void ARG::add(map<float, Branch> &new_joining_branches, map<float, Branch> &adde
     }
     remove_empty_recombinations();
     impute(new_joining_branches, added_branches);
-    // impute_nodes(start, end);
-    // impute_nodes(0, sequence_length);
     start_tree.add(added_branches.begin()->second, new_joining_branches.begin()->second, cut_node);
 }
 
@@ -691,8 +691,8 @@ void ARG::check_incompatibility() {
 void ARG::clear_remove_info() {
     removed_branches.clear();
     joining_branches.clear();
-    start = 0;
-    end = 0;
+    // start = 0;
+    // end = 0;
     cut_node = nullptr;
 }
  
@@ -1108,6 +1108,7 @@ float ARG::get_arg_length(map<float, Branch> &new_joining_branches, map<float, B
     return l;
 }
 
+/*
 tuple<float, Branch, float> ARG::sample_internal_cut() {
     // float arg_length = get_arg_length(0, sequence_length);
     float arg_length = get_arg_length();
@@ -1141,6 +1142,21 @@ tuple<float, Branch, float> ARG::sample_internal_cut() {
     }
     cerr << "sample internal cut failed" << endl;
     exit(1);
+}
+ */
+
+tuple<float, Branch, float> ARG::sample_internal_cut() {
+    if (end >= sequence_length) {
+        cut_pos = 0;
+        cut_tree = get_tree_at(0);
+    } else {
+        cut_tree = modify_tree_to(end, start_tree, start);
+        cut_pos = end;
+    }
+    Branch b;
+    float t;
+    tie(b, t) = cut_tree.sample_cut_point();
+    return {cut_pos, b, t};
 }
 
 tuple<float, Branch, float> ARG::sample_recombination_cut() {

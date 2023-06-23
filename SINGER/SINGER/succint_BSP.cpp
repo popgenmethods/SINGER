@@ -77,7 +77,6 @@ void succint_BSP::forward(float rho) {
     weight_sums.push_back(weight_sum);
 }
 
-
 void succint_BSP::transfer(Recombination &r) {
     rhos.push_back(0);
     prev_rho = -1;
@@ -366,7 +365,7 @@ float succint_BSP::get_overwrite_prob(Recombination &r, float lb, float ub) {
 }
 
 void succint_BSP::process_interval(Recombination &r, int i) {
-    Branch prev_branch = curr_intervals[i]->branch;
+    const Branch &prev_branch = curr_intervals[i]->branch;
     if (prev_branch == r.source_branch) {
         process_source_interval(r, i);
     } else if (prev_branch == r.target_branch) {
@@ -480,7 +479,21 @@ void succint_BSP::process_other_interval(Recombination &r, int i) {
     float lb, ub = 0;
     Interval_ptr prev_interval = curr_intervals[i];
     float p = forward_probs[curr_index - 1][i];
+    /*
     if (!r.affect(prev_interval->branch)) {
+        if (p > cutoff or prev_interval->full(cut_time)) {
+            temp_intervals.push_back(prev_interval);
+            temp.push_back(p);
+        }
+    } else {
+        lb = prev_interval->lb;
+        ub = prev_interval->ub;
+        Branch &next_branch = r.merging_branch;
+        Interval_info next_interval = Interval_info(next_branch, lb, ub);
+        transfer_helper(next_interval, prev_interval, p);
+    }
+     */
+    if (prev_interval->branch != r.source_sister_branch and prev_interval->branch != r.source_parent_branch) {
         if (p > cutoff or prev_interval->full(cut_time)) {
             temp_intervals.push_back(prev_interval);
             temp.push_back(p);

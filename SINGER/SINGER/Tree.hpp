@@ -21,15 +21,17 @@ class Tree {
 public:
     
     set<Branch> branches = {};
+    // unordered_set<Branch, branch_hash> branches = {};
     unordered_map<Node_ptr, Node_ptr> parents = {};
+    // unordered_map<Node_ptr, unordered_set<Node_ptr>> children = {};
     
     Tree();
     
     float length();
     
-    void insert_branch(Branch b);
+    void insert_branch(const Branch &b);
     
-    void delete_branch(Branch b);
+    void delete_branch(const Branch &b);
     
     void internal_insert_branch(const Branch &b, float cut_time);
     

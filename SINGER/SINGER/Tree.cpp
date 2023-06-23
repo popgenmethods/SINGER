@@ -20,18 +20,27 @@ float Tree::length() {
     return l;
 }
 
-void Tree::delete_branch(Branch b) {
+void Tree::delete_branch(const Branch &b) {
     assert(b.upper_node != nullptr and b.lower_node != nullptr);
     assert(branches.count(b) > 0);
     branches.erase(b);
     parents.erase(b.lower_node);
+    /*
+    unordered_set<Node_ptr> &children_nodes = children[b.upper_node];
+    if (children_nodes.size() == 1) {
+        children.erase(b.upper_node);
+    } else {
+        children_nodes.erase(b.lower_node);
+    }
+     */
 }
 
-void Tree::insert_branch(Branch b) {
+void Tree::insert_branch(const Branch &b) {
     assert(b.upper_node != nullptr and b.lower_node != nullptr);
     assert(branches.count(b) == 0);
     branches.insert(b);
     parents[b.lower_node] = b.upper_node;
+    // children[b.upper_node].insert(b.lower_node);
 }
 
 void Tree::internal_insert_branch(const Branch &b, float cut_time) {
@@ -41,6 +50,7 @@ void Tree::internal_insert_branch(const Branch &b, float cut_time) {
     assert(branches.count(b) == 0);
     branches.insert(b);
     parents[b.lower_node] = b.upper_node;
+    // children[b.upper_node].insert(b.lower_node);
 }
 
 void Tree::internal_delete_branch(const Branch &b, float cut_time) {
@@ -50,22 +60,23 @@ void Tree::internal_delete_branch(const Branch &b, float cut_time) {
     assert(branches.count(b) > 0);
     branches.erase(b);
     parents.erase(b.lower_node);
+    // children.erase(b.upper_node);
 }
 
 void Tree::forward_update(Recombination &r) {
-    for (Branch b : r.deleted_branches) {
+    for (const Branch &b : r.deleted_branches) {
         delete_branch(b);
     }
-    for (Branch b : r.inserted_branches) {
+    for (const Branch &b : r.inserted_branches) {
         insert_branch(b);
     }
 }
 
 void Tree::backward_update(Recombination &r) {
-    for (Branch b : r.inserted_branches) {
+    for (const Branch &b : r.inserted_branches) {
         delete_branch(b);
     }
-    for (Branch b : r.deleted_branches) {
+    for (const Branch &b : r.deleted_branches) {
         insert_branch(b);
     }
 }
@@ -115,6 +126,21 @@ Node_ptr Tree::find_sibling(Node_ptr n) {
     Node_ptr s = (*branch_it).lower_node;
     return s;
 }
+
+/*
+Node_ptr Tree::find_sibling(Node_ptr n) {
+    Node_ptr p = parents[n];
+    unordered_set<Node_ptr> &candidates = children[p];
+    Node_ptr c;
+    auto c_it = candidates.begin();
+    if (*c_it != n) {
+        c = *c_it;
+    } else {
+        c = *(next(c_it));
+    }
+    return c;
+}
+ */
 
 Branch Tree::find_joining_branch(Branch removed_branch) {
     if (removed_branch == Branch()) {

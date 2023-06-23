@@ -155,8 +155,8 @@ void test_internal_sampling() {
     sampler.set_input_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_hap0");
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50");
     sampler.iterative_start();
-    // sampler.recombination_climb(300, 1);
-    sampler.internal_sample(1000, 1);
+    sampler.recombination_climb(300, 1);
+    sampler.internal_sample(700, 1);
 }
 
 void test_fast_internal_sampling() {

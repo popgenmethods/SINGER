@@ -75,10 +75,9 @@ void Threader_smc::internal_rethread(ARG &a, tuple<float, Branch, float> cut_poi
     sample_joining_branches(a);
     run_TSP(a);
     sample_joining_points(a);
-    float prev_length = a.get_arg_length(a.joining_branches, a.removed_branches);
-    float next_length = a.get_arg_length(new_joining_branches, added_branches);
+    float ar = acceptance_ratio(a);
     float q = random();
-    if (q < prev_length/next_length) {
+    if (q < ar) {
         a.add(new_joining_branches, added_branches);
     } else {
         a.add(a.joining_branches, a.removed_branches);
@@ -324,6 +323,36 @@ void Threader_smc::sample_joining_points(ARG &a) {
         added_branches[x] = Branch(query_node, added_node);
         add_it++;
     }
+}
+
+/*
+float Threader_smc::acceptance_ratio(ARG &a) {
+    float prev_length = a.get_arg_length(a.joining_branches, a.removed_branches);
+    float next_length = a.get_arg_length(new_joining_branches, added_branches);
+    return prev_length/next_length;
+}
+ */
+
+float Threader_smc::acceptance_ratio(ARG &a) {
+    auto old_join_it = a.joining_branches.upper_bound(a.cut_pos);
+    old_join_it--;
+    auto new_join_it = new_joining_branches.upper_bound(a.cut_pos);
+    new_join_it--;
+    auto old_add_it = a.removed_branches.upper_bound(a.cut_pos);
+    old_add_it--;
+    auto new_add_it = added_branches.upper_bound(a.cut_pos);
+    new_add_it--;
+    float old_length = a.cut_tree.length();
+    float new_length = old_length;
+    old_length += old_add_it->second.upper_node->time - a.cut_time;
+    if (old_join_it->second.upper_node->index == -1) {
+        old_length += old_add_it->second.upper_node->time - old_join_it->second.lower_node->time;
+    }
+    old_length += new_add_it->second.upper_node->time - a.cut_time;
+    if (new_join_it->second.upper_node->index == -1) {
+        new_length += new_add_it->second.upper_node->time - new_join_it->second.lower_node->time;
+    }
+    return old_length/new_length;
 }
 
 float Threader_smc::random() {
