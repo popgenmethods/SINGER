@@ -42,7 +42,62 @@ void Sampler::set_num_samples(int n) {
     num_samples = n;
 }
 
+void Sampler::load_vcf(string vcf_file) {
+    ifstream file(vcf_file);
+    string line;
+    int prev_pos = -1;
+    vector<Node_ptr> nodes = {};
+    while (getline(file, line)) {
+        if (line[0] == '#') {continue;} // skip these header lines
+        istringstream iss(line);
+        string chrom, id, ref, alt, qual, filter, info, format, genotype;
+        int pos;
+        iss >> chrom >> pos >> id >> ref >> alt >> qual >> filter >> info >> format;
+        
+        if (pos == prev_pos) {continue;} // skip multi-allelic sites
+        if (ref.size() > 1 or alt.size() > 1) {continue;} // skip multi-allelic sites or structural variant
+        
+        streampos old_pos = file.tellg();
+        string next_line;
+        if (getline(file, next_line)) {
+            istringstream next_iss(next_line);
+            string next_chrom;
+            int next_pos;
+            next_iss >> next_chrom >> next_pos;
+            if (next_pos == pos) {
+                prev_pos = pos;
+                continue;
+            }
+            file.seekg(old_pos);
+        }
+        int individual_index = 0;
+        while (iss >> genotype) {
+            if (nodes.size() < 2*individual_index + 2) {
+                Node_ptr left_node = new_node(0);
+                Node_ptr right_node = new_node(0);
+                left_node->set_index(2*individual_index);
+                right_node->set_index(2*individual_index + 1);
+                nodes.push_back(left_node);
+                nodes.push_back(right_node);
+                sample_nodes.insert(left_node);
+                sample_nodes.insert(right_node);
+            }
+            if (genotype[0] == '1') {
+                nodes[2*individual_index]->add_mutation(pos);
+                carriers[pos].insert(nodes[2*individual_index]);
+            }
+            if (genotype[2] == '1') {
+                nodes[2*individual_index + 1]->add_mutation(pos);
+                carriers[pos].insert(nodes[2*individual_index + 1]);
+            }
+            individual_index += 1;
+        }
+    }
+    num_samples = (int) sample_nodes.size();
+}
+
 void Sampler::optimal_ordering() {
+    /*
     build_all_nodes();
     unordered_map<float, set<Node_ptr>> carriers = {};
     for (Node_ptr n : sample_nodes) {
@@ -50,16 +105,20 @@ void Sampler::optimal_ordering() {
             carriers[m].insert(n);
         }
     }
+     */
+    set<Node_ptr, compare_node> covered_nodes = {};
     while (carriers.size() > 0) {
         cout << "Curr number of nodes: " << ordered_sample_nodes.size() << endl;
-        cout << "Curr number of mutations: " << carriers.size() << endl;
+        cout << "Number of remaining mutations: " << carriers.size() << endl;
         auto it = max_element(carriers.begin(), carriers.end(), [](const auto& l, const auto& r) {return l.second.size() < r.second.size();});
         Node_ptr n = *(it->second.begin());
         for (float m : n->mutation_sites) {
             carriers.erase(m);
         }
         ordered_sample_nodes.push_back(n);
+        covered_nodes.insert(n);
     }
+    set_difference(sample_nodes.begin(), sample_nodes.end(), covered_nodes.begin(), covered_nodes.end(), back_inserter(ordered_sample_nodes));
     cout << "Finished ordering" << endl;
 }
 

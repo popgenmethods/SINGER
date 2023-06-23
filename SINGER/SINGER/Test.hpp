@@ -34,6 +34,6 @@ void test_fast_internal_sampling();
 
 void test_optimal_ordering();
 
-// void test_succint_bsp();
+void test_load_vcf();
 
 #endif /* Test_hpp */

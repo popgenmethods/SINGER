@@ -36,8 +36,9 @@ public:
     int random_seed = 0;
     shared_ptr<Emission> eh = make_shared<Binary_emission>();
     int sample_index = 0;
-    set<Node_ptr> sample_nodes = {};
+    set<Node_ptr, compare_node> sample_nodes = {};
     vector<Node_ptr> ordered_sample_nodes = {};
+    unordered_map<float, set<Node_ptr>> carriers = {};
     
     Sampler(float pop_size, float r, float m);
     
@@ -54,6 +55,8 @@ public:
     void set_sequence_length(float x);
     
     void set_num_samples(int n);
+    
+    void load_vcf(string vcf_file);
     
     void optimal_ordering();
     

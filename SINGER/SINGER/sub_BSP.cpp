@@ -150,7 +150,9 @@ void sub_BSP::update(float rho) {
 }
 
 float sub_BSP::get_recomb_prob(float rho, float t) {
-    float p = rho*(t - cut_time)*exp(-rho*(t - cut_time));
+    // float p = rho*(t - cut_time)*exp(-rho*(t - cut_time));
+    float p = rho*(t - cut_time);
+    assert(p < 0.2);
     return p;
 }
 
@@ -739,7 +741,8 @@ int sub_BSP::trace_back_helper(Interval_ptr interval, int x) {
         } else {
             recomb_prob = get_recomb_prob(rhos[x - 1], t);
             non_recomb_prob = (1 - recomb_prob)*forward_probs[x - 1][sample_index];
-            all_prob = non_recomb_prob + recomb_sum*w;
+            // all_prob = non_recomb_prob + recomb_sum*w;
+            all_prob = non_recomb_prob + recomb_sum*w + recomb_sum*forward_probs[x - 1][sample_index]*(1 - reduced_sum);
             shrinkage = non_recomb_prob/all_prob;
             assert(!isnan(shrinkage));
             assert(shrinkage >= 0 and shrinkage <= 1);

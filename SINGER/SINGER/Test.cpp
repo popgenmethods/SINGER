@@ -190,74 +190,10 @@ void test_optimal_ordering() {
     sampler.optimal_ordering();
 }
 
-/*
-void test_succint_bsp() {
-    srand(93723823);
-    // set_seed(93723823);
-    set_seed(15);
+void test_load_vcf() {
+    set_seed(93723823);
+    // set_seed(38);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
-    sampler.set_precision(0.01, 0.05);
-    sampler.set_num_samples(3);
-    sampler.set_sequence_length(1e6);
-    sampler.set_input_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_hap0");
-    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_hap0");
-    sampler.iterative_start();
-    Node_ptr n = sampler.build_node(3, 0.0);
-    sampler.arg.add_sample(n);
-    BSP_smc bsp = BSP_smc();
-    succint_BSP sbsp = succint_BSP();
-    bsp.reserve_memory(100000);
-    sbsp.reserve_memory(100000);
-    bsp.set_cutoff(0.01);
-    sbsp.set_cutoff(0.01);
-    bsp.set_emission(sampler.eh);
-    sbsp.set_emission(sampler.eh);
-    bsp.start(sampler.arg.start_tree.branches, 0.005);
-    sbsp.start(sampler.arg.start_tree.branches, 0.005);
-    auto recomb_it = sampler.arg.recombinations.upper_bound(0);
-    auto mut_it = sampler.arg.mutation_sites.lower_bound(0);
-    auto query_it = sampler.arg.removed_branches.begin();
-    vector<float> mutations;
-    set<float> mut_set = {};
-    set<Branch> deletions = {};
-    set<Branch> insertions = {};
-    Node_ptr query_node = nullptr;
-    for (int i = 0; i < 100000; i++) {
-        if (sampler.arg.coordinates[i] == query_it->first) {
-            query_node = query_it->second.lower_node;
-            query_it++;
-        }
-        if (sampler.arg.coordinates[i] == recomb_it->first) {
-            Recombination &r = recomb_it->second;
-            recomb_it++;
-            bsp.transfer(r);
-            sbsp.transfer(r);
-        } else if (sampler.arg.coordinates[i] != 0) {
-            bsp.forward(sampler.arg.rhos[i - 1]);
-            sbsp.forward(sampler.arg.rhos[i - 1]);
-        }
-        vector<float> curr_bsp_probs = bsp.forward_probs.back();
-        vector<float> curr_sbsp_probs = sbsp.forward_probs.back();
-        sort(curr_bsp_probs.begin(), curr_bsp_probs.end());
-        sort(curr_sbsp_probs.begin(), curr_sbsp_probs.end());
-        assert(curr_bsp_probs.size() == curr_sbsp_probs.size());
-        mut_set = {};
-        while (*mut_it < sampler.arg.coordinates[i + 1]) {
-            mut_set.insert(*mut_it);
-            mut_it++;
-        }
-        if (mut_set.size() > 0) {
-            bsp.mut_emit(sampler.arg.thetas[i], sampler.arg.coordinates[i + 1] - sampler.arg.coordinates[i], mut_set, query_node);
-            sbsp.mut_emit(sampler.arg.thetas[i], sampler.arg.coordinates[i + 1] - sampler.arg.coordinates[i], mut_set, query_node);
-        } else {
-            bsp.null_emit(sampler.arg.thetas[i], query_node);
-            sbsp.null_emit(sampler.arg.thetas[i], query_node);
-        }
-        vector<float> bsp_null_probs = bsp.null_emit_probs;
-        vector<float> sbsp_null_probs = sbsp.null_emit_probs;
-        sort(bsp_null_probs.begin(), bsp_null_probs.end());
-        sort(sbsp_null_probs.begin(), sbsp_null_probs.end());
-        assert(bsp_null_probs == sbsp_null_probs);
-    }
+    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf");
+    sampler.optimal_ordering();
 }
-*/
