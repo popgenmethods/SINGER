@@ -874,7 +874,9 @@ void ARG::write_nodes(string filename) {
     file.open(filename);
     int index = 0;
     for (Node_ptr n : node_set) {
-        n->set_index(index);
+        if (n->time > 0) {
+            n->set_index(index);
+        }
         file << setprecision(15) << n->time*Ne << "\n";
         index += 1;
     }

@@ -24,6 +24,8 @@ void test_iterative_start();
 
 void test_fast_iterative_start();
 
+void test_fast_larger_iterative_start();
+
 void test_terminal_sampling();
 
 void test_fast_terminal_sampling();

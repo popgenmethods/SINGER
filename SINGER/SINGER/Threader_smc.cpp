@@ -18,7 +18,8 @@ Threader_smc::~Threader_smc() {
 
 void Threader_smc::thread(ARG &a, Node_ptr n) {
     cout << "Iteration: " << a.sample_nodes.size() << endl;
-    cut_time = 0.005;
+    // cut_time = 0.005;
+    cut_time = max(0.5/10000, min(0.005, 0.1/a.sample_nodes.size()));
     a.cut_time = cut_time;
     a.add_sample(n);
     get_boundary(a);
@@ -42,7 +43,8 @@ void Threader_smc::thread(ARG &a, Node_ptr n) {
 
 void Threader_smc::fast_thread(ARG &a, Node_ptr n) {
     cout << "Iteration: " << a.sample_nodes.size() << endl;
-    cut_time = 0.005;
+    // cut_time = 0.005;
+    cut_time = max(0.5/10000, min(0.005, 0.1/a.sample_nodes.size()));
     a.cut_time = cut_time;
     a.add_sample(n);
     get_boundary(a);
