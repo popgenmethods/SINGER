@@ -20,7 +20,7 @@ class RSP_smc {
     
 public:
     
-    float min_time = 0.005;
+    // float min_time = 0.005;
     
     RSP_smc();
     

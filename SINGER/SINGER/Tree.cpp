@@ -25,14 +25,12 @@ void Tree::delete_branch(const Branch &b) {
     assert(branches.count(b) > 0);
     branches.erase(b);
     parents.erase(b.lower_node);
-    /*
     unordered_set<Node_ptr> &children_nodes = children[b.upper_node];
     if (children_nodes.size() == 1) {
         children.erase(b.upper_node);
     } else {
         children_nodes.erase(b.lower_node);
     }
-     */
 }
 
 void Tree::insert_branch(const Branch &b) {
@@ -40,7 +38,7 @@ void Tree::insert_branch(const Branch &b) {
     assert(branches.count(b) == 0);
     branches.insert(b);
     parents[b.lower_node] = b.upper_node;
-    // children[b.upper_node].insert(b.lower_node);
+    children[b.upper_node].insert(b.lower_node);
 }
 
 void Tree::internal_insert_branch(const Branch &b, float cut_time) {
@@ -50,7 +48,7 @@ void Tree::internal_insert_branch(const Branch &b, float cut_time) {
     assert(branches.count(b) == 0);
     branches.insert(b);
     parents[b.lower_node] = b.upper_node;
-    // children[b.upper_node].insert(b.lower_node);
+    children[b.upper_node].insert(b.lower_node);
 }
 
 void Tree::internal_delete_branch(const Branch &b, float cut_time) {
@@ -60,7 +58,12 @@ void Tree::internal_delete_branch(const Branch &b, float cut_time) {
     assert(branches.count(b) > 0);
     branches.erase(b);
     parents.erase(b.lower_node);
-    // children.erase(b.upper_node);
+    unordered_set<Node_ptr> &children_nodes = children[b.upper_node];
+    if (children_nodes.size() == 1) {
+        children.erase(b.upper_node);
+    } else {
+        children_nodes.erase(b.lower_node);
+    }
 }
 
 void Tree::forward_update(Recombination &r) {

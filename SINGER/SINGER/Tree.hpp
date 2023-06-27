@@ -21,9 +21,8 @@ class Tree {
 public:
     
     set<Branch> branches = {};
-    // unordered_set<Branch, branch_hash> branches = {};
-    unordered_map<Node_ptr, Node_ptr> parents = {};
-    // unordered_map<Node_ptr, unordered_set<Node_ptr>> children = {};
+    map<Node_ptr, Node_ptr, compare_node> parents = {};
+    unordered_map<Node_ptr, unordered_set<Node_ptr>> children = {};
     
     Tree();
     

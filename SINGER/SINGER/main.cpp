@@ -16,11 +16,12 @@ int main(int argc, const char * argv[]) {
     // test_trace_pruner();
     // test_iterative_start();
     // test_fast_iterative_start();
-    test_fast_larger_iterative_start();
+    // test_fast_larger_iterative_start();
     // test_terminal_sampling();
     // test_fast_terminal_sampling();
     // test_internal_sampling();
-    // test_fast_internal_sampling();
+    test_fast_internal_sampling();
+    // test_fast_larger_internal_sampling();
     // test_optimal_ordering();
     // test_succint_bsp();
     // test_load_vcf();

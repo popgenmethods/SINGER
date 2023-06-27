@@ -132,8 +132,8 @@ void Sampler::build_all_nodes() {
 
 void Sampler::build_singleton_arg() {
     float bin_size = rho_unit/recomb_rate;
-    // Node_ptr n = build_node(0, 0.0);
-    Node_ptr n = *sample_nodes.begin();
+    Node_ptr n = build_node(0, 0.0);
+    // Node_ptr n = *sample_nodes.begin();
     arg = ARG(Ne, sequence_length);
     arg.discretize(bin_size);
     arg.build_singleton_arg(n);
@@ -149,7 +149,6 @@ void Sampler::build_void_arg() {
 
 void Sampler::iterative_start() {
     build_singleton_arg();
-    /*
     for (int i = 1; i < num_samples; i++) {
         random_seed = rand();
         srand(random_seed);
@@ -159,17 +158,18 @@ void Sampler::iterative_start() {
         arg.check_incompatibility();
         cout << "Number of flippings: " << arg.count_flipping() << endl;
     }
-     */
+    /*
     auto it = sample_nodes.begin();
     it++;
     while (it != sample_nodes.end()) {
         Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
         Node_ptr n = *it;
         threader.thread(arg, n);
-        arg.check_mapping();
+        arg.check_incompatibility();
         cout << "Number of flippings: " << arg.count_flipping() << endl;
         it++;
     }
+     */
     string node_file = output_prefix + "_start_nodes_" + to_string(sample_index) + ".txt";
     string branch_file= output_prefix + "_start_branches_" + to_string(sample_index) + ".txt";
     string recomb_file = output_prefix + "_start_recombs_" + to_string(sample_index) + ".txt";
@@ -178,7 +178,6 @@ void Sampler::iterative_start() {
 
 void Sampler::fast_iterative_start() {
     build_singleton_arg();
-    /*
     for (int i = 1; i < num_samples; i++) {
         random_seed = rand();
         srand(random_seed);
@@ -190,20 +189,25 @@ void Sampler::fast_iterative_start() {
             threader.thread(arg, n);
         }
         // arg.write(output_prefix + "_fast_debug_nodes.txt", output_prefix + "_fast_debug_branches.txt", output_prefix + "_fast_debug_recomb.txt");
-        arg.check_mapping();
+        arg.check_incompatibility();
         cout << "Number of flippings: " << arg.count_flipping() << endl;
     }
-     */
+    /*
     auto it = sample_nodes.begin();
     it++;
     while (it != sample_nodes.end()) {
         Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
         Node_ptr n = *it;
-        threader.thread(arg, n);
-        arg.check_mapping();
+        if (arg.sample_nodes.size() > 1) {
+            threader.fast_thread(arg, n);
+        } else {
+            threader.thread(arg, n);
+        }
+        arg.check_incompatibility();
         cout << "Number of flippings: " << arg.count_flipping() << endl;
         it++;
     }
+     */
     string node_file = output_prefix + "_fast_start_nodes_" + to_string(sample_index) + ".txt";
     string branch_file= output_prefix + "_fast_start_branches_" + to_string(sample_index) + ".txt";
     string recomb_file = output_prefix + "_fast_start_recombs_" + to_string(sample_index) + ".txt";
@@ -231,7 +235,7 @@ void Sampler::recombination_climb(int num_iters, int spacing) {
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
         }
-        arg.check_mapping();
+        arg.check_incompatibility();
         string node_file = output_prefix + "_nodes_" + to_string(sample_index) + ".txt";
         string branch_file= output_prefix + "_branches_" + to_string(sample_index) + ".txt";
         string recomb_file = output_prefix + "_recombs_" + to_string(sample_index) + ".txt";
@@ -254,7 +258,7 @@ void Sampler::fast_recombination_climb(int num_iters, int spacing) {
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
         }
-        arg.check_mapping();
+        arg.check_incompatibility();
         string node_file = output_prefix + "_fast_nodes_" + to_string(sample_index) + ".txt";
         string branch_file= output_prefix + "_fast_branches_" + to_string(sample_index) + ".txt";
         string recomb_file = output_prefix + "_fast_recombs_" + to_string(sample_index) + ".txt";
@@ -277,7 +281,7 @@ void Sampler::fast_mutation_climb(int num_iters, int spacing) {
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
         }
-        arg.check_mapping();
+        arg.check_incompatibility();
         string node_file = output_prefix + "_fast_nodes_" + to_string(sample_index) + ".txt";
         string branch_file= output_prefix + "_fast_branches_" + to_string(sample_index) + ".txt";
         string recomb_file = output_prefix + "_fast_recombs_" + to_string(sample_index) + ".txt";
@@ -299,7 +303,7 @@ void Sampler::terminal_sample(int num_iters) {
         string node_file = output_prefix + "_nodes_terminal_" + to_string(sample_index) + ".txt";
         string branch_file= output_prefix + "_branches_terminal_" + to_string(sample_index) + ".txt";
         string recomb_file = output_prefix + "_recombs_terminal_" + to_string(sample_index) + ".txt";
-        arg.check_mapping();
+        arg.check_incompatibility();
         arg.write(node_file, branch_file, recomb_file);
         sample_index += 1;
         cout << "Number of trees: " << arg.recombinations.size() << endl;
@@ -317,7 +321,7 @@ void Sampler::fast_terminal_sample(int num_iters) {
         threader.fast_terminal_rethread(arg, cut_point);
         updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
         arg.clear_remove_info();
-        arg.check_mapping();
+        arg.check_incompatibility();
         string node_file = output_prefix + "_fast_nodes_terminal_" + to_string(i) + ".txt";
         string branch_file= output_prefix + "_fast_branches_terminal_" + to_string(i) + ".txt";
         string recomb_file = output_prefix + "_fast_recombs_terminal_" + to_string(i) + ".txt";
@@ -339,7 +343,7 @@ void Sampler::internal_sample(int num_iters, int spacing) {
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
         }
-        arg.check_mapping();
+        arg.check_incompatibility();
         string node_file = output_prefix + "_nodes_internal_" + to_string(sample_index) + ".txt";
         string branch_file= output_prefix + "_branches_internal_" + to_string(sample_index) + ".txt";
         string recomb_file = output_prefix + "_recombs_internal_" + to_string(sample_index) + ".txt";
@@ -364,7 +368,7 @@ void Sampler::fast_internal_sample(int num_iters, int spacing) {
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
         }
-        arg.check_mapping();
+        arg.check_incompatibility();
         string node_file = output_prefix + "_fast_nodes_internal_" + to_string(sample_index) + ".txt";
         string branch_file= output_prefix + "_fast_branches_internal_" + to_string(sample_index) + ".txt";
         string recomb_file = output_prefix + "_fast_recombs_internal_" + to_string(sample_index) + ".txt";

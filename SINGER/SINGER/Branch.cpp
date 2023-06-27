@@ -39,7 +39,7 @@ bool Branch::operator<(const Branch &other) const {
  */
 
 bool Branch::operator<(const Branch &other) const {
-    compare_node cn;
+    static compare_node cn;
     if (cn(upper_node, other.upper_node)) {
         return true;
     } else if (cn(other.upper_node, upper_node)) {

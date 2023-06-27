@@ -43,6 +43,7 @@ float RSP_smc::sample_start_time(Branch b, int density, float join_time, float c
     }
     assert(start_time > cut_time);
     return start_time;
+    return ub;
 }
 
 pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density, float join_time, float cut_time) {
@@ -102,6 +103,28 @@ pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density
     assert(start_time > cut_time);
     return {source_branch, start_time};
 }
+
+/*
+float RSP_smc::sample_start_time(Branch b, int density, float join_time, float cut_time) {
+    float lb = b.lower_node->time;
+    float ub = b.upper_node->time;
+    lb = max(cut_time, lb);
+    ub = min(join_time, ub);
+    return ub;
+}
+
+pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density, float join_time, float cut_time) {
+    float lb1 = max(b1.lower_node->time, cut_time);
+    float ub1 = min(b1.upper_node->time, join_time);
+    float lb2 = max(b2.lower_node->time, cut_time);
+    float ub2 = min(b2.upper_node->time, join_time);
+    if (ub1 > ub2) {
+        return {b1, ub1};
+    } else {
+        return {b2, ub2};
+    }
+}
+ */
 
 void RSP_smc::sample_recombination(Recombination &r, float cut_time, Tree &tree) {
     if (r.pos == 0) {
@@ -194,7 +217,8 @@ float RSP_smc::random_time(float lb, float ub) {
     assert(t > lb);
     return t;
      */
-    float t = random()*(ub - lb) + lb;
+    // float t = random()*(ub - lb) + lb;
+    float t = (0.01*random() + 0.99)*(ub - lb) + lb;
     /*
     if (t <= lb) {
         t = ub - 1e-12;

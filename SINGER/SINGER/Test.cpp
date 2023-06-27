@@ -124,8 +124,10 @@ void test_fast_larger_iterative_start() {
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0");
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0.vcf");
-    sampler.optimal_ordering();
+    // sampler.optimal_ordering();
+    sampler.fast_iterative_start();
 }
 
 void test_terminal_sampling() {
@@ -183,6 +185,17 @@ void test_fast_internal_sampling() {
     sampler.fast_iterative_start();
     // sampler.fast_recombination_climb(200, 1);
     // sampler.fast_mutation_climb(200, 1);
+    sampler.fast_internal_sample(100, 1);
+}
+
+void test_fast_larger_internal_sampling() {
+    set_seed(842651);
+    Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
+    sampler.set_precision(0.01, 0.05);
+    sampler.set_sequence_length(1e6);
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0");
+    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0.vcf");
+    sampler.fast_iterative_start();
     sampler.fast_internal_sample(1000, 1);
 }
 
