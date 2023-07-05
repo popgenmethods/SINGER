@@ -45,10 +45,27 @@ void Sampler::set_num_samples(int n) {
 void Sampler::load_vcf(string vcf_file) {
     ifstream file(vcf_file);
     string line;
+    int num_individuals = 0;
     int prev_pos = -1;
     vector<Node_ptr> nodes = {};
     while (getline(file, line)) {
-        if (line[0] == '#') {continue;} // skip these header lines
+        if (line.substr(0, 6) == "#CHROM") {
+            std::istringstream iss(line);
+            std::vector<std::string> fields;
+            std::string field;
+            while (iss >> field) {
+                fields.push_back(field);
+            }
+            num_individuals = (int) fields.size() - 9;
+            nodes.resize(2*num_individuals);
+            for (int i = 0; i < 2*num_individuals; i++) {
+                nodes[i] = new_node(0.0);
+                nodes[i]->set_index(i);
+                sample_nodes.insert(nodes[i]);
+            }
+        } else if (line[0] == '#') {
+            continue; // skip these header lines
+        }
         istringstream iss(line);
         string chrom, id, ref, alt, qual, filter, info, format, genotype;
         int pos;
@@ -85,12 +102,10 @@ void Sampler::load_vcf(string vcf_file) {
             if (genotype[0] == '1') {
                 nodes[2*individual_index]->add_mutation(pos);
                 carriers[pos].insert(nodes[2*individual_index]);
-                // covered_mutations[nodes[2*individual_index]] += 1;
             }
             if (genotype[2] == '1') {
                 nodes[2*individual_index + 1]->add_mutation(pos);
                 carriers[pos].insert(nodes[2*individual_index + 1]);
-                // covered_mutations[nodes[2*individual_index + 1]] += 1;
             }
             individual_index += 1;
         }
@@ -132,8 +147,7 @@ void Sampler::build_all_nodes() {
 
 void Sampler::build_singleton_arg() {
     float bin_size = rho_unit/recomb_rate;
-    Node_ptr n = build_node(0, 0.0);
-    // Node_ptr n = *sample_nodes.begin();
+    Node_ptr n = *sample_nodes.begin();
     arg = ARG(Ne, sequence_length);
     arg.discretize(bin_size);
     arg.build_singleton_arg(n);
@@ -149,27 +163,18 @@ void Sampler::build_void_arg() {
 
 void Sampler::iterative_start() {
     build_singleton_arg();
-    for (int i = 1; i < num_samples; i++) {
-        random_seed = rand();
-        srand(random_seed);
-        Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
-        Node_ptr n = build_node(i, 0.0);
-        threader.thread(arg, n);
-        arg.check_incompatibility();
-        cout << "Number of flippings: " << arg.count_flipping() << endl;
-    }
-    /*
     auto it = sample_nodes.begin();
     it++;
     while (it != sample_nodes.end()) {
+        bsp_c = min(0.01, 0.05/arg.sample_nodes.size());
         Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
         Node_ptr n = *it;
         threader.thread(arg, n);
         arg.check_incompatibility();
         cout << "Number of flippings: " << arg.count_flipping() << endl;
         it++;
+        arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_recombs.txt");
     }
-     */
     string node_file = output_prefix + "_start_nodes_" + to_string(sample_index) + ".txt";
     string branch_file= output_prefix + "_start_branches_" + to_string(sample_index) + ".txt";
     string recomb_file = output_prefix + "_start_recombs_" + to_string(sample_index) + ".txt";
@@ -178,24 +183,10 @@ void Sampler::iterative_start() {
 
 void Sampler::fast_iterative_start() {
     build_singleton_arg();
-    for (int i = 1; i < num_samples; i++) {
-        random_seed = rand();
-        srand(random_seed);
-        Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
-        Node_ptr n = build_node(i, 0.0);
-        if (arg.sample_nodes.size() > 1) {
-            threader.fast_thread(arg, n);
-        } else {
-            threader.thread(arg, n);
-        }
-        // arg.write(output_prefix + "_fast_debug_nodes.txt", output_prefix + "_fast_debug_branches.txt", output_prefix + "_fast_debug_recomb.txt");
-        arg.check_incompatibility();
-        cout << "Number of flippings: " << arg.count_flipping() << endl;
-    }
-    /*
     auto it = sample_nodes.begin();
     it++;
     while (it != sample_nodes.end()) {
+        bsp_c = min(0.01, 0.05/arg.sample_nodes.size());
         Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
         Node_ptr n = *it;
         if (arg.sample_nodes.size() > 1) {
@@ -207,7 +198,6 @@ void Sampler::fast_iterative_start() {
         cout << "Number of flippings: " << arg.count_flipping() << endl;
         it++;
     }
-     */
     string node_file = output_prefix + "_fast_start_nodes_" + to_string(sample_index) + ".txt";
     string branch_file= output_prefix + "_fast_start_branches_" + to_string(sample_index) + ".txt";
     string recomb_file = output_prefix + "_fast_start_recombs_" + to_string(sample_index) + ".txt";

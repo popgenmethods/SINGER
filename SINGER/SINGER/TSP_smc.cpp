@@ -498,7 +498,6 @@ void TSP_smc::compute_null_emit_probs(float theta, Node_ptr query_node) {
 void TSP_smc::compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node) {
     compute_emissions(mut_set, curr_branch, query_node);
     for (int i = 0; i < dim; i++) {
-        // mut_emit_probs[i] = eh->mut_emit(curr_branch, curr_intervals[i]->time, theta, bin_size, mut_set, query_node);
         mut_emit_probs[i] = eh->emit(curr_branch, curr_intervals[i]->time, theta, bin_size, emissions, query_node);
     }
 }
@@ -815,27 +814,16 @@ float TSP_smc::sample_time(float lb, float ub) {
     if (lb == ub) {
         return lb;
     }
-    float delta = exp(-lb) - exp(-ub);
-    float q;
-    float p;
-    float t = 0;
-    if (lb > 5 and ub == numeric_limits<float>::infinity()) {
-        t = lb + random()*log(2);
+    float t;
+    if (isinf(ub)) {
+        t = lb + random();
         return t;
-    } else if (!isinf(ub)) {
+    } else {
         t = lb + random()*(ub - lb);
         return t;
     }
-    while (t <= lb or t >= ub) {
-        q = random();
-        p = 1 - exp(-lb) + q*delta;
-        t = -log(1 - p);
-    }
-    assert(!isinf(t) and t != 0);
-    assert(lb == ub or (t > lb and t < ub));
-    return t;
 }
- */
+*/
 
 float TSP_smc::sample_time(float lb, float ub) {
     assert(lb <= ub);
@@ -844,10 +832,10 @@ float TSP_smc::sample_time(float lb, float ub) {
     }
     float t;
     if (isinf(ub)) {
-        t = lb + random();
+        t = lb + log(2)*random();
         return t;
     } else {
-        t = lb + random()*(ub - lb);
+        t = (0.45 + 0.1*random())*(ub - lb) + lb;
         return t;
     }
 }

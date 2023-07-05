@@ -44,23 +44,6 @@ void ARG::discretize(float s) {
 }
 
 int ARG::get_index(float x) {
-    /*
-    int left = 0;
-    int right = (int) coordinates.size() - 1;
-    int mid;
-    while (left <= right) {
-        mid = left + (right - left) / 2;
-        if (coordinates[mid] == x) {
-            return mid;
-        }
-        if (coordinates[mid] < x) {
-            left = mid + 1;
-        } else {
-            right = mid - 1;
-        }
-    }
-    return right;
-     */
     auto it = upper_bound(coordinates.begin(), coordinates.end(), x);
     --it;
     int index = (int) distance(coordinates.begin(), it);
@@ -859,7 +842,7 @@ int ARG::count_incompatibility(Tree tree, float x) {
     return max(0, count);
 }
 
-void ARG::write_nodes(string filename) {
+void ARG::create_node_set() {
     node_set.clear();
     for (auto x : recombinations) {
         for (Branch b : x.second.inserted_branches) {
@@ -870,6 +853,11 @@ void ARG::write_nodes(string filename) {
         add_node(n);
     }
     assert(cut_node == nullptr or node_set.count(cut_node) > 0);
+}
+
+void ARG::write_nodes(string filename) {
+    node_set.clear();
+    create_node_set();
     ofstream file;
     file.open(filename);
     int index = 0;
@@ -1223,6 +1211,53 @@ tuple<float, Branch, float> ARG::sample_terminal_cut() {
     return {0, branch, time};
 }
 
+void ARG::normalize(float t, Distribution &d) {
+    map<Node_ptr, float, compare_node> node_span = {};
+    map<Node_ptr, float> node_start = {};
+    for (const Branch &b : recombinations.begin()->second.inserted_branches) {
+        if (b.upper_node->time < t) {
+            node_start[b.upper_node] = 0;
+        }
+    }
+    auto r_it = next(recombinations.begin());
+    while (next(r_it) != recombinations.end()) {
+        Node_ptr dn = r_it->second.deleted_node;
+        Node_ptr in = r_it->second.inserted_node;
+        if (dn->time < t) {
+            assert(node_start.count(dn) > 0);
+            node_span[dn] += r_it->first - node_start[dn];
+            node_start.erase(dn);
+        }
+        if (in->time < t) {
+            node_start[in] = r_it->first;
+        }
+        r_it++;
+    }
+    for (auto x : node_start) {
+        Node_ptr n = x.first;
+        node_span[n] += sequence_length - node_start[n];
+    }
+    float ws = 0;
+    for (auto x : node_span) {
+        ws += x.second;
+    }
+    float q0 = d.get_cdf(t);
+    float w = 0;
+    float q = 0;
+    float correction = 0;
+    for (auto x : node_span) {
+        w += x.second;
+        q = q0*w/ws;
+        correction = d.get_quantile(q);
+        x.first->time = correction;
+    }
+    cut_time = 0;
+    for (auto &x : recombinations) {
+        x.second.start_time = -1;
+    }
+    smc_sample_recombinations();
+}
+
 bool compare_edge(const tuple<int, int, float, float>& edge1, const tuple<int, int, float, float>& edge2) {
     if (get<0>(edge1) < get<0>(edge2)) {
         return true;
@@ -1236,3 +1271,4 @@ bool compare_edge(const tuple<int, int, float, float>& edge1, const tuple<int, i
     }
     return get<2>(edge1) < get<2>(edge2);
 }
+

@@ -18,8 +18,7 @@ Threader_smc::~Threader_smc() {
 
 void Threader_smc::thread(ARG &a, Node_ptr n) {
     cout << "Iteration: " << a.sample_nodes.size() << endl;
-    // cut_time = 0.005;
-    cut_time = max(0.5/10000, min(0.005, 0.1/a.sample_nodes.size()));
+    cut_time = min(0.005, 0.1/a.sample_nodes.size());
     a.cut_time = cut_time;
     a.add_sample(n);
     get_boundary(a);
@@ -36,6 +35,10 @@ void Threader_smc::thread(ARG &a, Node_ptr n) {
     a.add(new_joining_branches, added_branches);
     cout << get_time() << " : begin sampling recombination" << endl;
     a.smc_sample_recombinations();
+    vector<float> ed = expected_diff(4e-4);
+    vector<float> od = observed_diff(a);
+    cout << "Expected diff: " << ed[0] << " " << ed[1] << " " << ed[2] << endl;
+    cout << "Observed diff: " << od[0] << " " << od[1] << " " << od[2] << endl;
     a.clear_remove_info();
     cout << get_time() << " : finish" << endl;
     cout << a.recombinations.size() << endl;
@@ -44,7 +47,8 @@ void Threader_smc::thread(ARG &a, Node_ptr n) {
 void Threader_smc::fast_thread(ARG &a, Node_ptr n) {
     cout << "Iteration: " << a.sample_nodes.size() << endl;
     // cut_time = 0.005;
-    cut_time = max(0.5/10000, min(0.005, 0.1/a.sample_nodes.size()));
+    cut_time = min(0.005, 0.1/a.sample_nodes.size());
+    // cut_time = 0;
     a.cut_time = cut_time;
     a.add_sample(n);
     get_boundary(a);
@@ -361,92 +365,47 @@ float Threader_smc::random() {
     return (float) rand()/RAND_MAX;
 }
 
-/*
-void Threader_smc::run_fast_BSP(ARG &a) {
-    fbsp.reserve_memory(end_index - start_index);
-    fbsp.set_cutoff(cutoff);
-    fbsp.set_emission(eh);
-    set<Branch> start_branches = pruner.reductions.begin()->second;
-    fbsp.start(start_branches, cut_time);
-    auto recomb_it = a.recombinations.upper_bound(start);
-    auto mut_it = a.mutation_sites.lower_bound(start);
-    auto query_it = a.removed_branches.begin();
-    auto reduction_it = pruner.reductions.begin();
-    vector<float> mutations;
-    set<float> mut_set = {};
-    Node_ptr query_node = nullptr;
-    for (int i = start_index; i < end_index; i++) {
-        if (a.coordinates[i] == query_it->first) {
-            query_node = query_it->second.lower_node;
-            query_it++;
+vector<float> Threader_smc::expected_diff(float m) {
+    vector<float> diff(3);
+    auto join_it = new_joining_branches.begin();
+    auto add_it = added_branches.begin();
+    float span;
+    while (add_it != prev(added_branches.end())) {
+        span = next(add_it)->first - add_it->first;
+        diff[0] += m*span*(add_it->second.upper_node->time - join_it->second.lower_node->time);
+        if (join_it->second.upper_node->index != -1) {
+            diff[1] += m*span*(join_it->second.upper_node->time - add_it->second.upper_node->time);
         }
-        while (reduction_it->first <= a.coordinates[i]) {
-            fbsp.set_states(reduction_it->second);
-            reduction_it++;
-        }
-        if (a.coordinates[i] == recomb_it->first) {
-            Recombination &r = recomb_it->second;
-            recomb_it++;
-            fbsp.transfer(r);
-        } else if (a.coordinates[i] != start) {
-            fbsp.forward(a.rhos[i - 1]);
-        }
-        mut_set = {};
-        while (*mut_it < a.coordinates[i+1]) {
-            mut_set.insert(*mut_it);
-            mut_it++;
-        }
-        if (mut_set.size() > 0) {
-            fbsp.mut_emit(a.thetas[i], a.coordinates[i+1] - a.coordinates[i], mut_set, query_node);
-        } else {
-            fbsp.null_emit(a.thetas[i], query_node);
+        diff[2] += m*span*(add_it->second.upper_node->time - add_it->second.lower_node->time);
+        add_it++;
+        if (add_it->first == next(join_it)->first) {
+            join_it++;
         }
     }
+    return diff;
 }
- */
 
-/*
-void Threader_smc::run_fast_BSP(ARG &a) {
-    fbsp.reserve_memory(end_index - start_index);
-    fbsp.set_cutoff(cutoff);
-    fbsp.set_emission(eh);
-    set<Interval_info> start_intervals = pruner.insertions.begin()->second;
-    fbsp.start(start_intervals, cut_time);
-    auto recomb_it = a.recombinations.upper_bound(start);
-    auto mut_it = a.mutation_sites.lower_bound(start);
-    auto query_it = a.removed_branches.begin();
-    auto delete_it = pruner.deletions.upper_bound(start);
-    auto insert_it = pruner.insertions.upper_bound(start);
-    vector<float> mutations;
-    set<float> mut_set = {};
-    Node_ptr query_node = nullptr;
-    for (int i = start_index; i < end_index; i++) {
-        if (a.coordinates[i] == query_it->first) {
-            query_node = query_it->second.lower_node;
-            query_it++;
-        }
-        while (delete_it->first <= a.coordinates[i]) {
-            fbsp.update_states(delete_it->second, insert_it->second);
-            delete_it++;
-            insert_it++;
-        }
-        if (a.coordinates[i] == recomb_it->first) {
-            Recombination &r = recomb_it->second;
-            recomb_it++;
-            fbsp.transfer(r);
-        } else if (a.coordinates[i] != start) {
-            fbsp.forward(a.rhos[i - 1]);
-        }
-        mut_set = {};
-        while (*mut_it < a.coordinates[i+1]) {
-            mut_set.insert(*mut_it);
+vector<float> Threader_smc::observed_diff(ARG &a) {
+    vector<float> diff(3);
+    auto join_it = new_joining_branches.begin();
+    auto add_it = added_branches.begin();
+    auto mut_it = a.mutation_sites.begin();
+    while (add_it != prev(added_branches.end())) {
+        Branch &joining_branch = join_it->second;
+        Branch &added_branch = add_it->second;
+        while (*mut_it < next(add_it)->first) {
+            float m = *mut_it;
+            diff[0] += abs(added_branch.upper_node->get_state(m) - joining_branch.lower_node->get_state(m));
+            if (join_it->second.upper_node->index != -1) {
+                diff[1] += abs(joining_branch.upper_node->get_state(m) - added_branch.upper_node->get_state(m));
+            }
+            diff[2] += abs(added_branch.upper_node->get_state(m) - added_branch.lower_node->get_state(m));
             mut_it++;
         }
-        if (mut_set.size() > 0) {
-            fbsp.mut_emit(a.thetas[i], a.coordinates[i+1] - a.coordinates[i], mut_set, query_node);
-        } else {
-            fbsp.null_emit(a.thetas[i], query_node);
+        add_it++;
+        if (next(join_it)->first == add_it->first) {
+            join_it++;
         }
     }
+    return diff;
 }
- */

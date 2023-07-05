@@ -102,6 +102,7 @@ void succint_BSP::transfer(Recombination &r) {
 
 float succint_BSP::get_recomb_prob(float rho, float t) {
     float p = rho*(t - cut_time)*exp(-rho*(t - cut_time));
+    // p = 0.5*p;
     return p;
 }
 
@@ -479,20 +480,6 @@ void succint_BSP::process_other_interval(Recombination &r, int i) {
     float lb, ub = 0;
     Interval_ptr prev_interval = curr_intervals[i];
     float p = forward_probs[curr_index - 1][i];
-    /*
-    if (!r.affect(prev_interval->branch)) {
-        if (p > cutoff or prev_interval->full(cut_time)) {
-            temp_intervals.push_back(prev_interval);
-            temp.push_back(p);
-        }
-    } else {
-        lb = prev_interval->lb;
-        ub = prev_interval->ub;
-        Branch &next_branch = r.merging_branch;
-        Interval_info next_interval = Interval_info(next_branch, lb, ub);
-        transfer_helper(next_interval, prev_interval, p);
-    }
-     */
     if (prev_interval->branch != r.source_sister_branch and prev_interval->branch != r.source_parent_branch) {
         if (p > cutoff or prev_interval->full(cut_time)) {
             temp_intervals.push_back(prev_interval);

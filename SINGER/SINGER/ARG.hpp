@@ -15,6 +15,7 @@
 #include "RSP_smc.hpp"
 #include "Reconstruction.hpp"
 #include "Fitch_reconstruction.hpp"
+#include "Distribution.hpp"
 
 class ARG {
     
@@ -148,7 +149,7 @@ public:
     
     int count_incompatibility(Tree tree, float x);
     
-    // void sort_nodes();
+    void create_node_set();
     
     void write_nodes(string filename);
     
@@ -161,6 +162,8 @@ public:
     void read_branches(string filename);
     
     void read_recombs(string filename);
+    
+    void normalize(float t, Distribution &d);
     
 };
 

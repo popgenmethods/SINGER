@@ -38,7 +38,6 @@ public:
     int sample_index = 0;
     set<Node_ptr, compare_node> sample_nodes = {};
     vector<Node_ptr> ordered_sample_nodes = {};
-    // unordered_map<Node_ptr, int> covered_mutations = {};
     unordered_map<float, set<Node_ptr>> carriers = {};
     
     Sampler(float pop_size, float r, float m);

@@ -40,4 +40,10 @@ void test_optimal_ordering();
 
 void test_load_vcf();
 
+void test_no_recomb();
+
+void test_no_mut();
+
+void test_normalization();
+
 #endif /* Test_hpp */

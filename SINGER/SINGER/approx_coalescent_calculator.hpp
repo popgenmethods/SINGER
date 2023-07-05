@@ -35,9 +35,9 @@ public:
     
     float prob(float x, float y);
     
-    float get_num_lineages(float x);
+    float prob_integral(float x);
     
-    float get_integral(float x);
+    float weight_integral(float u);
     
 };
 

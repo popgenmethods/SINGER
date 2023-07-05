@@ -217,8 +217,8 @@ float RSP_smc::random_time(float lb, float ub) {
     assert(t > lb);
     return t;
      */
-    // float t = random()*(ub - lb) + lb;
-    float t = (0.01*random() + 0.99)*(ub - lb) + lb;
+    float t = random()*(ub - lb) + lb;
+    // float t = (0.01*random() + 0.99)*(ub - lb) + lb;
     /*
     if (t <= lb) {
         t = ub - 1e-12;

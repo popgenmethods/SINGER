@@ -18,7 +18,12 @@ float Polar_emission::null_emit(Branch &branch, float time, float theta, Node_pt
     float lu = branch.upper_node->time - time;
     float l0 = time - node->time;
     emit_prob = null_prob(theta, ll, lu, l0);
-    old_prob = null_prob(theta*(ll + lu));
+    if (!isinf(lu)) {
+        old_prob = null_prob(theta*(ll + lu));
+    } else {
+        old_prob = 1;
+    }
+    // old_prob = null_prob(theta*(ll + lu));
     emit_prob /= old_prob;
     return emit_prob;
 }
@@ -57,7 +62,9 @@ float Polar_emission::mut_prob(float theta, float bin_size, float ll, float lu, 
 float Polar_emission::null_prob(float theta, float ll, float lu, float l0) {
     float prob = 1;
     prob *= null_prob(ll*theta);
-    prob *= null_prob(lu*theta);
+    if (!isinf(lu)) {
+        prob *= null_prob(lu*theta);
+    }
     prob *= null_prob(l0*theta);
     return prob;
 }

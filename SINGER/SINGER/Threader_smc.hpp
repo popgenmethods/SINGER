@@ -86,6 +86,10 @@ public:
     
     float random();
     
+    vector<float> expected_diff(float m);
+    
+    vector<float> observed_diff(ARG &a);
+    
 };
 
 #endif /* Threader_smc_hpp */
