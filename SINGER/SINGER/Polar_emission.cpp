@@ -47,8 +47,18 @@ float Polar_emission::mut_emit(Branch &branch, float time, float theta, float bi
 }
 
 float Polar_emission::emit(Branch &branch, float time, float theta, float bin_size, vector<float> &emissions, Node_ptr node) {
-    assert(true);
-    return 1;
+    float emit_prob = 1;
+    float old_prob = 1;
+    float ll = time - branch.lower_node->time;
+    float lu = branch.upper_node->time - time;
+    float l0 = time - node->time;
+    emit_prob = mut_prob(theta, bin_size, ll, lu, l0, emissions[0], emissions[1], emissions[2]);
+    old_prob = mut_prob(theta*(ll + lu), bin_size, emissions[3]);
+    emit_prob *= null_prob(theta, ll, lu, l0);
+    old_prob *= null_prob(theta*(ll + lu));
+    emit_prob /= old_prob;
+    // assert(emit_prob != 0);
+    return emit_prob;
 }
 
 float Polar_emission::mut_prob(float theta, float bin_size, float ll, float lu, float l0, int sl, int su, int s0) {

@@ -219,8 +219,15 @@ void succint_BSP::compute_recomb_probs(float rho) {
     if (prev_rho == rho) {
         return;
     }
+    float rb = 0;
     for (int i = 0; i < dim; i++) {
-        recomb_probs[i] = get_recomb_prob(rho, time_points[i]);
+        rb = get_recomb_prob(rho, time_points[i]);
+        /*
+        if (not curr_intervals[i]->full(cut_time)) {
+            rb = max(rb, 4e-4f);
+        }
+         */
+        recomb_probs[i] = rb;
     }
 }
 
@@ -346,6 +353,20 @@ void succint_BSP::generate_intervals(Recombination &r) {
             }
         }
     }
+    /*
+    float es = 0;
+    for (int i = 0; i < temp_intervals.size(); i++) {
+        if (temp_intervals[i]->full(cut_time)) {
+            es += temp[i];
+        }
+    }
+    assert(es > 0);
+    for (int i = 0; i < temp_intervals.size(); i++) {
+        if (temp_intervals[i]->full(cut_time)) {
+            temp[i] /= es;
+        }
+    }
+     */
     forward_probs.push_back(temp);
     curr_intervals = temp_intervals;
 }
@@ -476,6 +497,7 @@ void succint_BSP::process_target_interval(Recombination &r, int i) {
     }
 }
 
+/*
 void succint_BSP::process_other_interval(Recombination &r, int i) {
     float lb, ub = 0;
     Interval_ptr prev_interval = curr_intervals[i];
@@ -486,6 +508,26 @@ void succint_BSP::process_other_interval(Recombination &r, int i) {
             temp.push_back(p);
         }
     } else {
+        lb = prev_interval->lb;
+        ub = prev_interval->ub;
+        Branch &next_branch = r.merging_branch;
+        Interval_info next_interval = Interval_info(next_branch, lb, ub);
+        transfer_helper(next_interval, prev_interval, p);
+    }
+}
+ */
+
+void succint_BSP::process_other_interval(Recombination &r, int i) {
+    float lb, ub = 0;
+    Interval_ptr prev_interval = curr_intervals[i];
+    float p = forward_probs[curr_index - 1][i];
+    if (prev_interval->branch != r.source_sister_branch and prev_interval->branch != r.source_parent_branch) {
+        // in other words, not affected by recombination
+        if (p > cutoff or prev_interval->full(cut_time)) {
+            temp_intervals.push_back(prev_interval);
+            temp.push_back(p);
+        }
+    } else if (p > cutoff) { // will not create a full branch, so we need to prune
         lb = prev_interval->lb;
         ub = prev_interval->ub;
         Branch &next_branch = r.merging_branch;
@@ -566,8 +608,16 @@ Interval_ptr succint_BSP::sample_prev_interval(int x) {
     float ws = recomb_sums[x];
     float q = random();
     float w = ws*q;
+    float rb = 0;
     for (int i = 0; i < intervals.size(); i++) {
-        w -= get_recomb_prob(rho, prev_times[i])*forward_probs[x][i];
+        rb = get_recomb_prob(rho, prev_times[i]);
+        /*
+        if (not intervals[i]->full(cut_time)) {
+            rb = max(4e-4f, rb);
+        }
+         */
+        w -= rb*forward_probs[x][i];
+        // w -= get_recomb_prob(rho, prev_times[i])*forward_probs[x][i];
         if (w <= 0) {
             sample_index = i;
             return intervals[i];

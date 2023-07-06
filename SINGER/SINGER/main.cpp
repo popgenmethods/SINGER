@@ -14,7 +14,7 @@ int main(int argc, const char * argv[]) {
     // test_parsimony_pruner();
     // test_pruner_efficiency();
     // test_trace_pruner();
-    // test_iterative_start();
+    test_iterative_start();
     // test_fast_iterative_start();
     // test_fast_larger_iterative_start();
     // test_terminal_sampling();
@@ -26,7 +26,7 @@ int main(int argc, const char * argv[]) {
     // test_succint_bsp();
     // test_load_vcf();
     // test_no_recomb();
-    test_no_mut();
+    // test_no_mut();
     // test_normalization();
     std::cout << "Hello, World!\n";
     return 0;

@@ -35,10 +35,12 @@ void Threader_smc::thread(ARG &a, Node_ptr n) {
     a.add(new_joining_branches, added_branches);
     cout << get_time() << " : begin sampling recombination" << endl;
     a.smc_sample_recombinations();
+    /*
     vector<float> ed = expected_diff(4e-4);
     vector<float> od = observed_diff(a);
     cout << "Expected diff: " << ed[0] << " " << ed[1] << " " << ed[2] << endl;
     cout << "Observed diff: " << od[0] << " " << od[1] << " " << od[2] << endl;
+     */
     a.clear_remove_info();
     cout << get_time() << " : finish" << endl;
     cout << a.recombinations.size() << endl;
@@ -255,7 +257,9 @@ void Threader_smc::run_fast_BSP(ARG &a) {
 void Threader_smc::run_TSP(ARG &a) {
     tsp.reserve_memory(end_index - start_index);
     tsp.set_gap(gap);
-    tsp.set_emission(eh);
+    // tsp.set_emission(eh);
+    shared_ptr<Emission> pe = make_shared<Polar_emission>();
+    tsp.set_emission(pe);
     Branch start_branch = new_joining_branches.begin()->second;
     tsp.start(start_branch, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);

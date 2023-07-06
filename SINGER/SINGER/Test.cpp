@@ -93,7 +93,7 @@ void test_trace_pruner() {
 void test_iterative_start() {
     set_seed(93723823);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
-    sampler.set_precision(0.01, 0.01);
+    sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_0");
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_0.vcf");
@@ -214,12 +214,12 @@ void test_no_recomb() {
 }
 
 void test_no_mut() {
-    set_seed(89);
+    set_seed(1829);
     Sampler sampler = Sampler(2e4, 2e-8, 0);
-    sampler.set_precision(0.01, 0.05);
+    sampler.set_precision(0.001, 0.05);
     sampler.set_sequence_length(1e6);
-    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/no_mut_4");
-    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/no_mut_4.vcf");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/no_mut_8");
+    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/no_mut_8.vcf");
     sampler.iterative_start();
     // sampler.internal_sample(500, 1);
 }
