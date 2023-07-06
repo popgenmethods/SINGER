@@ -157,6 +157,8 @@ public:
     
     int trace_back_helper(Interval_ptr interval, int x);
     
+    int max_source_pos(vector<Interval_ptr> &intervals);
+    
     float avg_num_states();
 };
 

@@ -38,6 +38,7 @@ void succint_BSP::start(set<Branch> &branches, float t) {
             ub = b.upper_node->time;
             p = cc->weight(lb, ub);
             new_interval = create_interval(b, lb, ub, curr_index);
+            new_interval->source_pos = curr_index;
             curr_intervals.push_back(new_interval);
             temp.push_back(p);
         }
@@ -222,11 +223,6 @@ void succint_BSP::compute_recomb_probs(float rho) {
     float rb = 0;
     for (int i = 0; i < dim; i++) {
         rb = get_recomb_prob(rho, time_points[i]);
-        /*
-        if (not curr_intervals[i]->full(cut_time)) {
-            rb = max(rb, 4e-4f);
-        }
-         */
         recomb_probs[i] = rb;
     }
 }
@@ -321,6 +317,7 @@ void succint_BSP::generate_intervals(Recombination &r) {
     float lb;
     float ub;
     float p;
+    int max_source;
     vector<Interval_ptr > intervals;
     vector<float> weights;
     Interval_info interval;
@@ -328,23 +325,26 @@ void succint_BSP::generate_intervals(Recombination &r) {
     auto y = transfer_intervals.begin();
     for (auto x = transfer_weights.begin(); x != transfer_weights.end(); ++x, ++y) {
         interval = x->first;
-        const auto &weights = x->second;
-        const auto &intervals = y->second;
+        auto &weights = x->second;
+        auto &intervals = y->second;
         b = interval.branch;
         lb = interval.lb;
         ub = interval.ub;
         p = accumulate(weights.begin(), weights.end(), 0.0);
+        max_source = max_source_pos(intervals);
         assert(!isnan(p));
         if (lb == max(cut_time, b.lower_node->time) and ub == b.upper_node->time) { // full intervals
             new_interval = create_interval(b, lb, ub, curr_index);
+            new_interval->source_pos = max_source;
             temp_intervals.push_back(new_interval);
             temp.push_back(p);
             if (weights.size() > 0) {
                 new_interval->source_weights = move(weights);
                 new_interval->intervals = move(intervals);
             }
-        } else if (p >= cutoff) { // partial intervals
+        } else if (max_source > curr_index - 1e4) { // partial intervals
             new_interval = create_interval(b, lb, ub, curr_index);
+            new_interval->source_pos = max_source;
             temp_intervals.push_back(new_interval);
             temp.push_back(p);
             if (weights.size() > 0) {
@@ -353,20 +353,6 @@ void succint_BSP::generate_intervals(Recombination &r) {
             }
         }
     }
-    /*
-    float es = 0;
-    for (int i = 0; i < temp_intervals.size(); i++) {
-        if (temp_intervals[i]->full(cut_time)) {
-            es += temp[i];
-        }
-    }
-    assert(es > 0);
-    for (int i = 0; i < temp_intervals.size(); i++) {
-        if (temp_intervals[i]->full(cut_time)) {
-            temp[i] /= es;
-        }
-    }
-     */
     forward_probs.push_back(temp);
     curr_intervals = temp_intervals;
 }
@@ -497,26 +483,6 @@ void succint_BSP::process_target_interval(Recombination &r, int i) {
     }
 }
 
-/*
-void succint_BSP::process_other_interval(Recombination &r, int i) {
-    float lb, ub = 0;
-    Interval_ptr prev_interval = curr_intervals[i];
-    float p = forward_probs[curr_index - 1][i];
-    if (prev_interval->branch != r.source_sister_branch and prev_interval->branch != r.source_parent_branch) {
-        if (p > cutoff or prev_interval->full(cut_time)) {
-            temp_intervals.push_back(prev_interval);
-            temp.push_back(p);
-        }
-    } else {
-        lb = prev_interval->lb;
-        ub = prev_interval->ub;
-        Branch &next_branch = r.merging_branch;
-        Interval_info next_interval = Interval_info(next_branch, lb, ub);
-        transfer_helper(next_interval, prev_interval, p);
-    }
-}
- */
-
 void succint_BSP::process_other_interval(Recombination &r, int i) {
     float lb, ub = 0;
     Interval_ptr prev_interval = curr_intervals[i];
@@ -611,13 +577,7 @@ Interval_ptr succint_BSP::sample_prev_interval(int x) {
     float rb = 0;
     for (int i = 0; i < intervals.size(); i++) {
         rb = get_recomb_prob(rho, prev_times[i]);
-        /*
-        if (not intervals[i]->full(cut_time)) {
-            rb = max(4e-4f, rb);
-        }
-         */
         w -= rb*forward_probs[x][i];
-        // w -= get_recomb_prob(rho, prev_times[i])*forward_probs[x][i];
         if (w <= 0) {
             sample_index = i;
             return intervals[i];
@@ -686,6 +646,17 @@ int succint_BSP::trace_back_helper(Interval_ptr interval, int x) {
         x -= 1;
     }
     return y;
+}
+
+int succint_BSP::max_source_pos(vector<Interval_ptr> &intervals) {
+    int max_pos = -1;
+    for (Interval_ptr i : intervals) {
+        max_pos = max(i->source_pos, max_pos);
+    }
+    if (max_pos < 0) {
+        max_pos = curr_index - 1;
+    }
+    return max_pos;
 }
 
 float succint_BSP::avg_num_states() {

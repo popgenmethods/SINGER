@@ -48,9 +48,7 @@ void Threader_smc::thread(ARG &a, Node_ptr n) {
 
 void Threader_smc::fast_thread(ARG &a, Node_ptr n) {
     cout << "Iteration: " << a.sample_nodes.size() << endl;
-    // cut_time = 0.005;
     cut_time = min(0.005, 0.1/a.sample_nodes.size());
-    // cut_time = 0;
     a.cut_time = cut_time;
     a.add_sample(n);
     get_boundary(a);
@@ -258,8 +256,7 @@ void Threader_smc::run_TSP(ARG &a) {
     tsp.reserve_memory(end_index - start_index);
     tsp.set_gap(gap);
     // tsp.set_emission(eh);
-    shared_ptr<Emission> pe = make_shared<Polar_emission>();
-    tsp.set_emission(pe);
+    tsp.set_emission(e);
     Branch start_branch = new_joining_branches.begin()->second;
     tsp.start(start_branch, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);

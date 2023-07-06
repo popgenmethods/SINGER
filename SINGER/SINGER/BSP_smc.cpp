@@ -28,7 +28,6 @@ void BSP_smc::reserve_memory(int length) {
 void BSP_smc::start(set<Branch> &branches, float t) {
     cut_time = t;
     curr_index = 0;
-    // valid_branches = branches;
     for (Branch b : branches) {
         if (b.upper_node->time > cut_time) {
             valid_branches.insert(b);
