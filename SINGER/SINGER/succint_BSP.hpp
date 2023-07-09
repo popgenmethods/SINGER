@@ -24,6 +24,7 @@ public:
     // basic setup
     float cut_time = 0.0;
     float cutoff = 0;
+    int max_ibd_length = 0;
     shared_ptr<Emission> eh;
     set<float> check_points = {};
     
@@ -160,6 +161,8 @@ public:
     int max_source_pos(vector<Interval_ptr> &intervals);
     
     float avg_num_states();
+    
+    void write_recomb_weight_sums(string filename);
 };
 
 #endif /* succint_BSP_hpp */

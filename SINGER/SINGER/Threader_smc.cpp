@@ -35,12 +35,10 @@ void Threader_smc::thread(ARG &a, Node_ptr n) {
     a.add(new_joining_branches, added_branches);
     cout << get_time() << " : begin sampling recombination" << endl;
     a.smc_sample_recombinations();
-    /*
     vector<float> ed = expected_diff(4e-4);
     vector<float> od = observed_diff(a);
     cout << "Expected diff: " << ed[0] << " " << ed[1] << " " << ed[2] << endl;
     cout << "Observed diff: " << od[0] << " " << od[1] << " " << od[2] << endl;
-     */
     a.clear_remove_info();
     cout << get_time() << " : finish" << endl;
     cout << a.recombinations.size() << endl;
@@ -169,8 +167,9 @@ void Threader_smc::run_pruner(ARG &a) {
 void Threader_smc::run_BSP(ARG &a) {
     bsp.reserve_memory(end_index - start_index);
     bsp.set_cutoff(cutoff);
-    // bsp.set_emission(eh);
     bsp.set_emission(e);
+    // bsp.max_ibd_length = 1e3;
+    bsp.max_ibd_length = INT_MAX;
     bsp.start(a.start_tree.branches, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
@@ -209,11 +208,10 @@ void Threader_smc::run_BSP(ARG &a) {
 void Threader_smc::run_fast_BSP(ARG &a) {
     fbsp.reserve_memory(end_index - start_index);
     fbsp.set_cutoff(cutoff);
-    // fbsp.set_emission(eh);
-    fbsp.set_emission(e);
+    fbsp.set_emission(eh);
+    // fbsp.set_emission(e);
     set<Interval_info> start_intervals = pruner.insertions.begin()->second;
     fbsp.start(a.start_tree.branches, start_intervals, cut_time);
-    // fbsp.start(start_intervals, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
     auto query_it = a.removed_branches.begin();
@@ -391,16 +389,21 @@ vector<float> Threader_smc::observed_diff(ARG &a) {
     auto join_it = new_joining_branches.begin();
     auto add_it = added_branches.begin();
     auto mut_it = a.mutation_sites.begin();
+    float sl, su, sm, s0;
     while (add_it != prev(added_branches.end())) {
         Branch &joining_branch = join_it->second;
         Branch &added_branch = add_it->second;
         while (*mut_it < next(add_it)->first) {
             float m = *mut_it;
-            diff[0] += abs(added_branch.upper_node->get_state(m) - joining_branch.lower_node->get_state(m));
+            sl = joining_branch.lower_node->get_state(m);
+            su = joining_branch.upper_node->get_state(m);
+            sm = added_branch.upper_node->get_state(m);
+            s0 = added_branch.lower_node->get_state(m);
+            diff[0] += abs(sm - sl);
             if (join_it->second.upper_node->index != -1) {
-                diff[1] += abs(joining_branch.upper_node->get_state(m) - added_branch.upper_node->get_state(m));
+                diff[1] += abs(su - sm);
             }
-            diff[2] += abs(added_branch.upper_node->get_state(m) - added_branch.lower_node->get_state(m));
+            diff[2] += abs(sm - s0);
             mut_it++;
         }
         add_it++;

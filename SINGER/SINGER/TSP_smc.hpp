@@ -160,6 +160,7 @@ public:
     
     Node_ptr sample_joining_node(Interval *interval, Node_ptr n);
     
+    void write_mean_time(string filename);
 };
 
 #endif /* TSP_smc_hpp */

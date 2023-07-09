@@ -214,9 +214,10 @@ void test_no_recomb() {
 }
 
 void test_no_mut() {
-    set_seed(1829);
+    set_seed(8);
+    // set_seed(93723823);
     Sampler sampler = Sampler(2e4, 2e-8, 0);
-    sampler.set_precision(0.001, 0.05);
+    sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/no_mut_8");
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/no_mut_8.vcf");

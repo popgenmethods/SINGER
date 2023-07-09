@@ -23,6 +23,7 @@ public:
     // basic setup
     float cut_time = 0.0;
     float cutoff = 0;
+    int max_length = 0;
     shared_ptr<Emission> eh;
     set<float> check_points = {};
     

@@ -342,7 +342,7 @@ void succint_BSP::generate_intervals(Recombination &r) {
                 new_interval->source_weights = move(weights);
                 new_interval->intervals = move(intervals);
             }
-        } else if (max_source > curr_index - 1e4) { // partial intervals
+        } else if (p > cutoff and max_source > curr_index - max_ibd_length) { // partial intervals
             new_interval = create_interval(b, lb, ub, curr_index);
             new_interval->source_pos = max_source;
             temp_intervals.push_back(new_interval);
@@ -354,6 +354,10 @@ void succint_BSP::generate_intervals(Recombination &r) {
         }
     }
     forward_probs.push_back(temp);
+    float ps = accumulate(temp.begin(), temp.end(), 0.0f);
+    if (ps < 1 - 1.5*cutoff) {
+        cout << curr_index << " " << ps << endl;
+    }
     curr_intervals = temp_intervals;
 }
 
@@ -489,7 +493,10 @@ void succint_BSP::process_other_interval(Recombination &r, int i) {
     float p = forward_probs[curr_index - 1][i];
     if (prev_interval->branch != r.source_sister_branch and prev_interval->branch != r.source_parent_branch) {
         // in other words, not affected by recombination
-        if (p > cutoff or prev_interval->full(cut_time)) {
+        if (prev_interval->full(cut_time)) {
+            temp_intervals.push_back(prev_interval);
+            temp.push_back(p);
+        } else if (p > cutoff and prev_interval->source_pos > curr_index - max_ibd_length) {
             temp_intervals.push_back(prev_interval);
             temp.push_back(p);
         }
@@ -654,7 +661,7 @@ int succint_BSP::max_source_pos(vector<Interval_ptr> &intervals) {
         max_pos = max(i->source_pos, max_pos);
     }
     if (max_pos < 0) {
-        max_pos = curr_index - 1;
+        max_pos = curr_index;
     }
     return max_pos;
 }
@@ -671,4 +678,12 @@ float succint_BSP::avg_num_states() {
     }
     float avg = (float) count/span;
     return avg;
+}
+
+void succint_BSP::write_recomb_weight_sums(string filename) {
+    ofstream out_file(filename);
+    for (int i = 0; i < recomb_sums.size(); i++) {
+        out_file << recomb_sums[i] << " " << weight_sums[i + 1] << endl;
+    }
+    out_file.close();
 }

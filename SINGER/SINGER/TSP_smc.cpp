@@ -886,3 +886,22 @@ Node_ptr TSP_smc::sample_joining_node(Interval *interval, Node_ptr n) {
     assert(new_n != nullptr);
     return new_n;
 }
+
+void TSP_smc::write_mean_time(string filename) {
+    ofstream out_file(filename);
+    auto s_it = state_spaces.upper_bound(0);
+    vector<Interval *> states = state_spaces.begin()->second;
+    for (int i = 0; i < forward_probs.size(); i++) {
+        if (i == s_it->first) {
+            states = s_it->second;
+            s_it++;
+        }
+        assert(states.size() == forward_probs[i].size());
+        float t = 0;
+        for (int j = 0; j < states.size(); j++) {
+            t += forward_probs[i][j] * states[j]->time;
+        }
+        out_file << t << endl;
+    }
+    out_file.close();
+}

@@ -170,6 +170,8 @@ void Sampler::iterative_start() {
         Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
         Node_ptr n = *it;
         threader.thread(arg, n);
+        threader.bsp.write_recomb_weight_sums("/Users/yun_deng/Desktop/SINGER/arg_files/bsp_info.txt");
+        threader.tsp.write_mean_time("/Users/yun_deng/Desktop/SINGER/arg_files/tsp_info.txt");
         arg.check_incompatibility();
         cout << "Number of flippings: " << arg.count_flipping() << endl;
         it++;
