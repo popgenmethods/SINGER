@@ -42,6 +42,7 @@ float Polar_emission::mut_emit(Branch &branch, float time, float theta, float bi
     emit_prob *= null_prob(theta, ll, lu, l0);
     old_prob *= null_prob(theta*(ll + lu));
     emit_prob /= old_prob;
+    emit_prob *= root_reward;
     assert(emit_prob != 0);
     return emit_prob;
 }
@@ -79,6 +80,7 @@ float Polar_emission::null_prob(float theta, float ll, float lu, float l0) {
     return prob;
 }
 
+/*
 float Polar_emission::mut_prob(float theta, float bin_size, int s) {
     if (isinf(theta)) {
         return 1.0;
@@ -87,6 +89,15 @@ float Polar_emission::mut_prob(float theta, float bin_size, int s) {
     if (s < 0) {
         unit_theta *= reverse_penalty;
     }
+    return pow(unit_theta, abs(s));
+}
+ */
+
+float Polar_emission::mut_prob(float theta, float bin_size, int s) {
+    if (isinf(theta)) {
+        return 1.0;
+    }
+    float unit_theta = theta/bin_size;
     return pow(unit_theta, abs(s));
 }
 
@@ -109,6 +120,13 @@ void Polar_emission::get_diff(float m, Branch branch, Node_ptr node) {
         sm = 1;
     } else {
         sm = 0;
+    }
+    if (branch.upper_node->index == -1) {
+        if (sm == 0 and sl == 1) {
+            root_reward = 1/(1 - ancestral_prob);
+        }
+    } else {
+        root_reward = 1;
     }
     // remember: lower - upper, to keep the directionality of mutations
     diff[0] = sl - sm;

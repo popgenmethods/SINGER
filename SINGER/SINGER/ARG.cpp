@@ -289,6 +289,7 @@ void ARG::add(map<float, Branch> &new_joining_branches, map<float, Branch> &adde
     Branch prev_added_branch = Branch();
     Branch next_added_branch = Branch();
     while (add_it != added_branches.end() and add_it->first < sequence_length) {
+        assert(add_it->first <= join_it->first);
         if (recomb_it->first == add_it->first) {
             Recombination &r = recomb_it->second;
             recomb_it++;
@@ -298,13 +299,6 @@ void ARG::add(map<float, Branch> &new_joining_branches, map<float, Branch> &adde
             }
             next_added_branch = add_it->second;
             add_it++;
-            /*
-            if (prev_added_branch.upper_node == r.inserted_node) {
-                if (joining_branches.begin()->first != r.pos and joining_branches.rbegin()->first != r.pos) {
-                    assert(prev_joining_branch == r.target_branch);
-                }
-            }
-             */
             r.add(prev_added_branch, next_added_branch, prev_joining_branch, next_joining_branch, cut_node);
             prev_joining_branch = next_joining_branch;
             prev_added_branch = next_added_branch;
@@ -873,9 +867,9 @@ void ARG::write_nodes(string filename) {
 }
 
 void ARG::write_branches(string filename) {
-    map<Branch, int> branch_map;
-    vector<tuple<int, int, float, float>> branch_info;
-    int pos;
+    map<Branch, float> branch_map;
+    vector<tuple<float, float, float, float>> branch_info;
+    float pos;
     for (auto x : recombinations) {
         if (x.first < sequence_length) {
             pos = x.first;
@@ -1254,6 +1248,63 @@ void ARG::normalize(float t, Distribution &d) {
     cut_time = 0;
     for (auto &x : recombinations) {
         x.second.start_time = -1;
+    }
+    smc_sample_recombinations();
+}
+
+void ARG::normalize() {
+    set<float> mutation_ages = {};
+    float lb, ub, m;
+    for (auto &x : mutation_branches) {
+        for (auto &y : x.second) {
+            lb = y.lower_node->time;
+            ub = y.upper_node->time;
+            m = random()*(ub - lb) + lb;
+            mutation_ages.insert(m);
+        }
+    }
+    map<Node_ptr, float, compare_node> node_span = {};
+    map<Node_ptr, float> node_start = {};
+    for (const Branch &b : recombinations.begin()->second.inserted_branches) {
+        if (b.upper_node->time < INT_MAX) {
+            node_start[b.upper_node] = 0;
+        }
+    }
+    auto r_it = next(recombinations.begin());
+    while (next(r_it) != recombinations.end()) {
+        Node_ptr dn = r_it->second.deleted_node;
+        Node_ptr in = r_it->second.inserted_node;
+        if (dn->time < INT_MAX) {
+            assert(node_start.count(dn) > 0);
+            node_span[dn] += r_it->first - node_start[dn];
+            node_start.erase(dn);
+        }
+        if (in->time < INT_MAX) {
+            node_start[in] = r_it->first;
+        }
+        r_it++;
+    }
+    for (auto x : node_start) {
+        Node_ptr n = x.first;
+        node_span[n] += sequence_length - node_start[n];
+    }
+    float num_lineages = sample_nodes.size()*sequence_length;
+    float theta = 4e-4;
+    float count = 0;
+    float correction = 0;
+    auto n_it = node_span.begin();
+    auto m_it = mutation_ages.begin();
+    while (n_it != node_span.end()) {
+        Node_ptr n = n_it->first;
+        count = 0;
+        while (*m_it < n->time) {
+            count += 1;
+            m_it++;
+        }
+        correction += max(count/num_lineages/theta, 1e-6f);
+        n->time = correction;
+        num_lineages -= n_it->second;
+        n_it++;
     }
     smc_sample_recombinations();
 }

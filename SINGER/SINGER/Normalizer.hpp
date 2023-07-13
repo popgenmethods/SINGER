@@ -1,0 +1,36 @@
+//
+//  Normalizer.hpp
+//  SINGER
+//
+//  Created by Yun Deng on 7/13/23.
+//
+
+#ifndef Normalizer_hpp
+#define Normalizer_hpp
+
+#include <stdio.h>
+#include "random_utils.hpp"
+#include "ARG.hpp"
+
+class Normalizer {
+    
+public:
+    
+    map<Node_ptr, float, compare_node> root_span = {};
+    map<Node_ptr, float, compare_node> node_span = {};
+    set<float> mutation_ages = {};
+    
+    Normalizer();
+    
+    ~Normalizer();
+    
+    void get_root_span(ARG &a);
+    
+    void get_node_span(ARG &a);
+    
+    void randomize_mutation_ages(ARG &a);
+    
+    void normalize(ARG &a);
+};
+
+#endif /* Normalizer_hpp */

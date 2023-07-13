@@ -165,6 +165,8 @@ public:
     
     void normalize(float t, Distribution &d);
     
+    void normalize();
+    
 };
 
 bool compare_edge(const tuple<int, int, float, float>& edge1, const tuple<int, int, float, float>& edge2);

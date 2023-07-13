@@ -146,26 +146,26 @@ void test_fast_terminal_sampling() {
 
 void test_internal_sampling() {
     set_seed(93723823);
-    Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
+    Sampler sampler = Sampler(2e4, 1e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_num_samples(100);
     sampler.set_sequence_length(1e6);
-    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
-    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_0");
+    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_0.vcf");
     sampler.iterative_start();
     // sampler.recombination_climb(300, 1);
-    sampler.internal_sample(1000, 1);
+    sampler.internal_sample(500, 1);
 }
 
 void test_fast_internal_sampling() {
-    set_seed(823594);
+    set_seed(72354);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
-    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
-    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_0");
+    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_0.vcf");
     sampler.fast_iterative_start();
-    sampler.fast_internal_sample(1000, 1);
+    sampler.fast_internal_sample(500, 1);
     // sampler.fast_recombination_climb(1000, 1);
 }
 
@@ -214,7 +214,7 @@ void test_no_recomb() {
 }
 
 void test_no_mut() {
-    set_seed(8);
+    set_seed(38);
     // set_seed(93723823);
     Sampler sampler = Sampler(2e4, 2e-8, 0);
     sampler.set_precision(0.01, 0.05);
@@ -230,13 +230,49 @@ void test_normalization() {
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
-    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_0");
-    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_0.vcf");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
+    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf");
     sampler.iterative_start();
     Distribution d = Distribution();
     d.read("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_quantiles.txt");
-    sampler.arg.normalize(0.1, d);
+    // sampler.arg.normalize(0.1, d);
+    sampler.arg.normalize();
+    sampler.arg.normalize();
+    sampler.arg.normalize();
     sampler.arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/normalized_ts_node.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_ts_recombs.txt");
-    sampler.internal_sample(500, 1);
+    // sampler.internal_sample(500, 1);
 }
 
+void test_normalizer() {
+    set_seed(93723823);
+    Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
+    sampler.set_precision(0.01, 0.05);
+    sampler.set_sequence_length(1e6);
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_0");
+    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_0.vcf");
+    sampler.fast_iterative_start();
+    Normalizer nm = Normalizer();
+    nm.normalize(sampler.arg);
+    sampler.arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/normalized_200_node.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_200_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_200_recombs.txt");
+}
+
+void test_tsp() {
+    set_seed(2423);
+    ARG a = ARG(2e4, 1e6);
+    a.read("/Users/yun_deng/Desktop/SINGER/arg_files/continuous_ts_10_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/continuous_ts_10_branches.txt");
+    a.discretize(10);
+    a.smc_sample_recombinations();
+    a.remove_leaf(9);
+    a.compute_rhos_thetas(4e-4, 0.0);
+    shared_ptr<Binary_emission> e = make_shared<Binary_emission>();
+    Threader_smc threader = Threader_smc(0.01, 0.05, e);
+    Node_ptr n = a.removed_branches.begin()->second.lower_node;
+    threader.end_index = (int) a.coordinates.size();
+    threader.new_joining_branches = a.joining_branches;
+    threader.bsp.simplify(threader.new_joining_branches);
+    threader.run_TSP(a);
+    threader.sample_joining_points(a);
+    a.add(threader.new_joining_branches, threader.added_branches);
+    a.smc_sample_recombinations();
+    a.write("/Users/yun_deng/Desktop/SINGER/arg_files/new_continuous_ts_10_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/new_continuous_ts_10_branches.txt");
+}

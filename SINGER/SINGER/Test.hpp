@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include "Sampler.hpp"
 #include "Trace_pruner.hpp"
+#include "Normalizer.hpp"
 
 void test_read_arg();
 
@@ -45,5 +46,9 @@ void test_no_recomb();
 void test_no_mut();
 
 void test_normalization();
+
+void test_normalizer();
+
+void test_tsp();
 
 #endif /* Test_hpp */

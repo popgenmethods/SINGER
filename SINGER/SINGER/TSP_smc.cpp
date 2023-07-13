@@ -151,6 +151,7 @@ float TSP_smc::get_exp_quantile(float p) {
     return -log(1 - p);
 }
 
+/*
 vector<float> TSP_smc::generate_grid(float lb, float ub) {
     assert(lb < ub);
     vector<float> points = {lb};
@@ -166,6 +167,24 @@ vector<float> TSP_smc::generate_grid(float lb, float ub) {
     points.emplace_back(ub);
     return points;
 }
+ */
+
+vector<float> TSP_smc::generate_grid(float lb, float ub) {
+    assert(lb < ub);
+    vector<float> points = {lb};
+    float lq = 0;
+    float uq = 1 - exp(lb - ub);
+    float q = uq - lq;
+    int n = ceil(q/gap);
+    float l;
+    for (int i = 1; i < n; i++) {
+        l = get_exp_quantile(lq + i*q/n) + lb;
+        points.emplace_back(l);
+    }
+    points.emplace_back(ub);
+    return points;
+}
+
 
 float TSP_smc::recomb_cdf(float s, float t) {
     if (isinf(t)) {

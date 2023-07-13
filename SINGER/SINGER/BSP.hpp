@@ -1,47 +1,52 @@
 //
-//  sub_BSP.hpp
+//  BSP.hpp
 //  SINGER
 //
-//  Created by Yun Deng on 6/17/23.
+//  Created by Yun Deng on 7/10/23.
 //
 
-#ifndef sub_BSP_hpp
-#define sub_BSP_hpp
+#ifndef BSP_hpp
+#define BSP_hpp
 
 #include <stdio.h>
+#include <fstream>
 #include "Tree.hpp"
-#include "Emission.hpp"
+#include "Coalescent_calculator.hpp"
 #include "Interval.hpp"
-#include "fast_coalescent_calculator.hpp"
+#include "Emission.hpp"
 
 using Interval_ptr = shared_ptr<Interval>;
 
-class sub_BSP {
+class BSP {
     
 public:
     
     // basic setup
     float cut_time = 0.0;
     float cutoff = 0;
-    int max_length = INT_MAX;
     shared_ptr<Emission> eh;
     set<float> check_points = {};
+    
+    // pruning parameters
+    float rho_unit = 0;
+    int grace_period = 0;
+    float penalty = 1;
     
     // hmm running results
     vector<float> rhos = {};
     vector<float> recomb_sums = {}; // length: number of blocks - 1
-    vector<float> reduced_sums = {}; // length: number of blocks
+    vector<float> weight_sums = {}; // length: number of blocks
     
     // hmm states
     int curr_index = 0;
     map<int, vector<Interval_ptr>>  state_spaces = {{INT_MAX, {}}};
     vector<Interval_ptr> curr_intervals = {};
     vector<Interval_ptr> temp_intervals = {};
-    map<int, vector<float>> all_join_times = {{INT_MAX, {}}};
-    map<int, vector<float>> all_join_weights = {{INT_MAX, {}}};
+    map<int, vector<float>> times = {{INT_MAX, {}}};
+    map<int, vector<float>> weights = {{INT_MAX, {}}};
     
     // coalescent computation
-    shared_ptr<fast_coalescent_calculator> cc;
+    shared_ptr<Coalescent_calculator> cc;
     
     // transfer at recombinations
     map<Interval_info, vector<Interval_ptr>> transfer_intervals = {};
@@ -55,11 +60,12 @@ public:
     // vector computation:
     int dim = 0;
     float recomb_sum = 0;
-    float reduced_sum = 0;
-    vector<float> temp_probs = {};
-    vector<float> join_times = {};
-    vector<float> join_weights = {};
+    float weight_sum = 0;
+    vector<float> temp = {};
+    vector<float> time_points = {};
+    vector<float> raw_weights = {};
     vector<float> recomb_probs = {};
+    vector<float> recomb_weights = {};
     vector<float> null_emit_probs = {};
     vector<float> mut_emit_probs = {};
     int sample_index = -1;
@@ -67,23 +73,18 @@ public:
     vector<vector<float>> forward_probs = {};
     
     // states after pruning:
-    bool branch_change = false;
-    set<Branch> covered_branches = {};
-    set<Branch> full_branches = {};
-    set<Branch> reduced_branches = {};
-    map<Branch, set<Interval_info>> reduced_intervals = {};
+    bool states_change = false;
+    set<Branch> valid_branches = {};
     
-    sub_BSP();
+    BSP();
     
-    ~sub_BSP();
+    ~BSP();
     
     void reserve_memory(int length);
     
-    void start(set<Branch> &start_branches, set<Interval_info> &start_intervals, float t);
+    void start(set<Branch> &branches, float t);
     
-    void start(unordered_set<Branch, branch_hash> &start_branches, set<Interval_info> &start_intervals, float t);
-    
-    // void start(set<Branch> &branches, float t);
+    void start(unordered_set<Branch, branch_hash> &branches, float t);
     
     void set_cutoff(float x);
     
@@ -92,10 +93,6 @@ public:
     void set_check_points(set<float> &p);
     
     void forward(float rho); // forward pass when there is no recombination (without emission). Also update recomb_sums and weight_sums.
-    
-    void update(float rho);
-    
-    void regular_forward(float rho);
     
     void transfer(Recombination &r); // forward pass when there is a recombination (without emission), and add a transition object. Also update active intervals, recomb_sums and weight_sums.
 
@@ -107,13 +104,15 @@ public:
     
     map<float, Branch> sample_joining_branches(int start_index, vector<float> &coordinates);
     
-    // void update_states(set<Branch> &deletions, set<Branch> &insertions);
+    void write_forward_probs(string filename);
     
-    void update_states(set<Interval_info> &deletions, set<Interval_info> &insertions);
+    void update_states(set<Branch> &deletions, set<Branch> &insertions);
     
     void set_dimensions();
     
     void compute_recomb_probs(float rho);
+    
+    void compute_recomb_weights(float rho);
     
     void compute_null_emit_prob(float theta, Node_ptr query_node);
     
@@ -121,13 +120,13 @@ public:
     
     void transfer_helper(Interval_info &next_interval, Interval_ptr &prev_interval, float w);
     
-    // void add_new_branches(Recombination &r);
+    void transfer_helper(Interval_info &next_interval);
+    
+    void add_new_branches(Recombination &r);
     
     void compute_interval_info();
     
     void sanity_check(Recombination &r);
-    
-    void get_full_branches(Recombination &r);
     
     void generate_intervals(Recombination &r);
     
@@ -147,9 +146,9 @@ public:
     
     vector<Interval_ptr> &get_state_space(int x);
     
-    vector<float> &get_join_times(int x);
+    vector<float> &get_time_points(int x);
     
-    vector<float> &get_join_weights(int x);
+    vector<float> &get_raw_weights(int x);
     
     int get_interval_index(Interval_ptr interval, vector<Interval_ptr> &intervals);
     
@@ -161,14 +160,17 @@ public:
     
     Interval_ptr sample_source_interval(Interval_ptr interval, int x);
     
-    Interval_ptr sample_connection_interval(Interval_ptr interval, int x);
-    
     int trace_back_helper(Interval_ptr interval, int x);
-    
-    float avg_num_states();
     
     int min_source_pos(vector<Interval_ptr> &intervals);
     
+    float avg_num_states();
+    
+    void write_recomb_weight_sums(string filename);
+    
+    float calculate_penalty(int source_pos);
+    
+    float calculate_penalty(int source_pos, float lb, float ub);
 };
 
-#endif /* sub_BSP_hpp */
+#endif /* BSP_hpp */

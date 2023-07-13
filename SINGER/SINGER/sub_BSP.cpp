@@ -35,6 +35,7 @@ void sub_BSP::start(set<Branch> &start_branches, set<Interval_info> &start_inter
             ub = b.upper_node->time;
             p = cc->prob(lb, ub);
             new_interval = create_interval(b, lb, ub, curr_index);
+            new_interval->source_pos = curr_index;
             curr_intervals.emplace_back(new_interval);
             temp_probs.emplace_back(p);
         }
@@ -131,6 +132,7 @@ void sub_BSP::update(float rho) {
             lb = max(cut_time, b.lower_node->time);
             ub = b.upper_node->time;
             new_interval = create_interval(b, lb, ub, curr_index);
+            new_interval->source_pos = curr_index;
             temp_intervals.emplace_back(new_interval);
             temp_probs.emplace_back(0);
         }
@@ -377,6 +379,7 @@ void sub_BSP::generate_intervals(Recombination &r) {
     float lb;
     float ub;
     float p;
+    int min_source;
     vector<Interval_ptr> intervals;
     vector<float> weights;
     Interval_info interval;
@@ -384,15 +387,17 @@ void sub_BSP::generate_intervals(Recombination &r) {
     auto y = transfer_intervals.begin();
     for (auto x = transfer_weights.begin(); x != transfer_weights.end(); ++x, ++y) {
         interval = x->first;
-        const auto &weights = x->second;
-        const auto &intervals = y->second;
+        auto &weights = x->second;
+        auto &intervals = y->second;
         b = interval.branch;
         lb = interval.lb;
         ub = interval.ub;
         p = accumulate(weights.begin(), weights.end(), 0.0);
+        min_source = min_source_pos(intervals);
         assert(!isnan(p));
         if (lb == max(cut_time, b.lower_node->time) and ub == b.upper_node->time) { // full intervals
             new_interval = create_interval(b, lb, ub, curr_index);
+            new_interval->source_pos = min_source;
             temp_intervals.emplace_back(new_interval);
             temp_probs.emplace_back(p);
             if (weights.size() > 0) {
@@ -400,8 +405,18 @@ void sub_BSP::generate_intervals(Recombination &r) {
                 new_interval->intervals = move(intervals);
             }
             covered_branches.insert(b);
-        } else if (full_branches.count(b) == 0 or p > cutoff) {
+        } else if (full_branches.count(b) == 0) {
             new_interval = create_interval(b, lb, ub, curr_index);
+            new_interval->source_pos = min_source;
+            temp_intervals.emplace_back(new_interval);
+            temp_probs.emplace_back(p);
+            if (weights.size() > 0) {
+                new_interval->source_weights = move(weights);
+                new_interval->intervals = move(intervals);
+            }
+        } else if (p > cutoff and curr_index - min_source < max_length) {
+            new_interval = create_interval(b, lb, ub, curr_index);
+            new_interval->source_pos = min_source;
             temp_intervals.emplace_back(new_interval);
             temp_probs.emplace_back(p);
             if (weights.size() > 0) {
@@ -418,7 +433,10 @@ void sub_BSP::generate_intervals(Recombination &r) {
                 temp_intervals.emplace_back(prev_interval);
                 temp_probs.emplace_back(p);
                 covered_branches.insert(prev_interval->branch);
-            } else if (full_branches.count(prev_interval->branch) == 0 or p > cutoff) {
+            } else if (full_branches.count(prev_interval->branch) == 0) {
+                temp_intervals.emplace_back(prev_interval);
+                temp_probs.emplace_back(p);
+            } else if (p > cutoff and curr_index - prev_interval->source_pos <= max_length) {
                 temp_intervals.emplace_back(prev_interval);
                 temp_probs.emplace_back(p);
             }
@@ -429,6 +447,7 @@ void sub_BSP::generate_intervals(Recombination &r) {
             lb = max(cut_time, b.lower_node->time);
             ub = b.upper_node->time;
             new_interval = create_interval(b, lb, ub, curr_index);
+            new_interval->source_pos = curr_index;
             temp_intervals.emplace_back(new_interval);
             temp_probs.emplace_back(0);
         }
@@ -741,8 +760,8 @@ int sub_BSP::trace_back_helper(Interval_ptr interval, int x) {
         } else {
             recomb_prob = get_recomb_prob(rhos[x - 1], t);
             non_recomb_prob = (1 - recomb_prob)*forward_probs[x - 1][sample_index];
-            // all_prob = non_recomb_prob + recomb_sum*w;
-            all_prob = non_recomb_prob + recomb_sum*w + recomb_sum*forward_probs[x - 1][sample_index]*(1 - reduced_sum);
+            all_prob = non_recomb_prob + recomb_sum*w;
+            // all_prob = non_recomb_prob + recomb_sum*w + recomb_sum*forward_probs[x - 1][sample_index]*(1 - reduced_sum);
             shrinkage = non_recomb_prob/all_prob;
             assert(!isnan(shrinkage));
             assert(shrinkage >= 0 and shrinkage <= 1);
@@ -754,4 +773,12 @@ int sub_BSP::trace_back_helper(Interval_ptr interval, int x) {
         x -= 1;
     }
     return y;
+}
+
+int sub_BSP::min_source_pos(vector<Interval_ptr> &intervals) {
+    int min_pos = curr_index;
+    for (Interval_ptr i : intervals) {
+        min_pos = min(i->source_pos, min_pos);
+    }
+    return min_pos;
 }

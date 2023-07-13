@@ -1,24 +1,24 @@
 //
-//  succint_BSP.cpp
+//  BSP.cpp
 //  SINGER
 //
-//  Created by Yun Deng on 5/10/23.
+//  Created by Yun Deng on 7/10/23.
 //
 
-#include "succint_BSP.hpp"
+#include "BSP.hpp"
 
-succint_BSP::succint_BSP() {}
+BSP::BSP() {}
 
-succint_BSP::~succint_BSP() {
+BSP::~BSP() {
     vector<vector<float>>().swap(forward_probs);
     map<int, vector<Interval_ptr>>().swap(state_spaces);
 }
 
-void succint_BSP::reserve_memory(int length) {
+void BSP::reserve_memory(int length) {
     forward_probs.reserve(length);
 }
 
-void succint_BSP::start(set<Branch> &branches, float t) {
+void BSP::start(set<Branch> &branches, float t) {
     cut_time = t;
     curr_index = 0;
     for (Branch b : branches) {
@@ -51,19 +51,19 @@ void succint_BSP::start(set<Branch> &branches, float t) {
     temp.clear();
 }
 
-void succint_BSP::set_cutoff(float x) {
+void BSP::set_cutoff(float x) {
     cutoff = x;
 }
 
-void succint_BSP::set_emission(shared_ptr<Emission> e) {
+void BSP::set_emission(shared_ptr<Emission> e) {
     eh = e;
 }
 
-void succint_BSP::set_check_points(set<float> &p) {
+void BSP::set_check_points(set<float> &p) {
     check_points = p;
 }
 
-void succint_BSP::forward(float rho) {
+void BSP::forward(float rho) {
     rhos.push_back(rho);
     compute_recomb_probs(rho);
     compute_recomb_weights(rho);
@@ -78,7 +78,7 @@ void succint_BSP::forward(float rho) {
     weight_sums.push_back(weight_sum);
 }
 
-void succint_BSP::transfer(Recombination &r) {
+void BSP::transfer(Recombination &r) {
     rhos.push_back(0);
     prev_rho = -1;
     prev_theta = -1;
@@ -101,13 +101,13 @@ void succint_BSP::transfer(Recombination &r) {
     state_spaces[curr_index] = curr_intervals;
 }
 
-float succint_BSP::get_recomb_prob(float rho, float t) {
+float BSP::get_recomb_prob(float rho, float t) {
     float p = rho*(t - cut_time)*exp(-rho*(t - cut_time));
     // p = 0.5*p;
     return p;
 }
 
-void succint_BSP::null_emit(float theta, Node_ptr query_node) {
+void BSP::null_emit(float theta, Node_ptr query_node) {
     compute_null_emit_prob(theta, query_node);
     prev_theta = theta;
     prev_node = query_node;
@@ -123,7 +123,7 @@ void succint_BSP::null_emit(float theta, Node_ptr query_node) {
     }
 }
 
-void succint_BSP::mut_emit(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node) {
+void BSP::mut_emit(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node) {
     compute_mut_emit_probs(theta, bin_size, mut_set, query_node);
     float ws = 0;
     for (int i = 0; i < dim; i++) {
@@ -136,7 +136,7 @@ void succint_BSP::mut_emit(float theta, float bin_size, set<float> &mut_set, Nod
     }
 }
 
-map<float, Branch> succint_BSP::sample_joining_branches(int start_index, vector<float> &coordinates) {
+map<float, Branch> BSP::sample_joining_branches(int start_index, vector<float> &coordinates) {
     prev_rho = -1;
     map<float, Branch> joining_branches = {};
     int x = curr_index;
@@ -169,7 +169,7 @@ map<float, Branch> succint_BSP::sample_joining_branches(int start_index, vector<
     return joining_branches;
 }
 
-void succint_BSP::write_forward_probs(string filename) {
+void BSP::write_forward_probs(string filename) {
     ofstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Unable to open the file." << std::endl;
@@ -190,7 +190,7 @@ void succint_BSP::write_forward_probs(string filename) {
     file.close();
 }
 
-void succint_BSP::update_states(set<Branch> &deletions, set<Branch> &insertions) {
+void BSP::update_states(set<Branch> &deletions, set<Branch> &insertions) {
     for (Branch b : deletions) {
         if (b.upper_node->time > cut_time) {
             assert(valid_branches.count(b) > 0);
@@ -206,7 +206,7 @@ void succint_BSP::update_states(set<Branch> &deletions, set<Branch> &insertions)
     }
 }
 
-void succint_BSP::set_dimensions() {
+void BSP::set_dimensions() {
     dim = (int) curr_intervals.size();
     time_points.resize(dim); time_points.assign(dim, 0);
     raw_weights.resize(dim); raw_weights.assign(dim, 0);
@@ -216,7 +216,7 @@ void succint_BSP::set_dimensions() {
     mut_emit_probs.resize(dim); mut_emit_probs.assign(dim, 0);
 }
 
-void succint_BSP::compute_recomb_probs(float rho) {
+void BSP::compute_recomb_probs(float rho) {
     if (prev_rho == rho) {
         return;
     }
@@ -227,7 +227,7 @@ void succint_BSP::compute_recomb_probs(float rho) {
     }
 }
 
-void succint_BSP::compute_recomb_weights(float rho) {
+void BSP::compute_recomb_weights(float rho) {
     if (prev_rho == rho) {
         return;
     }
@@ -242,7 +242,7 @@ void succint_BSP::compute_recomb_weights(float rho) {
     }
 }
 
-void succint_BSP::compute_null_emit_prob(float theta, Node_ptr query_node) {
+void BSP::compute_null_emit_prob(float theta, Node_ptr query_node) {
     if (theta == prev_theta and query_node == prev_node) {
         return;
     }
@@ -251,23 +251,23 @@ void succint_BSP::compute_null_emit_prob(float theta, Node_ptr query_node) {
     }
 }
 
-void succint_BSP::compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node) {
+void BSP::compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node) {
     for (int i = 0; i < dim; i++) {
         mut_emit_probs[i] = eh->mut_emit(curr_intervals[i]->branch, time_points[i], theta, bin_size, mut_set, query_node);
     }
 }
 
-void succint_BSP::transfer_helper(Interval_info &next_interval, Interval_ptr &prev_interval, float w) {
+void BSP::transfer_helper(Interval_info &next_interval, Interval_ptr &prev_interval, float w) {
     transfer_weights[next_interval].push_back(w);
     transfer_intervals[next_interval].push_back(prev_interval);
 }
 
-void succint_BSP::transfer_helper(Interval_info &next_interval) {
+void BSP::transfer_helper(Interval_info &next_interval) {
     transfer_weights[next_interval];
     transfer_intervals[next_interval];
 }
 
-void succint_BSP::add_new_branches(Recombination &r) { // add recombined branch and merging branch, if legal
+void BSP::add_new_branches(Recombination &r) { // add recombined branch and merging branch, if legal
     Interval_info next_interval;
     float lb = 0;
     float ub = 0;
@@ -285,7 +285,7 @@ void succint_BSP::add_new_branches(Recombination &r) { // add recombined branch 
     }
 }
 
-void succint_BSP::compute_interval_info() {
+void BSP::compute_interval_info() {
     if (states_change) {
         cc->compute(valid_branches);
     }
@@ -303,7 +303,7 @@ void succint_BSP::compute_interval_info() {
     weights[curr_index] = raw_weights;
 }
 
-void succint_BSP::sanity_check(Recombination &r) {
+void BSP::sanity_check(Recombination &r) {
     for (int i = 0; i < curr_intervals.size(); i++) {
         Interval_ptr interval = curr_intervals[i];
         if (interval->lb == interval->ub and interval->lb == r.inserted_node->time and interval->branch != r.target_branch) {
@@ -312,13 +312,14 @@ void succint_BSP::sanity_check(Recombination &r) {
     }
 }
 
-void succint_BSP::generate_intervals(Recombination &r) {
+void BSP::generate_intervals(Recombination &r) {
     Branch b;
     float lb;
     float ub;
     float p;
-    int max_source;
-    vector<Interval_ptr > intervals;
+    float q;
+    int min_source;
+    vector<Interval_ptr> intervals;
     vector<float> weights;
     Interval_info interval;
     Interval_ptr new_interval = nullptr;
@@ -331,20 +332,21 @@ void succint_BSP::generate_intervals(Recombination &r) {
         lb = interval.lb;
         ub = interval.ub;
         p = accumulate(weights.begin(), weights.end(), 0.0);
-        max_source = max_source_pos(intervals);
+        min_source = min_source_pos(intervals);
+        q = p*calculate_penalty(min_source, lb, ub);
         assert(!isnan(p));
-        if (lb == max(cut_time, b.lower_node->time) and ub == b.upper_node->time) { // full intervals
+        if (lb == max(cut_time, b.lower_node->time)) { // full intervals
             new_interval = create_interval(b, lb, ub, curr_index);
-            new_interval->source_pos = max_source;
+            new_interval->source_pos = min_source;
             temp_intervals.push_back(new_interval);
             temp.push_back(p);
             if (weights.size() > 0) {
                 new_interval->source_weights = move(weights);
                 new_interval->intervals = move(intervals);
             }
-        } else if (p > cutoff and max_source > curr_index - max_ibd_length) { // partial intervals
+        } else if (p > cutoff) { // partial intervals
             new_interval = create_interval(b, lb, ub, curr_index);
-            new_interval->source_pos = max_source;
+            new_interval->source_pos = min_source;
             temp_intervals.push_back(new_interval);
             temp.push_back(p);
             if (weights.size() > 0) {
@@ -357,7 +359,7 @@ void succint_BSP::generate_intervals(Recombination &r) {
     curr_intervals = temp_intervals;
 }
 
-float succint_BSP::get_overwrite_prob(Recombination &r, float lb, float ub) {
+float BSP::get_overwrite_prob(Recombination &r, float lb, float ub) {
     if (check_points.count(r.pos) > 0) {
         return 0.0;
     }
@@ -372,7 +374,7 @@ float succint_BSP::get_overwrite_prob(Recombination &r, float lb, float ub) {
     return overwrite_prob;
 }
 
-void succint_BSP::process_interval(Recombination &r, int i) {
+void BSP::process_interval(Recombination &r, int i) {
     const Branch &prev_branch = curr_intervals[i]->branch;
     if (prev_branch == r.source_branch) {
         process_source_interval(r, i);
@@ -383,7 +385,7 @@ void succint_BSP::process_interval(Recombination &r, int i) {
     }
 }
 
-void succint_BSP::process_source_interval(Recombination &r, int i) {
+void BSP::process_source_interval(Recombination &r, int i) {
     float w1, w2, lb, ub = 0;
     Interval_ptr prev_interval = curr_intervals[i];
     float p = forward_probs[curr_index - 1][i];
@@ -426,7 +428,7 @@ void succint_BSP::process_source_interval(Recombination &r, int i) {
     }
 }
 
-void succint_BSP::process_target_interval(Recombination &r, int i) {
+void BSP::process_target_interval(Recombination &r, int i) {
     float w0, w1, w2, lb, ub = 0;
     Interval_ptr prev_interval = curr_intervals[i];
     float p = forward_probs[curr_index - 1][i];
@@ -483,20 +485,21 @@ void succint_BSP::process_target_interval(Recombination &r, int i) {
     }
 }
 
-void succint_BSP::process_other_interval(Recombination &r, int i) {
+void BSP::process_other_interval(Recombination &r, int i) {
     float lb, ub = 0;
     Interval_ptr prev_interval = curr_intervals[i];
     float p = forward_probs[curr_index - 1][i];
+    float q = p*calculate_penalty(prev_interval->source_pos, prev_interval->lb, prev_interval->ub);
     if (prev_interval->branch != r.source_sister_branch and prev_interval->branch != r.source_parent_branch) {
         // in other words, not affected by recombination
         if (prev_interval->full(cut_time)) {
             temp_intervals.push_back(prev_interval);
             temp.push_back(p);
-        } else if (p > cutoff and prev_interval->source_pos > curr_index - max_ibd_length) {
+        } else if (q > cutoff) {
             temp_intervals.push_back(prev_interval);
             temp.push_back(p);
         }
-    } else if (p > cutoff) { // will not create a full branch, so we need to prune
+    } else if (q > cutoff) { // will not create a full branch, so we need to prune
         lb = prev_interval->lb;
         ub = prev_interval->ub;
         Branch &next_branch = r.merging_branch;
@@ -505,42 +508,42 @@ void succint_BSP::process_other_interval(Recombination &r, int i) {
     }
 }
 
-float succint_BSP::random() {
+float BSP::random() {
     float p = uniform_random();
     return p;
 }
 
-int succint_BSP::get_prev_breakpoint(int x) {
+int BSP::get_prev_breakpoint(int x) {
     auto state_it = state_spaces.upper_bound(x);
     state_it--;
     return state_it->first;
 }
 
-vector<Interval_ptr> &succint_BSP::get_state_space(int x) {
+vector<Interval_ptr> &BSP::get_state_space(int x) {
     auto state_it = state_spaces.upper_bound(x);
     state_it--;
     return state_it->second;
 }
 
-vector<float> &succint_BSP::get_time_points(int x) {
+vector<float> &BSP::get_time_points(int x) {
     auto time_it = times.upper_bound(x);
     time_it--;
     return time_it->second;
 }
 
-vector<float> &succint_BSP::get_raw_weights(int x) {
+vector<float> &BSP::get_raw_weights(int x) {
     auto weight_it = weights.upper_bound(x);
     weight_it--;
     return weight_it->second;
 }
 
-int succint_BSP::get_interval_index(Interval_ptr interval, vector<Interval_ptr > &intervals) {
+int BSP::get_interval_index(Interval_ptr interval, vector<Interval_ptr > &intervals) {
     auto it = find(intervals.begin(), intervals.end(), interval);
     int index = (int) distance(intervals.begin(), it);
     return index;
 }
  
-void succint_BSP::simplify(map<float, Branch> &joining_branches) {
+void BSP::simplify(map<float, Branch> &joining_branches) {
     map<float, Branch> simplified_joining_branches = {};
     Branch curr_branch = joining_branches.begin()->second;
     simplified_joining_branches[joining_branches.begin()->first] = curr_branch;
@@ -554,7 +557,7 @@ void succint_BSP::simplify(map<float, Branch> &joining_branches) {
     joining_branches = simplified_joining_branches;
 }
 
-Interval_ptr succint_BSP::sample_curr_interval(int x) {
+Interval_ptr BSP::sample_curr_interval(int x) {
     vector<Interval_ptr > &intervals = get_state_space(x);
     float ws = accumulate(forward_probs[x].begin(), forward_probs[x].end(), 0.0);
     float q = random();
@@ -570,7 +573,7 @@ Interval_ptr succint_BSP::sample_curr_interval(int x) {
     exit(1);
 }
 
-Interval_ptr succint_BSP::sample_prev_interval(int x) {
+Interval_ptr BSP::sample_prev_interval(int x) {
     vector<Interval_ptr > &intervals = get_state_space(x);
     vector<float> &prev_times = get_time_points(x);
     float rho = rhos[x];
@@ -590,7 +593,7 @@ Interval_ptr succint_BSP::sample_prev_interval(int x) {
     exit(1);
 }
 
-Interval_ptr succint_BSP::sample_source_interval(Interval_ptr interval, int x) {
+Interval_ptr BSP::sample_source_interval(Interval_ptr interval, int x) {
     vector<Interval_ptr> &intervals = interval->intervals;
     vector<float> &weights = interval->source_weights;
     vector<Interval_ptr> &prev_intervals = get_state_space(x);
@@ -614,7 +617,7 @@ Interval_ptr succint_BSP::sample_source_interval(Interval_ptr interval, int x) {
     }
 }
 
-int succint_BSP::trace_back_helper(Interval_ptr interval, int x) {
+int BSP::trace_back_helper(Interval_ptr interval, int x) {
     int y = get_prev_breakpoint(x);
     if (!interval->full(cut_time)) {
         return y;
@@ -651,18 +654,15 @@ int succint_BSP::trace_back_helper(Interval_ptr interval, int x) {
     return y;
 }
 
-int succint_BSP::max_source_pos(vector<Interval_ptr> &intervals) {
-    int max_pos = -1;
+int BSP::min_source_pos(vector<Interval_ptr> &intervals) {
+    int min_pos = curr_index;
     for (Interval_ptr i : intervals) {
-        max_pos = max(i->source_pos, max_pos);
+        min_pos = min(i->source_pos, min_pos);
     }
-    if (max_pos < 0) {
-        max_pos = curr_index;
-    }
-    return max_pos;
+    return min_pos;
 }
 
-float succint_BSP::avg_num_states() {
+float BSP::avg_num_states() {
     int span = 0;
     float count = 0;
     auto x = state_spaces.begin();
@@ -676,10 +676,31 @@ float succint_BSP::avg_num_states() {
     return avg;
 }
 
-void succint_BSP::write_recomb_weight_sums(string filename) {
+void BSP::write_recomb_weight_sums(string filename) {
     ofstream out_file(filename);
     for (int i = 0; i < recomb_sums.size(); i++) {
         out_file << recomb_sums[i] << " " << weight_sums[i + 1] << endl;
     }
     out_file.close();
+}
+
+/*
+float BSP::calculate_penalty(int source_pos) {
+    int exponent = curr_index - source_pos - grace_period;
+    float p = pow(penalty, exponent);
+    return p;
+}
+*/
+
+float BSP::calculate_penalty(int source_pos, float lb, float ub) {
+    int exponent = curr_index - source_pos - grace_period;
+    float t = 0;
+    if (isinf(ub)) {
+        t = lb + log(2);
+    } else {
+        t = ub;
+    }
+    float unit_penalty = 1 - rho_unit;
+    float p = pow(unit_penalty, exponent);
+    return 1;
 }

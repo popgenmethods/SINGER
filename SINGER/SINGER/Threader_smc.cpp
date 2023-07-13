@@ -18,7 +18,9 @@ Threader_smc::~Threader_smc() {
 
 void Threader_smc::thread(ARG &a, Node_ptr n) {
     cout << "Iteration: " << a.sample_nodes.size() << endl;
-    cut_time = min(0.005, 0.1/a.sample_nodes.size());
+    // cut_time = min(0.005, 0.1/a.sample_nodes.size());
+    // cut_time = 0.0005;
+    cut_time = 0;
     a.cut_time = cut_time;
     a.add_sample(n);
     get_boundary(a);
@@ -46,7 +48,8 @@ void Threader_smc::thread(ARG &a, Node_ptr n) {
 
 void Threader_smc::fast_thread(ARG &a, Node_ptr n) {
     cout << "Iteration: " << a.sample_nodes.size() << endl;
-    cut_time = min(0.005, 0.1/a.sample_nodes.size());
+    // cut_time = min(0.005, 0.1/a.sample_nodes.size());
+    cut_time = 0;
     a.cut_time = cut_time;
     a.add_sample(n);
     get_boundary(a);
@@ -168,8 +171,6 @@ void Threader_smc::run_BSP(ARG &a) {
     bsp.reserve_memory(end_index - start_index);
     bsp.set_cutoff(cutoff);
     bsp.set_emission(e);
-    // bsp.max_ibd_length = 1e3;
-    bsp.max_ibd_length = INT_MAX;
     bsp.start(a.start_tree.branches, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
@@ -208,8 +209,8 @@ void Threader_smc::run_BSP(ARG &a) {
 void Threader_smc::run_fast_BSP(ARG &a) {
     fbsp.reserve_memory(end_index - start_index);
     fbsp.set_cutoff(cutoff);
-    fbsp.set_emission(eh);
-    // fbsp.set_emission(e);
+    fbsp.set_emission(e);
+    fbsp.max_length = INT_MAX;
     set<Interval_info> start_intervals = pruner.insertions.begin()->second;
     fbsp.start(a.start_tree.branches, start_intervals, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
@@ -330,14 +331,13 @@ void Threader_smc::sample_joining_points(ARG &a) {
     }
 }
 
-/*
 float Threader_smc::acceptance_ratio(ARG &a) {
     float prev_length = a.get_arg_length(a.joining_branches, a.removed_branches);
     float next_length = a.get_arg_length(new_joining_branches, added_branches);
     return prev_length/next_length;
 }
- */
 
+/*
 float Threader_smc::acceptance_ratio(ARG &a) {
     auto old_join_it = a.joining_branches.upper_bound(a.cut_pos);
     old_join_it--;
@@ -359,6 +359,7 @@ float Threader_smc::acceptance_ratio(ARG &a) {
     }
     return old_length/new_length;
 }
+ */
 
 float Threader_smc::random() {
     return (float) rand()/RAND_MAX;

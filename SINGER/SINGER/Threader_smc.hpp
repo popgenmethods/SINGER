@@ -12,6 +12,7 @@
 #include <chrono>
 #include <sstream>
 #include "ARG.hpp"
+#include "BSP.hpp"
 #include "succint_BSP.hpp"
 #include "BSP_smc.hpp"
 #include "fast_BSP.hpp"
@@ -50,8 +51,8 @@ public:
     int start_index = 0;
     int end_index = 0;
     Trace_pruner pruner = Trace_pruner();
-    // BSP_smc bsp = BSP_smc();
-    succint_BSP bsp = succint_BSP();
+    BSP bsp = BSP();
+    // succint_BSP bsp = succint_BSP();
     // fast_BSP_smc fbsp = fast_BSP_smc();
     // fast_BSP fbsp = fast_BSP();
     // reduced_BSP fbsp = reduced_BSP();
