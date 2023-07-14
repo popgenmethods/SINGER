@@ -19,6 +19,7 @@ public:
     map<Node_ptr, float, compare_node> root_span = {};
     map<Node_ptr, float, compare_node> node_span = {};
     set<float> mutation_ages = {};
+    map<float, float> mutation_counts = {};
     
     Normalizer();
     
@@ -28,9 +29,15 @@ public:
     
     void get_node_span(ARG &a);
     
+    void count_mutations(ARG &a);
+    
     void randomize_mutation_ages(ARG &a);
     
+    void randomized_normalize(ARG &a);
+    
     void normalize(ARG &a);
+    
+    void add_mutation(float lb, float ub);
 };
 
 #endif /* Normalizer_hpp */

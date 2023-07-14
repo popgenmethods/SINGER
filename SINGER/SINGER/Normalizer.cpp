@@ -69,6 +69,24 @@ void Normalizer::get_node_span(ARG &a) {
     node_span.erase(a.root);
 }
 
+void Normalizer::count_mutations(ARG &a) {
+    for (auto &x : node_span) {
+        mutation_counts[x.first->time] = 0;
+    }
+    mutation_counts[0] = 0;
+    mutation_counts[INT_MAX] = 0;
+    float lb, ub;
+    for (auto &x : a.mutation_branches) {
+        for (auto &y : x.second) {
+            if (y.upper_node != a.root) {
+                lb = y.lower_node->time;
+                ub = y.upper_node->time;
+                add_mutation(lb, ub);
+            }
+        }
+    }
+}
+
 void Normalizer::randomize_mutation_ages(ARG &a) {
     float lb, ub, m;
     for (auto &x : a.mutation_branches) {
@@ -84,14 +102,15 @@ void Normalizer::randomize_mutation_ages(ARG &a) {
     mutation_ages.insert(INT_MAX);
 }
 
-void Normalizer::normalize(ARG &a) {
+void Normalizer::randomized_normalize(ARG &a) {
     get_root_span(a);
     get_node_span(a);
     randomize_mutation_ages(a);
     float num_lineages = a.sample_nodes.size()*a.sequence_length;
-    float theta = 4e-4;
+    float theta = 0;
     float count = 0;
     float correction = 0;
+    float tau = 0;
     auto n_it = node_span.begin();
     auto m_it = mutation_ages.begin();
     while (n_it != node_span.end()) {
@@ -101,10 +120,53 @@ void Normalizer::normalize(ARG &a) {
             count += 1;
             m_it++;
         }
-        correction += max(count/num_lineages/theta, 1e-6f);
+        tau = max(count/num_lineages/theta, 1e-6f);
+        /*
+        if (correction + tau > 8) {
+            correction += 1e-6;
+        } else {
+            correction += max(count/num_lineages/theta, 1e-6f);
+        }
+         */
+        theta = num_lineages*4e-4;
+        correction += max(count/theta, 1e-6f);
         n->time = correction;
         num_lineages -= n_it->second;
         n_it++;
     }
     a.smc_sample_recombinations();
+}
+
+void Normalizer::normalize(ARG &a) {
+    get_root_span(a);
+    get_node_span(a);
+    count_mutations(a);
+    float num_lineages = a.sample_nodes.size()*a.sequence_length;
+    float theta = 4e-4;
+    float count = 0;
+    float correction = 0;
+    auto n_it = node_span.begin();
+    auto c_it = mutation_counts.begin();
+    while (n_it != node_span.end()) {
+        Node_ptr n = n_it->first;
+        count = c_it->second;
+        correction += max(count/num_lineages/theta, 1e-6f);
+        n->time = correction;
+        num_lineages -= n_it->second;
+        n_it++;
+        c_it++;
+    }
+    a.smc_sample_recombinations();
+}
+
+void Normalizer::add_mutation(float lb, float ub) {
+    float x, y, l;
+    auto it = mutation_counts.lower_bound(lb);
+    while (it->first < ub) {
+        x = it->first;
+        y = next(it)->first;
+        l = min(ub, y) - max(lb, x);
+        mutation_counts[x] += l/(ub - lb);
+        it++;
+    }
 }
