@@ -225,6 +225,7 @@ void test_no_mut() {
     // sampler.internal_sample(500, 1);
 }
 
+/*
 void test_normalization() {
     set_seed(93723823);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
@@ -242,6 +243,7 @@ void test_normalization() {
     sampler.arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/normalized_ts_node.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_ts_recombs.txt");
     // sampler.internal_sample(500, 1);
 }
+ */
 
 void test_normalizer() {
     set_seed(93723823);
@@ -250,12 +252,10 @@ void test_normalizer() {
     sampler.set_sequence_length(1e6);
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf");
-    sampler.iterative_start();
-    for (int i = 0; i < 1; i++) {
-        Normalizer nm = Normalizer();
-        nm.randomized_normalize(sampler.arg);
-    }
-    sampler.arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/normalized_50_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_50_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_50_recombs.txt");
+    sampler.fast_iterative_start();
+    Normalizer nm = Normalizer();
+    nm.randomized_normalize(sampler.arg);
+    sampler.arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/normalized_fast_50_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_fast_50_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_50_fast_recombs.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_fast_50_mutations.txt");
 }
 
 void test_tsp() {

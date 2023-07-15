@@ -12,7 +12,8 @@ Normalizer::Normalizer() {}
 Normalizer::~Normalizer() {}
 
 void Normalizer::get_root_span(ARG &a) {
-    map<Node_ptr, float> root_start = {};
+    map<Node_ptr, float, compare_node> root_start = {};
+    map<Node_ptr, float, compare_node> root_span = {};
     Branch prev_branch;
     Branch next_branch;
     Recombination &r = a.recombinations.begin()->second;
@@ -41,13 +42,23 @@ void Normalizer::get_root_span(ARG &a) {
         Node_ptr n = x.first;
         root_span[n] += a.sequence_length - x.second;
     }
+    all_root_nodes.resize(root_span.size());
+    all_root_spans.resize(root_span.size());
+    int index = 0;
+    for (auto &x : root_span) {
+        all_root_nodes[index] = x.first;
+        all_root_spans[index] = x.second;
+        index++;
+    }
 }
 
 void Normalizer::get_node_span(ARG &a) {
-    map<Node_ptr, float> node_start = {};
+    map<Node_ptr, float, compare_node> node_start = {};
+    map<Node_ptr, float, compare_node> node_span = {};
     for (const Branch &b : a.recombinations.begin()->second.inserted_branches) {
         node_start[b.upper_node] = 0;
     }
+    node_start.erase(a.root);
     auto r_it = next(a.recombinations.begin());
     while (next(r_it) != a.recombinations.end()) {
         Node_ptr dn = r_it->second.deleted_node;
@@ -62,16 +73,20 @@ void Normalizer::get_node_span(ARG &a) {
         Node_ptr n = x.first;
         node_span[n] += a.sequence_length - node_start[n];
     }
-    for (auto &x : root_span) {
-        Node_ptr n = x.first;
-        node_span[n] += x.second;
+    all_nodes.resize(node_span.size());
+    all_spans.resize(node_span.size());
+    int index = 0;
+    for (auto &x : node_span) {
+        all_nodes[index] = x.first;
+        all_spans[index] = x.second;
+        index++;
     }
-    node_span.erase(a.root);
 }
 
+/*
 void Normalizer::count_mutations(ARG &a) {
-    for (auto &x : node_span) {
-        mutation_counts[x.first->time] = 0;
+    for (auto &x : all_nodes) {
+        mutation_counts[x->time] = 0;
     }
     mutation_counts[0] = 0;
     mutation_counts[INT_MAX] = 0;
@@ -86,6 +101,7 @@ void Normalizer::count_mutations(ARG &a) {
         }
     }
 }
+ */
 
 void Normalizer::randomize_mutation_ages(ARG &a) {
     float lb, ub, m;
@@ -106,37 +122,42 @@ void Normalizer::randomized_normalize(ARG &a) {
     get_root_span(a);
     get_node_span(a);
     randomize_mutation_ages(a);
-    float num_lineages = a.sample_nodes.size()*a.sequence_length;
+    float active_lineages = accumulate(all_spans.begin(), all_spans.end(), 0);
+    active_lineages += accumulate(all_root_spans.begin(), all_root_spans.end(), 0);
+    float active_length = a.sequence_length;
+    float mean_num_lineages = 0;
+    float delta_k = 0;
+    float prior_rate = 0;
     float theta = 0;
-    float count = 0;
-    float correction = 0;
-    float tau = 0;
-    auto n_it = node_span.begin();
+    float m = 0;
+    float t = 0;
     auto m_it = mutation_ages.begin();
-    while (n_it != node_span.end()) {
-        Node_ptr n = n_it->first;
-        count = 0;
+    int j = 0;
+    for (int i = 0; i < all_nodes.size(); i++) {
+        Node_ptr n = all_nodes[i];
+        m = 0;
         while (*m_it < n->time) {
-            count += 1;
+            m += 1;
             m_it++;
         }
-        tau = max(count/num_lineages/theta, 1e-6f);
-        /*
-        if (correction + tau > 8) {
-            correction += 1e-6;
-        } else {
-            correction += max(count/num_lineages/theta, 1e-6f);
+        assert(active_lineages > 0);
+        mean_num_lineages = active_lineages/active_length;
+        theta = active_lineages*4e-4;
+        t += max(m/theta, 1e-6f);
+        all_nodes[i]->time = t;
+        delta_k = all_spans[i]/active_lineages;
+        prior_rate = mean_num_lineages*(mean_num_lineages - delta_k)/2/delta_k;
+        active_lineages -= all_spans[i];
+        if (n == all_root_nodes[j]) {
+            active_lineages -= all_root_spans[j];
+            active_length -= all_root_spans[j];
+            j++;
         }
-         */
-        theta = num_lineages*4e-4;
-        correction += max(count/theta, 1e-6f);
-        n->time = correction;
-        num_lineages -= n_it->second;
-        n_it++;
     }
     a.smc_sample_recombinations();
 }
 
+/*
 void Normalizer::normalize(ARG &a) {
     get_root_span(a);
     get_node_span(a);
@@ -170,3 +191,4 @@ void Normalizer::add_mutation(float lb, float ub) {
         it++;
     }
 }
+*/

@@ -397,6 +397,13 @@ void ARG::write(string node_file, string branch_file, string recomb_file) {
     write_recombs(recomb_file);
 }
 
+void ARG::write(string node_file, string branch_file, string recomb_file, string mutation_file) {
+    write_nodes(node_file);
+    write_branches(branch_file);
+    write_recombs(recomb_file);
+    write_mutations(mutation_file);
+}
+
 void ARG::read(string node_file, string branch_file) {
     read_nodes(node_file);
     read_branches(branch_file);
@@ -919,6 +926,17 @@ void ARG::write_recombs(string filename) {
     file.close();
 }
 
+void ARG::write_mutations(string filename) {
+    ofstream file;
+    file.open(filename);
+    for (auto &x : mutation_branches) {
+        float m = x.first;
+        for (auto &y : x.second) {
+            file << m << " " << y.lower_node->index << " " << y.lower_node->get_state(m) << endl;
+        }
+    }
+}
+
 void ARG::read_nodes(string filename) {
     root->set_index(-1);
     node_set.clear();
@@ -1205,6 +1223,7 @@ tuple<float, Branch, float> ARG::sample_terminal_cut() {
     return {0, branch, time};
 }
 
+/*
 void ARG::normalize(float t, Distribution &d) {
     map<Node_ptr, float, compare_node> node_span = {};
     map<Node_ptr, float> node_start = {};
@@ -1308,6 +1327,7 @@ void ARG::normalize() {
     }
     smc_sample_recombinations();
 }
+*/
 
 bool compare_edge(const tuple<int, int, float, float>& edge1, const tuple<int, int, float, float>& edge2) {
     if (get<0>(edge1) < get<0>(edge2)) {

@@ -93,6 +93,8 @@ public:
     
     void write(string node_file, string branch_file, string recomb_file);
     
+    void write(string node_file, string branch_file, string recomb_file, string mutation_file);
+    
     void read(string node_file, string branch_file);
     
     void read(string node_file, string branch_file, string recomb_file);\
@@ -157,15 +159,17 @@ public:
     
     void write_recombs(string filename);
     
+    void write_mutations(string filename);
+    
     void read_nodes(string filename);
     
     void read_branches(string filename);
     
     void read_recombs(string filename);
     
-    void normalize(float t, Distribution &d);
+    // void normalize(float t, Distribution &d);
     
-    void normalize();
+    // void normalize();
     
 };
 

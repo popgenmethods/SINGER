@@ -16,8 +16,11 @@ class Normalizer {
     
 public:
     
-    map<Node_ptr, float, compare_node> root_span = {};
-    map<Node_ptr, float, compare_node> node_span = {};
+    // map<Node_ptr, float, compare_node> root_span = {};
+    vector<Node_ptr> all_root_nodes = {};
+    vector<float> all_root_spans = {};
+    vector<Node_ptr> all_nodes = {};
+    vector<float> all_spans = {};
     set<float> mutation_ages = {};
     map<float, float> mutation_counts = {};
     
@@ -35,9 +38,9 @@ public:
     
     void randomized_normalize(ARG &a);
     
-    void normalize(ARG &a);
+    // void normalize(ARG &a);
     
-    void add_mutation(float lb, float ub);
+    // void add_mutation(float lb, float ub);
 };
 
 #endif /* Normalizer_hpp */

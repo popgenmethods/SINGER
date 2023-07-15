@@ -45,7 +45,7 @@ void test_no_recomb();
 
 void test_no_mut();
 
-void test_normalization();
+// void test_normalization();
 
 void test_normalizer();
 
