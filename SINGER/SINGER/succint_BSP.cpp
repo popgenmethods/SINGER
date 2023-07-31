@@ -103,7 +103,6 @@ void succint_BSP::transfer(Recombination &r) {
 
 float succint_BSP::get_recomb_prob(float rho, float t) {
     float p = rho*(t - cut_time)*exp(-rho*(t - cut_time));
-    // p = 0.5*p;
     return p;
 }
 

@@ -85,9 +85,15 @@ public:
     
     void smc_sample_recombinations();
     
+    void heuristic_sample_recombinations();
+    
     int count_incompatibility();
     
     int count_flipping();
+    
+    void read_coordinates(string filename);
+    
+    void write_coordinates(string filename);
     
     void write(string node_file, string branch_file);
     
@@ -97,7 +103,9 @@ public:
     
     void read(string node_file, string branch_file);
     
-    void read(string node_file, string branch_file, string recomb_file);\
+    void read(string node_file, string branch_file, string recomb_file);
+    
+    void read(string node_file, string branch_file, string recomb_file, string mut_file);
     
     float get_arg_length();
     
@@ -166,6 +174,8 @@ public:
     void read_branches(string filename);
     
     void read_recombs(string filename);
+    
+    void read_muts(string filename);
     
     // void normalize(float t, Distribution &d);
     

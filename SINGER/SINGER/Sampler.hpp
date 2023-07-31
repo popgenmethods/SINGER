@@ -16,6 +16,7 @@
 #include "Threader_smc.hpp"
 #include "Binary_emission.hpp"
 #include "Emission.hpp"
+#include "Normalizer.hpp"
 
 class Sampler {
     
@@ -90,6 +91,11 @@ public:
     
     void fast_internal_sample(int num_iters, int spacing);
     
+    void resume_internal_sample(int num_iters, int spacing, int resume_point);
+    
+    void resume_fast_internal_sample(int num_iters, int spacing, int resume_point, int seed);
+    
+    void normalize();
 };
 
 #endif /* Sampler_hpp */

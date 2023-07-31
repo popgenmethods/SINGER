@@ -49,6 +49,12 @@ void test_no_mut();
 
 void test_normalizer();
 
+void test_read_muts();
+
+void test_resume();
+
 void test_tsp();
+
+void test_debug_resume();
 
 #endif /* Test_hpp */

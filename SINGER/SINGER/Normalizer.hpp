@@ -16,7 +16,9 @@ class Normalizer {
     
 public:
     
-    // map<Node_ptr, float, compare_node> root_span = {};
+    int num_windows = 100;
+    float ls = 0;
+    
     vector<Node_ptr> all_root_nodes = {};
     vector<float> all_root_spans = {};
     vector<Node_ptr> all_nodes = {};
@@ -32,15 +34,17 @@ public:
     
     void get_node_span(ARG &a);
     
-    void count_mutations(ARG &a);
-    
     void randomize_mutation_ages(ARG &a);
     
     void randomized_normalize(ARG &a);
     
-    // void normalize(ARG &a);
+    void normalize(ARG &a);
     
-    // void add_mutation(float lb, float ub);
+    void partition_arg(ARG &a);
+    
+    void count_mutations(ARG &a);
+    
+    void add_mutation(float lb, float ub);
 };
 
 #endif /* Normalizer_hpp */

@@ -147,6 +147,7 @@ void sub_BSP::update(float rho) {
         forward_probs[curr_index][i] += recomb_sum*join_weights[i];
         // assert(!isnan(forward_probs[curr_index][i]) and forward_probs[curr_index][i] >= 0);
     }
+    assert(recomb_sum > 0);
     recomb_sums.emplace_back(recomb_sum);
     reduced_sums.emplace_back(reduced_sum);
 }
@@ -460,7 +461,7 @@ void sub_BSP::generate_intervals(Recombination &r) {
 }
 
 float sub_BSP::get_overwrite_prob(Recombination &r, float lb, float ub) {
-    if (check_points.count(curr_index) > 0) {
+    if (check_points.count(r.pos) > 0) {
         return 0.0;
     }
     float join_time = r.inserted_node->time;
@@ -760,8 +761,8 @@ int sub_BSP::trace_back_helper(Interval_ptr interval, int x) {
         } else {
             recomb_prob = get_recomb_prob(rhos[x - 1], t);
             non_recomb_prob = (1 - recomb_prob)*forward_probs[x - 1][sample_index];
-            all_prob = non_recomb_prob + recomb_sum*w;
-            // all_prob = non_recomb_prob + recomb_sum*w + recomb_sum*forward_probs[x - 1][sample_index]*(1 - reduced_sum);
+            // all_prob = non_recomb_prob + recomb_sum*w;
+            all_prob = non_recomb_prob + recomb_sum*w + recomb_sum*forward_probs[x - 1][sample_index]*(1 - reduced_sum);
             shrinkage = non_recomb_prob/all_prob;
             assert(!isnan(shrinkage));
             assert(shrinkage >= 0 and shrinkage <= 1);

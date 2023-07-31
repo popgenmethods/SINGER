@@ -393,7 +393,7 @@ void Trace_pruner::forward_transition(Recombination &r, const Interval_info &int
     if (!r.affect(interval.branch)) {
         transition_scores[interval] = curr_scores[interval];
     } else if (interval.branch == r.source_branch) {
-        if (l < r.start_time) {
+        if (l <= r.start_time) {
             lb = min(l, r.start_time);
             ub = min(u, r.start_time);
             w1 = exp_prop(interval.lb, interval.ub, lb, ub);

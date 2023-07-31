@@ -348,6 +348,21 @@ void ARG::smc_sample_recombinations() {
     }
 }
 
+void ARG::heuristic_sample_recombinations() {
+    RSP_smc rsp = RSP_smc();
+    Tree tree = get_tree_at(0);
+    auto it = recombinations.upper_bound(0);
+    while (it->first < sequence_length) {
+        Recombination &r = it->second;
+        if (r.pos != 0 and r.pos < sequence_length) {
+            rsp.sample_recombination(r, 0, tree);
+            assert(r.start_time > 0);
+        }
+        tree.forward_update(r);
+        it++;
+    }
+}
+
 int ARG::count_incompatibility() {
     Tree tree = Tree();
     auto recomb_it = recombinations.begin();
@@ -377,11 +392,36 @@ int ARG::count_flipping() {
     int count = 0;
     for (auto x : mutation_branches) {
         set<Branch> &branches = x.second;
-        if (branches.rbegin()->upper_node == root and branches.size() > 1) {
+        if (branches.size() > 1 and branches.rbegin()->upper_node == root) {
             count += 1;
         }
     }
     return count;
+}
+
+void ARG::read_coordinates(string filename) {
+    ifstream fin(filename);
+    if (!fin.good()) {
+        cerr << "input file not found" << endl;
+        exit(1);
+    }
+    float x;
+    while (fin >> x) {
+        coordinates.push_back(x);
+    }
+    // cout << "finished" << endl;
+    bin_num = (int) coordinates.size() - 1;
+    return;
+}
+
+void ARG::write_coordinates(string filename) {
+    ofstream file;
+    file.open(filename);
+    file << std::setprecision(20) << std::fixed;
+    for (auto x : coordinates) {
+        file << x << endl;
+    }
+    return;
 }
 
 void ARG::write(string node_file, string branch_file) {
@@ -415,6 +455,13 @@ void ARG::read(string node_file, string branch_file, string recomb_file) {
     read_branches(branch_file);
     read_recombs(recomb_file);
     start_tree = get_tree_at(0);
+}
+
+void ARG::read(string node_file, string branch_file, string recomb_file, string mut_file) {
+    read_nodes(node_file);
+    read_branches(branch_file);
+    read_recombs(recomb_file);
+    read_muts(mut_file);
 }
 
 // private methods:
@@ -526,11 +573,13 @@ void ARG::remap_mutations() {
     while (mut_it->first < y) {
         while (join_it->first < mut_it->first) {
             joining_branch = join_it->second;
+            assert(joining_branch != Branch());
             join_it++;
         }
         while (remove_it->first < mut_it->first) {
             removed_branch = remove_it->second;
             joining_node = removed_branch.upper_node;
+            assert(joining_node != nullptr);
             remove_it++;
         }
         lower_branch = Branch(joining_branch.lower_node, joining_node);
@@ -917,6 +966,7 @@ void ARG::write_branches(string filename) {
 void ARG::write_recombs(string filename) {
     ofstream file;
     file.open(filename);
+    file << std::setprecision(20) << std::fixed;
     for (auto x : recombinations) {
         Recombination &r = x.second;
         if (x.first > 0 and x.first < sequence_length) {
@@ -932,7 +982,7 @@ void ARG::write_mutations(string filename) {
     for (auto &x : mutation_branches) {
         float m = x.first;
         for (auto &y : x.second) {
-            file << m << " " << y.lower_node->index << " " << y.lower_node->get_state(m) << endl;
+            file << m << " " << y.lower_node->index << " " << y.upper_node->index << " " << y.lower_node->get_state(m) << endl;
         }
     }
 }
@@ -1007,6 +1057,7 @@ void ARG::read_recombs(string filename) {
         cerr << "input file not found" << endl;
         exit(1);
     }
+    create_node_set();
     vector<Node_ptr> nodes = vector<Node_ptr>(node_set.begin(), node_set.end());
     map<int, Branch> source_branches = {};
     map<int, float> start_times = {};
@@ -1024,7 +1075,7 @@ void ARG::read_recombs(string filename) {
         } else {
             un = nodes[n2];
         }
-        b = Branch(nodes[n1], nodes[n2]);
+        b = Branch(ln, un);
         source_branches[pos] = b;
         start_times[pos] = t;
     }
@@ -1041,6 +1092,56 @@ void ARG::read_recombs(string filename) {
                 x.second.find_recomb_info();
             }
         }
+    }
+    node_set.clear();
+}
+
+void ARG::read_muts(string filename) {
+    ifstream fin(filename);
+    if (!fin.good()) {
+        cerr << "input file not found" << endl;
+        exit(1);
+    }
+    create_node_set();
+    vector<Node_ptr> nodes = vector<Node_ptr>(node_set.begin(), node_set.end());
+    float pos;
+    int n1;
+    int n2;
+    float s;
+    Node_ptr ln;
+    Node_ptr un;
+    Branch b;
+    while (fin >> pos >> n1 >> n2 >> s) {
+        if (pos <= sequence_length) {
+            mutation_sites.insert(pos);
+            ln = nodes[n1];
+            if (n2 == -1) {
+                un = root;
+            } else {
+                un = nodes[n2];
+            }
+            if (s == 1) {
+                ln->write_state(pos, 1);
+                un->write_state(pos, 0);
+            } else {
+                un->write_state(pos, 1);
+                ln->write_state(pos, 0);
+            }
+            b = Branch(ln, un);
+            mutation_branches[pos].insert(b);
+        }
+    }
+    Tree tree = Tree();
+    auto m_it = mutation_branches.begin();
+    auto r_it = recombinations.begin();
+    while (r_it->first < sequence_length) {
+        Recombination &r = r_it->second;
+        tree.forward_update(r);
+        while (m_it->first < next(r_it)->first) {
+            tree.impute_states(m_it->first, m_it->second);
+            m_it++;
+        }
+        r_it++;
     }
 }
 
@@ -1112,7 +1213,6 @@ float ARG::get_arg_length(map<float, Branch> &new_joining_branches, map<float, B
 
 /*
 tuple<float, Branch, float> ARG::sample_internal_cut() {
-    // float arg_length = get_arg_length(0, sequence_length);
     float arg_length = get_arg_length();
     cut_tree = Tree();
     float p = random();

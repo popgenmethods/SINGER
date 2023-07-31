@@ -78,6 +78,10 @@ public:
     
     int distance(Node_ptr n1, Node_ptr n2);
     
+    void impute_states(float m, set<Branch> &mutation_branches);
+    
+    void impute_states_helper(Node_ptr n, map<Node_ptr, float> &states);
+    
     float random();
     
 };

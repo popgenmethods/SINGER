@@ -83,26 +83,6 @@ void Normalizer::get_node_span(ARG &a) {
     }
 }
 
-/*
-void Normalizer::count_mutations(ARG &a) {
-    for (auto &x : all_nodes) {
-        mutation_counts[x->time] = 0;
-    }
-    mutation_counts[0] = 0;
-    mutation_counts[INT_MAX] = 0;
-    float lb, ub;
-    for (auto &x : a.mutation_branches) {
-        for (auto &y : x.second) {
-            if (y.upper_node != a.root) {
-                lb = y.lower_node->time;
-                ub = y.upper_node->time;
-                add_mutation(lb, ub);
-            }
-        }
-    }
-}
- */
-
 void Normalizer::randomize_mutation_ages(ARG &a) {
     float lb, ub, m;
     for (auto &x : a.mutation_branches) {
@@ -130,7 +110,7 @@ void Normalizer::randomized_normalize(ARG &a) {
     float prior_rate = 0;
     float theta = 0;
     float m = 0;
-    float t = 0;
+    float t = 0.0005;
     auto m_it = mutation_ages.begin();
     int j = 0;
     for (int i = 0; i < all_nodes.size(); i++) {
@@ -140,7 +120,7 @@ void Normalizer::randomized_normalize(ARG &a) {
             m += 1;
             m_it++;
         }
-        assert(active_lineages > 0);
+        // assert(active_lineages > 0);
         mean_num_lineages = active_lineages/active_length;
         theta = active_lineages*4e-4;
         t += max(m/theta, 1e-6f);
@@ -154,30 +134,85 @@ void Normalizer::randomized_normalize(ARG &a) {
             j++;
         }
     }
-    a.smc_sample_recombinations();
+    for (auto &x : a.recombinations) {
+        x.second.start_time = -1;
+    }
+    a.heuristic_sample_recombinations();
 }
 
-/*
 void Normalizer::normalize(ARG &a) {
     get_root_span(a);
     get_node_span(a);
+    partition_arg(a);
     count_mutations(a);
-    float num_lineages = a.sample_nodes.size()*a.sequence_length;
-    float theta = 4e-4;
-    float count = 0;
-    float correction = 0;
-    auto n_it = node_span.begin();
     auto c_it = mutation_counts.begin();
-    while (n_it != node_span.end()) {
-        Node_ptr n = n_it->first;
-        count = c_it->second;
-        correction += max(count/num_lineages/theta, 1e-6f);
-        n->time = correction;
-        num_lineages -= n_it->second;
-        n_it++;
+    float t = 0;
+    int i = 0;
+    while (c_it->first < INT_MAX) {
+        float e = 4e-4*ls/num_windows;
+        float o = c_it->second;
+        float scale = o/e;
+        while (i < all_nodes.size() and all_nodes[i]->time < next(c_it)->first) {
+            all_nodes[i]->time = t + scale*(all_nodes[i]->time - c_it->first);
+            i++;
+        }
+        t += scale*(next(c_it)->first - c_it->first);
         c_it++;
     }
-    a.smc_sample_recombinations();
+    a.heuristic_sample_recombinations();
+}
+
+void Normalizer::partition_arg(ARG &a) {
+    float active_lineages = accumulate(all_spans.begin(), all_spans.end(), 0);
+    active_lineages += accumulate(all_root_spans.begin(), all_root_spans.end(), 0);
+    float t = 0;
+    int j = 0;
+    for (int i = 0; i < all_spans.size(); i++) {
+        Node_ptr n = all_nodes[i];
+        ls += (n->time - t)*active_lineages;
+        active_lineages -= all_spans[i];
+        if (all_root_nodes[j] == n) {
+            active_lineages -= all_root_spans[j];
+            j++;
+        }
+        t = n->time;
+    }
+    float l = 0;
+    float x = 0;
+    t = 0;
+    j = 0;
+    active_lineages = accumulate(all_spans.begin(), all_spans.end(), 0);
+    active_lineages += accumulate(all_root_spans.begin(), all_root_spans.end(), 0);
+    for (int i = 0; i < all_spans.size(); i++) {
+        Node_ptr n = all_nodes[i];
+        l += (n->time - t)*active_lineages;
+        while (l > ls/num_windows) {
+            l -= ls/num_windows;
+            x = n->time - l/active_lineages;
+            mutation_counts[x] = 0;
+        }
+        active_lineages -= all_spans[i];
+        if (all_root_nodes[j] == n) {
+            active_lineages -= all_root_spans[j];
+            j++;
+        }
+        t = n->time;
+    }
+}
+
+void Normalizer::count_mutations(ARG &a) {
+    mutation_counts[0] = 0;
+    mutation_counts[INT_MAX] = 0;
+    float lb, ub;
+    for (auto &x : a.mutation_branches) {
+        for (auto &y : x.second) {
+            if (y.upper_node != a.root) {
+                lb = y.lower_node->time;
+                ub = y.upper_node->time;
+                add_mutation(lb, ub);
+            }
+        }
+    }
 }
 
 void Normalizer::add_mutation(float lb, float ub) {
@@ -191,4 +226,3 @@ void Normalizer::add_mutation(float lb, float ub) {
         it++;
     }
 }
-*/

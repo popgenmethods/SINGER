@@ -170,17 +170,17 @@ void Sampler::iterative_start() {
         Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
         Node_ptr n = *it;
         threader.thread(arg, n);
-        // threader.bsp.write_recomb_weight_sums("/Users/yun_deng/Desktop/SINGER/arg_files/bsp_info.txt");
-        // threader.tsp.write_mean_time("/Users/yun_deng/Desktop/SINGER/arg_files/tsp_info.txt");
         arg.check_incompatibility();
         cout << "Number of flippings: " << arg.count_flipping() << endl;
         it++;
-        arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_recombs.txt");
     }
+    normalize();
     string node_file = output_prefix + "_start_nodes_" + to_string(sample_index) + ".txt";
     string branch_file= output_prefix + "_start_branches_" + to_string(sample_index) + ".txt";
     string recomb_file = output_prefix + "_start_recombs_" + to_string(sample_index) + ".txt";
     arg.write(node_file, branch_file, recomb_file);
+    string coord_file = output_prefix + "_coordinates.txt";
+    arg.write_coordinates(coord_file);
 }
 
 void Sampler::fast_iterative_start() {
@@ -200,10 +200,13 @@ void Sampler::fast_iterative_start() {
         cout << "Number of flippings: " << arg.count_flipping() << endl;
         it++;
     }
+    normalize();
     string node_file = output_prefix + "_fast_start_nodes_" + to_string(sample_index) + ".txt";
     string branch_file= output_prefix + "_fast_start_branches_" + to_string(sample_index) + ".txt";
     string recomb_file = output_prefix + "_fast_start_recombs_" + to_string(sample_index) + ".txt";
     arg.write(node_file, branch_file, recomb_file);
+    string coord_file = output_prefix + "_fast_coordinates.txt";
+    arg.write_coordinates(coord_file);
 }
 
 void Sampler::multiple_iterative_start(int num_iters) {
@@ -231,6 +234,7 @@ void Sampler::recombination_climb(int num_iters, int spacing) {
         string node_file = output_prefix + "_nodes_" + to_string(sample_index) + ".txt";
         string branch_file= output_prefix + "_branches_" + to_string(sample_index) + ".txt";
         string recomb_file = output_prefix + "_recombs_" + to_string(sample_index) + ".txt";
+        string mut_file = output_prefix + "_muts_" + to_string(sample_index) + ".txt";
         arg.write(node_file, branch_file, recomb_file);
         sample_index += 1;
         cout << "Number of trees: " << arg.recombinations.size() << endl;
@@ -327,7 +331,8 @@ void Sampler::internal_sample(int num_iters, int spacing) {
         cout << get_time() << " Iteration: " << to_string(i) << endl;
         float updated_length = 0;
         random_seed = rand();
-        srand(random_seed);
+        set_seed(random_seed);
+        cout << "Random seed: " << random_seed << endl;
         while (updated_length < spacing*arg.sequence_length) {
             Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
             tuple<float, Branch, float> cut_point = arg.sample_internal_cut();
@@ -335,11 +340,13 @@ void Sampler::internal_sample(int num_iters, int spacing) {
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
         }
+        normalize();
         arg.check_incompatibility();
         string node_file = output_prefix + "_nodes_internal_" + to_string(sample_index) + ".txt";
         string branch_file= output_prefix + "_branches_internal_" + to_string(sample_index) + ".txt";
         string recomb_file = output_prefix + "_recombs_internal_" + to_string(sample_index) + ".txt";
-        arg.write(node_file, branch_file, recomb_file);
+        string mut_file = output_prefix + "_muts_internal_" + to_string(sample_index) + ".txt";
+        arg.write(node_file, branch_file, recomb_file, mut_file);
         sample_index += 1;
         cout << "Number of trees: " << arg.recombinations.size() << endl;
         cout << "Number of flippings: " << arg.count_flipping() << endl;
@@ -348,11 +355,13 @@ void Sampler::internal_sample(int num_iters, int spacing) {
 }
 
 void Sampler::fast_internal_sample(int num_iters, int spacing) {
+    bsp_c = min(0.01, 0.05/arg.sample_nodes.size());
     for (int i = 0; i < num_iters; i++) {
         cout << get_time() << " Iteration: " << to_string(sample_index) << endl;
         float updated_length = 0;
         random_seed = rand();
-        srand(random_seed);
+        set_seed(random_seed);
+        cout << "Random seed: " << random_seed << endl;
         while (updated_length < spacing*arg.sequence_length) {
             Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
             tuple<float, Branch, float> cut_point = arg.sample_internal_cut();
@@ -360,14 +369,103 @@ void Sampler::fast_internal_sample(int num_iters, int spacing) {
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
         }
+        normalize();
         arg.check_incompatibility();
+        cout << "Start: " << arg.start << " , End: " << arg.end << endl;
         string node_file = output_prefix + "_fast_nodes_internal_" + to_string(sample_index) + ".txt";
         string branch_file= output_prefix + "_fast_branches_internal_" + to_string(sample_index) + ".txt";
         string recomb_file = output_prefix + "_fast_recombs_internal_" + to_string(sample_index) + ".txt";
-        arg.write(node_file, branch_file, recomb_file);
+        string mut_file = output_prefix + "_fast_muts_internal_" + to_string(sample_index) + ".txt";
+        arg.write(node_file, branch_file, recomb_file, mut_file);
         sample_index += 1;
         cout << "Number of trees: " << arg.recombinations.size() << endl;
         cout << "Number of flippings: " << arg.count_flipping() << endl;
         cout << "Data likelihood: " << arg.data_likelihood(2e-8) << endl;
     }
+}
+
+void Sampler::resume_internal_sample(int num_iters, int spacing, int resume_point) {
+    arg = ARG(Ne, sequence_length);
+    string node_file = output_prefix + "_nodes_internal_" + to_string(resume_point) + ".txt";
+    string branch_file= output_prefix + "_branches_internal_" + to_string(resume_point) + ".txt";
+    string recomb_file = output_prefix + "_recombs_internal_" + to_string(resume_point) + ".txt";
+    string mut_file = output_prefix + "_muts_internal_" + to_string(resume_point) + ".txt";
+    string coord_file = output_prefix + "_coordinates.txt";
+    arg.read(node_file, branch_file, recomb_file, mut_file);
+    arg.read_coordinates(coord_file);
+    arg.compute_rhos_thetas(recomb_rate, mut_rate);
+    sample_index = resume_point + 1;
+    for (int i = 0; i < num_iters; i++) {
+        cout << get_time() << " Iteration: " << to_string(i) << endl;
+        float updated_length = 0;
+        random_seed = rand();
+        set_seed(random_seed);
+        while (updated_length < spacing*arg.sequence_length) {
+            Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
+            tuple<float, Branch, float> cut_point = arg.sample_internal_cut();
+            threader.internal_rethread(arg, cut_point);
+            updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
+            arg.clear_remove_info();
+        }
+        normalize();
+        arg.check_incompatibility();
+        string node_file = output_prefix + "_nodes_internal_" + to_string(sample_index) + ".txt";
+        string branch_file= output_prefix + "_branches_internal_" + to_string(sample_index) + ".txt";
+        string recomb_file = output_prefix + "_recombs_internal_" + to_string(sample_index) + ".txt";
+        string mut_file = output_prefix + "_muts_internal_" + to_string(sample_index) + ".txt";
+        arg.write(node_file, branch_file, recomb_file, mut_file);
+        sample_index += 1;
+        cout << "Number of trees: " << arg.recombinations.size() << endl;
+        cout << "Number of flippings: " << arg.count_flipping() << endl;
+        cout << "Data likelihood: " << arg.data_likelihood(2e-8) << endl;
+    }
+}
+
+void Sampler::resume_fast_internal_sample(int num_iters, int spacing, int resume_point, int seed) {
+    arg = ARG(Ne, sequence_length);
+    string node_file = output_prefix + "_fast_nodes_internal_" + to_string(resume_point) + ".txt";
+    string branch_file= output_prefix + "_fast_branches_internal_" + to_string(resume_point) + ".txt";
+    string recomb_file = output_prefix + "_fast_recombs_internal_" + to_string(resume_point) + ".txt";
+    string mut_file = output_prefix + "_fast_muts_internal_" + to_string(resume_point) + ".txt";
+    string coord_file = output_prefix + "_fast_coordinates.txt";
+    arg.read(node_file, branch_file, recomb_file, mut_file);
+    arg.read_coordinates(coord_file);
+    arg.compute_rhos_thetas(recomb_rate, mut_rate);
+    arg.start = 0;
+    arg.end = 707610.065;
+    arg.start_tree = arg.get_tree_at(arg.start);
+    sample_index = resume_point + 1;
+    bsp_c = min(0.01, 0.05/arg.sample_nodes.size());
+    for (int i = sample_index; i < sample_index + num_iters; i++) {
+        cout << get_time() << " Iteration: " << to_string(i) << endl;
+        float updated_length = 0;
+        random_seed = seed;
+        set_seed(random_seed);
+        cout << "Random seed: " << random_seed << endl;
+        while (updated_length < spacing*arg.sequence_length) {
+            Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
+            tuple<float, Branch, float> cut_point = arg.sample_internal_cut();
+            threader.fast_internal_rethread(arg, cut_point);
+            updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
+            arg.clear_remove_info();
+        }
+        normalize();
+        arg.check_incompatibility();
+        cout << "Start: " << arg.start << " , End: " << arg.end << endl;
+        string node_file = output_prefix + "_fast_nodes_internal_" + to_string(sample_index) + ".txt";
+        string branch_file= output_prefix + "_fast_branches_internal_" + to_string(sample_index) + ".txt";
+        string recomb_file = output_prefix + "_fast_recombs_internal_" + to_string(sample_index) + ".txt";
+        string mut_file = output_prefix + "_fast_muts_internal_" + to_string(sample_index) + ".txt";
+        arg.write(node_file, branch_file, recomb_file, mut_file);
+        sample_index += 1;
+        cout << "Number of trees: " << arg.recombinations.size() << endl;
+        cout << "Number of flippings: " << arg.count_flipping() << endl;
+        cout << "Data likelihood: " << arg.data_likelihood(2e-8) << endl;
+    }
+}
+
+void Sampler::normalize() {
+    Normalizer nm = Normalizer();
+    nm.randomized_normalize(arg);
+    // nm.normalize(arg);
 }

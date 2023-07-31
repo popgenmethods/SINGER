@@ -151,7 +151,6 @@ float TSP_smc::get_exp_quantile(float p) {
     return -log(1 - p);
 }
 
-/*
 vector<float> TSP_smc::generate_grid(float lb, float ub) {
     assert(lb < ub);
     vector<float> points = {lb};
@@ -167,8 +166,8 @@ vector<float> TSP_smc::generate_grid(float lb, float ub) {
     points.emplace_back(ub);
     return points;
 }
- */
 
+/*
 vector<float> TSP_smc::generate_grid(float lb, float ub) {
     assert(lb < ub);
     vector<float> points = {lb};
@@ -184,7 +183,7 @@ vector<float> TSP_smc::generate_grid(float lb, float ub) {
     points.emplace_back(ub);
     return points;
 }
-
+ */
 
 float TSP_smc::recomb_cdf(float s, float t) {
     if (isinf(t)) {
@@ -488,7 +487,6 @@ void TSP_smc::set_dimensions() {
 }
 
 float TSP_smc::random() {
-    // float p = (float) rand()/RAND_MAX;
     float p = uniform_random();
     return p;
 }
@@ -842,9 +840,10 @@ float TSP_smc::sample_time(float lb, float ub) {
         return t;
     }
 }
-*/
+ */
 
 float TSP_smc::sample_time(float lb, float ub) {
+    /*
     assert(lb <= ub);
     if (lb == ub) {
         return lb;
@@ -857,7 +856,34 @@ float TSP_smc::sample_time(float lb, float ub) {
         t = (0.45 + 0.1*random())*(ub - lb) + lb;
         return t;
     }
+     */
+    return exp_median(lb, ub);
 }
+
+/*
+float TSP_smc::sample_time(float lb, float ub) {
+    assert(lb <= ub);
+    if (lb == ub) {
+        return lb;
+    }
+    float delta = exp(-lb) - exp(-ub);
+    float q;
+    float p;
+    float t = 0;
+    if (lb > 5 and ub == numeric_limits<float>::infinity()) {
+        t = lb + random()*log(2);
+    }
+    while (t <= lb or t >= ub) {
+        q = random();
+        p = 1 - exp(-lb) + q*delta;
+        t = -log(1 - p);
+    }
+    assert(t != numeric_limits<float>::infinity());
+    assert(lb == ub or (t > lb and t < ub));
+    assert(t != 0);
+    return t;
+}
+ */
 
 float TSP_smc::sample_time(float lb, float ub, float t) {
     float new_t = 0;
@@ -875,6 +901,22 @@ float TSP_smc::sample_time(float lb, float ub, float t) {
     }
     assert(new_t > lb and new_t < ub);
     return new_t;
+}
+
+float TSP_smc::exp_median(float lb, float ub) {
+    assert(lb <= ub);
+    if (isinf(ub)) {
+        return lb + 2*random();
+    }
+    if (ub - lb <= 0.005) {
+        return (0.45 + 0.1*random())*(ub - lb) + lb;
+    }
+    float lq = 1 - exp(-lb);
+    float uq = 1 - exp(-ub);
+    float mq = (0.45 + 0.1*random())*(uq - lq) + lq;
+    float m = -log(1 - mq);
+    assert(m >= lb and m <= ub);
+    return m;
 }
 
 

@@ -156,6 +156,8 @@ public:
     
     float sample_time(float lb, float ub, float t);
     
+    float exp_median(float lb, float ub);
+    
     Node_ptr sample_joining_node(Interval *interval);
     
     Node_ptr sample_joining_node(Interval *interval, Node_ptr n);

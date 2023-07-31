@@ -28,8 +28,11 @@ int main(int argc, const char * argv[]) {
     // test_no_recomb();
     // test_no_mut();
     // test_normalization();
-    test_normalizer();
+    // test_normalizer();
+    // test_read_muts();
+    // test_resume();
     // test_tsp();
+    test_debug_resume();
     std::cout << "Hello, World!\n";
     return 0;
 }

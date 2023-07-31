@@ -160,6 +160,7 @@ void Threader_smc::get_boundary(ARG &a) {
 void Threader_smc::set_check_points(ARG &a) {
     set<float> check_points = a.get_check_points();
     bsp.set_check_points(check_points);
+    fbsp.set_check_points(check_points);
     tsp.set_check_points(check_points);
 }
 
@@ -171,6 +172,7 @@ void Threader_smc::run_BSP(ARG &a) {
     bsp.reserve_memory(end_index - start_index);
     bsp.set_cutoff(cutoff);
     bsp.set_emission(e);
+    // bsp.set_emission(eh);
     bsp.start(a.start_tree.branches, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
@@ -210,6 +212,7 @@ void Threader_smc::run_fast_BSP(ARG &a) {
     fbsp.reserve_memory(end_index - start_index);
     fbsp.set_cutoff(cutoff);
     fbsp.set_emission(e);
+    // fbsp.set_emission(eh);
     fbsp.max_length = INT_MAX;
     set<Interval_info> start_intervals = pruner.insertions.begin()->second;
     fbsp.start(a.start_tree.branches, start_intervals, cut_time);
@@ -331,13 +334,14 @@ void Threader_smc::sample_joining_points(ARG &a) {
     }
 }
 
+/*
 float Threader_smc::acceptance_ratio(ARG &a) {
     float prev_length = a.get_arg_length(a.joining_branches, a.removed_branches);
     float next_length = a.get_arg_length(new_joining_branches, added_branches);
     return prev_length/next_length;
 }
+ */
 
-/*
 float Threader_smc::acceptance_ratio(ARG &a) {
     auto old_join_it = a.joining_branches.upper_bound(a.cut_pos);
     old_join_it--;
@@ -359,10 +363,9 @@ float Threader_smc::acceptance_ratio(ARG &a) {
     }
     return old_length/new_length;
 }
- */
 
 float Threader_smc::random() {
-    return (float) rand()/RAND_MAX;
+    return uniform_random();
 }
 
 vector<float> Threader_smc::expected_diff(float m) {

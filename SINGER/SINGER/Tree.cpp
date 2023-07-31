@@ -319,8 +319,34 @@ int Tree::distance(Node_ptr n1, Node_ptr n2) {
     return depth1 + depth2;
 }
 
+void Tree::impute_states(float m, set<Branch> &mutation_branches) {
+    map<Node_ptr, float> states = {};
+    for (const Branch &b : mutation_branches) {
+        states[b.lower_node] = b.lower_node->get_state(m);
+        states[b.upper_node] = b.upper_node->get_state(m);
+    }
+    for (const Branch &b : branches) {
+        impute_states_helper(b.lower_node, states);
+    }
+    for (auto &x : states) {
+        x.first->write_state(m, x.second);
+    }
+}
+
+void Tree::impute_states_helper(Node_ptr n, map<Node_ptr, float> &states) {
+    if (n->index == -1) {
+        states[n] = 0;
+        return;
+    }
+    if (states.count(n) > 0) {
+        return;
+    }
+    Node_ptr p = parents[n];
+    impute_states_helper(p, states);
+    states[n] = states[p];
+}
+
 float Tree::random() {
-    float p = (float) rand()/RAND_MAX;
-    p = min(p, 0.999f);
+    float p = uniform_random();
     return p;
 }

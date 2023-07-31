@@ -42,8 +42,10 @@ float RSP_smc::sample_start_time(Branch b, int density, float join_time, float c
         }
     }
     assert(start_time > cut_time);
+    assert(start_time <= join_time);
+    assert(start_time <= ub);
     return start_time;
-    return ub;
+    // return ub;
 }
 
 pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density, float join_time, float cut_time) {
@@ -101,6 +103,8 @@ pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density
     }
     assert(weight_sum <= 0);
     assert(start_time > cut_time);
+    assert(start_time <= join_time);
+    assert(start_time <= min(ub1, ub2));
     return {source_branch, start_time};
 }
 
