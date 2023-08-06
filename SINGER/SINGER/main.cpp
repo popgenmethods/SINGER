@@ -31,8 +31,9 @@ int main(int argc, const char * argv[]) {
     // test_normalizer();
     // test_read_muts();
     // test_resume();
+    test_resume_fast_larger_internal_sampling();
     // test_tsp();
-    test_debug_resume();
+    // test_debug_resume();
     std::cout << "Hello, World!\n";
     return 0;
 }

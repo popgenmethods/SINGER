@@ -105,8 +105,8 @@ void test_fast_iterative_start() {
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
-    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_0");
-    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_0.vcf");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
+    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf");
     sampler.fast_iterative_start();
 }
 
@@ -167,7 +167,7 @@ void test_fast_internal_sampling() {
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf");
     sampler.fast_iterative_start();
-    sampler.fast_internal_sample(1000, 1);
+    sampler.fast_internal_sample(2000, 1);
 }
 
 void test_fast_larger_internal_sampling() {
@@ -178,7 +178,6 @@ void test_fast_larger_internal_sampling() {
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0");
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0.vcf");
     sampler.fast_iterative_start();
-    // sampler.fast_recombination_climb(1000, 1);
     sampler.fast_internal_sample(1000, 1);
 }
 
@@ -247,17 +246,13 @@ void test_normalization() {
  */
 
 void test_normalizer() {
-    set_seed(93723823);
-    Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
-    sampler.set_precision(0.01, 0.05);
-    sampler.set_sequence_length(1e6);
-    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
-    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf");
-    sampler.iterative_start();
-    Normalizer nm = Normalizer();
-    // nm.randomized_normalize(sampler.arg);
-    nm.normalize(sampler.arg);
-    sampler.arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/normalized_50_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_50_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_50_recombs.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_50_mutations.txt");
+    ARG a = ARG(2e4, 1e6);
+    a.read("/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0_fast_nodes_internal_999.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0_fast_branches_internal_999.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0_fast_recombs_internal_999.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0_fast_muts_internal_999.txt");
+    for (int i = 0; i < 10; i++) {
+        Normalizer nm = Normalizer();
+        nm.normalize(a);
+        a.write("/Users/yun_deng/Desktop/SINGER/arg_files/normalized_500_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_500_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_500_recombs.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_500_mutations.txt");
+    }
 }
 
 void test_read_muts() {
@@ -268,6 +263,24 @@ void test_read_muts() {
 }
 
 void test_resume() {
+    set_seed(15);
+    Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
+    sampler.set_precision(0.01, 0.05);
+    sampler.set_sequence_length(1e6);
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
+    sampler.resume_internal_sample(1000, 1, 1999);
+}
+
+void test_resume_fast_larger_internal_sampling() {
+    set_seed(15);
+    Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
+    sampler.set_precision(0.01, 0.05);
+    sampler.set_sequence_length(1e6);
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0");
+    sampler.resume_fast_internal_sample(100, 1, 3914);
+}
+
+void test_fast_resume() {
     set_seed(15);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
@@ -302,5 +315,5 @@ void test_debug_resume() {
     sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
-    sampler.resume_fast_internal_sample(500, 1, 896, 1066149215);
+    sampler.resume_fast_internal_sample(500, 1, 1640, 1066149215);
 }

@@ -30,6 +30,10 @@ void Trace_pruner::prune_arg(ARG &a) {
     write_reductions(a);
 }
 
+void Trace_pruner::set_check_points(set<float> &p) {
+    check_points = p;
+}
+
 void Trace_pruner::start_search(ARG &a, float m) {
     seed_scores.clear();
     Node_ptr n = get_node_at(m);
@@ -447,7 +451,7 @@ void Trace_pruner::backward_transition(Recombination &r, const Interval_info &in
     if (!r.create(interval.branch)) {
         transition_scores[interval] = curr_scores[interval];
     } else if (interval.branch == r.recombined_branch) {
-        if (l < r.start_time) {
+        if (l <= r.start_time) {
             lb = min(l, r.start_time);
             ub = min(u, r.start_time);
             w1 = exp_prop(interval.lb, interval.ub, lb, ub);
@@ -457,7 +461,11 @@ void Trace_pruner::backward_transition(Recombination &r, const Interval_info &in
         if (u > r.start_time) {
             lb = max(r.start_time, l);
             ub = max(r.start_time, u);
-            w2 = exp_prop(l, u, lb, ub);
+            if (check_points.count(r.pos) > 0) { // forbid transition to point mass when check points
+                w2 = 0.01*cutoff;
+            } else {
+                w2 = exp_prop(l, u, lb, ub);
+            }
             new_interval = Interval_info(r.target_branch, r.inserted_node->time, r.inserted_node->time);
             backward_transition_helper(interval, new_interval, x, w2*p);
         }
@@ -585,8 +593,11 @@ float Trace_pruner::exp_median(float l, float u) {
 }
 
 float Trace_pruner::forward_overwrite_prob(Recombination &r, float lb, float ub) {
-    if (lb > r.inserted_node->time or ub < r.inserted_node->time) {
+    if (lb > r.inserted_node->time or ub < r.inserted_node->time) { // this dominates
         return 0;
+    }
+    if (check_points.count(r.pos) > 0) { // reject illegal transitions
+        return 0.01*cutoff;
     }
     if (lb == ub and lb == r.inserted_node->time) {
         return 1;
@@ -608,6 +619,9 @@ float Trace_pruner::backward_overwrite_prob(Recombination &r, float lb, float ub
     float p1 = exp_prob(lb, ub);
     float p2 = exp_prob(r.start_time, r.deleted_node->time);
     float p = p2/(p1 + p2);
+    if (p1 + p2 == 0) {
+        p = 0.01*cutoff;
+    }
     assert(!isnan(p));
     return p;
 }

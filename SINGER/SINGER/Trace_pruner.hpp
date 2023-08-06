@@ -38,6 +38,8 @@ public:
     map<Interval_info, float> seed_scores = {};
     map<Interval_info, float> curr_scores = {};
     
+    set<float> check_points;
+    
     map<float, set<Branch>> reductions = {};
     map<float, set<Interval_info>> deletions = {};
     map<float, set<Interval_info>> insertions = {};
@@ -49,6 +51,8 @@ public:
     Trace_pruner();
     
     void prune_arg(ARG &a);
+    
+    void set_check_points(set<float> &p);
     
     void start_search(ARG &a, float m);
     

@@ -159,6 +159,7 @@ void Threader_smc::get_boundary(ARG &a) {
 
 void Threader_smc::set_check_points(ARG &a) {
     set<float> check_points = a.get_check_points();
+    pruner.set_check_points(check_points);
     bsp.set_check_points(check_points);
     fbsp.set_check_points(check_points);
     tsp.set_check_points(check_points);

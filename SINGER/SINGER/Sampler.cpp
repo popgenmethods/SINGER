@@ -204,7 +204,8 @@ void Sampler::fast_iterative_start() {
     string node_file = output_prefix + "_fast_start_nodes_" + to_string(sample_index) + ".txt";
     string branch_file= output_prefix + "_fast_start_branches_" + to_string(sample_index) + ".txt";
     string recomb_file = output_prefix + "_fast_start_recombs_" + to_string(sample_index) + ".txt";
-    arg.write(node_file, branch_file, recomb_file);
+    string mut_file = output_prefix + "_fast_start_muts_" + to_string(sample_index) + ".txt";
+    arg.write(node_file, branch_file, recomb_file, mut_file);
     string coord_file = output_prefix + "_fast_coordinates.txt";
     arg.write_coordinates(coord_file);
 }
@@ -421,6 +422,46 @@ void Sampler::resume_internal_sample(int num_iters, int spacing, int resume_poin
     }
 }
 
+void Sampler::resume_fast_internal_sample(int num_iters, int spacing, int resume_point) {
+    arg = ARG(Ne, sequence_length);
+    string node_file = output_prefix + "_fast_nodes_internal_" + to_string(resume_point) + ".txt";
+    string branch_file= output_prefix + "_fast_branches_internal_" + to_string(resume_point) + ".txt";
+    string recomb_file = output_prefix + "_fast_recombs_internal_" + to_string(resume_point) + ".txt";
+    string mut_file = output_prefix + "_fast_muts_internal_" + to_string(resume_point) + ".txt";
+    string coord_file = output_prefix + "_fast_coordinates.txt";
+    arg.read(node_file, branch_file, recomb_file, mut_file);
+    arg.read_coordinates(coord_file);
+    arg.compute_rhos_thetas(recomb_rate, mut_rate);
+    arg.start_tree = arg.get_tree_at(arg.start);
+    sample_index = resume_point + 1;
+    bsp_c = min(0.01, 0.05/arg.sample_nodes.size());
+    for (int i = sample_index; i < resume_point + num_iters; i++) {
+        cout << get_time() << " Iteration: " << to_string(i) << endl;
+        float updated_length = 0;
+        // set_seed(random_seed);
+        // cout << "Random seed: " << random_seed << endl;
+        while (updated_length < spacing*arg.sequence_length) {
+            Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
+            tuple<float, Branch, float> cut_point = arg.sample_internal_cut();
+            threader.fast_internal_rethread(arg, cut_point);
+            updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
+            arg.clear_remove_info();
+        }
+        normalize();
+        arg.check_incompatibility();
+        cout << "Start: " << arg.start << " , End: " << arg.end << endl;
+        string node_file = output_prefix + "_fast_nodes_internal_" + to_string(sample_index) + ".txt";
+        string branch_file= output_prefix + "_fast_branches_internal_" + to_string(sample_index) + ".txt";
+        string recomb_file = output_prefix + "_fast_recombs_internal_" + to_string(sample_index) + ".txt";
+        string mut_file = output_prefix + "_fast_muts_internal_" + to_string(sample_index) + ".txt";
+        arg.write(node_file, branch_file, recomb_file, mut_file);
+        sample_index += 1;
+        cout << "Number of trees: " << arg.recombinations.size() << endl;
+        cout << "Number of flippings: " << arg.count_flipping() << endl;
+        cout << "Data likelihood: " << arg.data_likelihood(2e-8) << endl;
+    }
+}
+
 void Sampler::resume_fast_internal_sample(int num_iters, int spacing, int resume_point, int seed) {
     arg = ARG(Ne, sequence_length);
     string node_file = output_prefix + "_fast_nodes_internal_" + to_string(resume_point) + ".txt";
@@ -432,11 +473,11 @@ void Sampler::resume_fast_internal_sample(int num_iters, int spacing, int resume
     arg.read_coordinates(coord_file);
     arg.compute_rhos_thetas(recomb_rate, mut_rate);
     arg.start = 0;
-    arg.end = 707610.065;
+    arg.end = 783080.066;
     arg.start_tree = arg.get_tree_at(arg.start);
     sample_index = resume_point + 1;
     bsp_c = min(0.01, 0.05/arg.sample_nodes.size());
-    for (int i = sample_index; i < sample_index + num_iters; i++) {
+    for (int i = sample_index; i < resume_point + num_iters; i++) {
         cout << get_time() << " Iteration: " << to_string(i) << endl;
         float updated_length = 0;
         random_seed = seed;
@@ -466,6 +507,6 @@ void Sampler::resume_fast_internal_sample(int num_iters, int spacing, int resume
 
 void Sampler::normalize() {
     Normalizer nm = Normalizer();
-    nm.randomized_normalize(arg);
-    // nm.normalize(arg);
+    nm.normalize(arg);
+    // nm.randomized_normalize(arg);
 }

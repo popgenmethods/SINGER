@@ -91,6 +91,7 @@ void Normalizer::randomize_mutation_ages(ARG &a) {
                 lb = y.lower_node->time;
                 ub = y.upper_node->time;
                 m = uniform_random()*(ub - lb) + lb;
+                // m = 0.5*(lb + ub);
                 mutation_ages.insert(m);
             }
         }
@@ -120,7 +121,6 @@ void Normalizer::randomized_normalize(ARG &a) {
             m += 1;
             m_it++;
         }
-        // assert(active_lineages > 0);
         mean_num_lineages = active_lineages/active_length;
         theta = active_lineages*4e-4;
         t += max(m/theta, 1e-6f);
@@ -146,18 +146,38 @@ void Normalizer::normalize(ARG &a) {
     partition_arg(a);
     count_mutations(a);
     auto c_it = mutation_counts.begin();
-    float t = 0;
-    int i = 0;
+    float t = 1.0/a.Ne;
+    int k = 0;
+    vector<float> new_grid = vector<float>(mutation_counts.size());
+    new_grid[0] = t;
     while (c_it->first < INT_MAX) {
         float e = 4e-4*ls/num_windows;
         float o = c_it->second;
         float scale = o/e;
+        new_grid[k+1] = new_grid[k] + scale*(next(c_it)->first - c_it->first);
+        c_it++;
+        k++;
+    }
+    int i = 0;
+    float p;
+    k = 0;
+    c_it = mutation_counts.begin();
+    while (c_it->first < INT_MAX) {
         while (i < all_nodes.size() and all_nodes[i]->time < next(c_it)->first) {
-            all_nodes[i]->time = t + scale*(all_nodes[i]->time - c_it->first);
+            Node_ptr node = all_nodes[i];
+            p = (node->time - c_it->first)/(next(c_it)->first - c_it->first);
+            t = (1 - p)*new_grid[k] + p*new_grid[k+1];
+            if (i > 0 and t <= all_nodes[i-1]->time) {
+                t = all_nodes[i-1]->time + 1e-7f;
+            }
+            node->time = t;
             i++;
         }
-        t += scale*(next(c_it)->first - c_it->first);
         c_it++;
+        k++;
+    }
+    for (auto &x : a.recombinations) {
+        x.second.start_time = -1;
     }
     a.heuristic_sample_recombinations();
 }
@@ -186,7 +206,7 @@ void Normalizer::partition_arg(ARG &a) {
     for (int i = 0; i < all_spans.size(); i++) {
         Node_ptr n = all_nodes[i];
         l += (n->time - t)*active_lineages;
-        while (l > ls/num_windows) {
+        while (l > ls/num_windows and mutation_counts.size() < num_windows - 1) {
             l -= ls/num_windows;
             x = n->time - l/active_lineages;
             mutation_counts[x] = 0;
@@ -198,6 +218,7 @@ void Normalizer::partition_arg(ARG &a) {
         }
         t = n->time;
     }
+    // assert(mutation_counts.size() == num_windows - 1);
 }
 
 void Normalizer::count_mutations(ARG &a) {
@@ -217,7 +238,8 @@ void Normalizer::count_mutations(ARG &a) {
 
 void Normalizer::add_mutation(float lb, float ub) {
     float x, y, l;
-    auto it = mutation_counts.lower_bound(lb);
+    auto it = mutation_counts.upper_bound(lb);
+    it--;
     while (it->first < ub) {
         x = it->first;
         y = next(it)->first;

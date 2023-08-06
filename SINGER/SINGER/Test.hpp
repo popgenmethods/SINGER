@@ -53,6 +53,8 @@ void test_read_muts();
 
 void test_resume();
 
+void test_resume_fast_larger_internal_sampling();
+
 void test_tsp();
 
 void test_debug_resume();
