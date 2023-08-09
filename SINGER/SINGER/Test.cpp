@@ -165,7 +165,7 @@ void test_fast_internal_sampling() {
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/approx_smc_50_0");
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf");
     sampler.fast_iterative_start();
-    sampler.fast_internal_sample(2000, 1);
+    sampler.fast_internal_sample(50, 1);
 }
 
 void test_fast_larger_internal_sampling() {

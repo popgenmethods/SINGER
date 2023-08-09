@@ -42,6 +42,7 @@ void Sampler::set_num_samples(int n) {
     num_samples = n;
 }
 
+/*
 void Sampler::load_vcf(string vcf_file) {
     ifstream file(vcf_file);
     string line;
@@ -65,6 +66,84 @@ void Sampler::load_vcf(string vcf_file) {
             }
         } else if (line[0] == '#') {
             continue; // skip these header lines
+        }
+        istringstream iss(line);
+        string chrom, id, ref, alt, qual, filter, info, format, genotype;
+        int pos;
+        iss >> chrom >> pos >> id >> ref >> alt >> qual >> filter >> info >> format;
+        
+        if (pos == prev_pos) {continue;} // skip multi-allelic sites
+        if (ref.size() > 1 or alt.size() > 1) {continue;} // skip multi-allelic sites or structural variant
+        
+        streampos old_pos = file.tellg();
+        string next_line;
+        if (getline(file, next_line)) {
+            istringstream next_iss(next_line);
+            string next_chrom;
+            int next_pos;
+            next_iss >> next_chrom >> next_pos;
+            if (next_pos == pos) {
+                prev_pos = pos;
+                continue;
+            }
+            file.seekg(old_pos);
+        }
+        int individual_index = 0;
+        while (iss >> genotype) {
+            if (nodes.size() < 2*individual_index + 2) {
+                Node_ptr left_node = new_node(0);
+                Node_ptr right_node = new_node(0);
+                left_node->set_index(2*individual_index);
+                right_node->set_index(2*individual_index + 1);
+                nodes.push_back(left_node);
+                nodes.push_back(right_node);
+                sample_nodes.insert(left_node);
+                sample_nodes.insert(right_node);
+            }
+            if (genotype[0] == '1') {
+                nodes[2*individual_index]->add_mutation(pos);
+                carriers[pos].insert(nodes[2*individual_index]);
+            }
+            if (genotype[2] == '1') {
+                nodes[2*individual_index + 1]->add_mutation(pos);
+                carriers[pos].insert(nodes[2*individual_index + 1]);
+            }
+            individual_index += 1;
+        }
+    }
+    num_samples = (int) sample_nodes.size();
+}
+ */
+
+void Sampler::load_vcf(string vcf_file) {
+    ifstream file(vcf_file);
+    string line;
+    int num_individuals = 0;
+    int prev_pos = -1;
+    vector<Node_ptr> nodes = {};
+    bool first_line = true;
+    while (getline(file, line)) {
+        if (line[0] == '#') {
+            continue; // skip these header lines
+        }
+        if (first_line) {
+            std::istringstream iss(line);
+            std::vector<std::string> fields;
+            std::string field;
+            for (int i = 0; i < 9; i++) {
+                iss >> field; // Read the first 9 fixed fields
+            }
+            while (iss >> field) {
+                fields.push_back(field);
+            }
+            num_individuals = (int)fields.size();
+            nodes.resize(2 * num_individuals);
+            for (int i = 0; i < 2 * num_individuals; i++) {
+                nodes[i] = new_node(0.0);
+                nodes[i]->set_index(i);
+                sample_nodes.insert(nodes[i]);
+            }
+            first_line = false;
         }
         istringstream iss(line);
         string chrom, id, ref, alt, qual, filter, info, format, genotype;

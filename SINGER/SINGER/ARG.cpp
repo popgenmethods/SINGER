@@ -348,21 +348,20 @@ void ARG::smc_sample_recombinations() {
     }
 }
 
-/*
 void ARG::heuristic_sample_recombinations() {
     RSP_smc rsp = RSP_smc();
     auto it = recombinations.upper_bound(0);
     while (it->first < sequence_length) {
         Recombination &r = it->second;
         if (r.pos != 0 and r.pos < sequence_length) {
-            rsp.heuristic_sample_recombination(r, 0);
+            rsp.approx_sample_recombination(r, 0);
             assert(r.start_time > 0);
         }
         it++;
     }
 }
- */
 
+/*
 void ARG::heuristic_sample_recombinations() {
     RSP_smc rsp = RSP_smc();
     Tree tree = get_tree_at(0);
@@ -377,6 +376,7 @@ void ARG::heuristic_sample_recombinations() {
         it++;
     }
 }
+ */
 
 int ARG::count_incompatibility() {
     Tree tree = Tree();

@@ -43,7 +43,6 @@ float RSP_smc::sample_start_time(Branch b, int density, float join_time, float c
     assert(start_time <= join_time);
     assert(start_time <= ub);
     return start_time;
-    // return ub;
 }
 
 pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density, float join_time, float cut_time) {
@@ -66,20 +65,16 @@ pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density
     vector<int> branch_indices(0);
     float weight_sum = 0;
     for (int i = 0; i < n1; i++) {
-        // t = random()*(ub1 - lb1) + lb1;
         t = random_time(lb1, ub1);
         w = recomb_pdf(t, ub1);
-        // w = recomb_pdf(t, join_time)*exp(- ub1 + t);
         start_times.push_back(t);
         weights.push_back(w);
         weight_sum += w;
         branch_indices.push_back(1);
     }
     for (int i = 0; i < n2; i++) {
-        // t = random()*(ub2 - lb2) + lb2;
         t = random_time(lb2, ub2);
         w = recomb_pdf(t, ub2);
-        // w = recomb_pdf(t, join_time)*exp(- ub2 + t);
         start_times.push_back(t);
         weights.push_back(w);
         weight_sum += w;
@@ -105,28 +100,6 @@ pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density
     assert(start_time <= min(ub1, ub2));
     return {source_branch, start_time};
 }
-
-/*
-float RSP_smc::sample_start_time(Branch b, int density, float join_time, float cut_time) {
-    float lb = b.lower_node->time;
-    float ub = b.upper_node->time;
-    lb = max(cut_time, lb);
-    ub = min(join_time, ub);
-    return ub;
-}
-
-pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density, float join_time, float cut_time) {
-    float lb1 = max(b1.lower_node->time, cut_time);
-    float ub1 = min(b1.upper_node->time, join_time);
-    float lb2 = max(b2.lower_node->time, cut_time);
-    float ub2 = min(b2.upper_node->time, join_time);
-    if (ub1 > ub2) {
-        return {b1, ub1};
-    } else {
-        return {b2, ub2};
-    }
-}
- */
 
 void RSP_smc::sample_recombination(Recombination &r, float cut_time, Tree &tree) {
     if (r.pos == 0) {
@@ -192,7 +165,7 @@ void RSP_smc::approx_sample_recombination(Recombination &r, float cut_time) {
         r.source_branch = source_candidates[0];
         lb1 = max(cut_time, r.source_branch.lower_node->time);
         ub1 = min(r.source_branch.upper_node->time, r.inserted_node->time);
-        r.start_time = 0.99*ub1 + 0.01*lb1;
+        r.start_time = random_time(lb1, ub1);
     } else if (source_candidates.size() == 2) {
         lb1 = max(cut_time, source_candidates[0].lower_node->time);
         lb2 = max(cut_time, source_candidates[1].lower_node->time);
@@ -202,10 +175,10 @@ void RSP_smc::approx_sample_recombination(Recombination &r, float cut_time) {
         float p = random();
         if (p <= q) {
             r.source_branch = source_candidates[0];
-            r.start_time = 0.99*ub1 + 0.01*lb1;
+            r.start_time = random_time(lb1, ub1);
         } else {
             r.source_branch = source_candidates[1];
-            r.start_time = 0.99*ub2 + 0.01*lb2;
+            r.start_time = random_time(lb2, ub2);
         }
     } else {
         cout << r.pos << " " << source_candidates.size() << endl;

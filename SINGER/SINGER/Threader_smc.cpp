@@ -50,7 +50,6 @@ void Threader_smc::thread(ARG &a, Node_ptr n) {
 
 void Threader_smc::fast_thread(ARG &a, Node_ptr n) {
     cout << "Iteration: " << a.sample_nodes.size() << endl;
-    // cut_time = min(0.005, 0.1/a.sample_nodes.size());
     cut_time = 0;
     a.cut_time = cut_time;
     a.add_sample(n);
@@ -69,7 +68,6 @@ void Threader_smc::fast_thread(ARG &a, Node_ptr n) {
     cout << get_time() << " : begin adding" << endl;
     a.add(new_joining_branches, added_branches);
     cout << get_time() << " : begin sampling recombination" << endl;
-    // a.smc_sample_recombinations();
     a.heuristic_sample_recombinations();
     a.clear_remove_info();
     cout << get_time() << " : finish" << endl;
@@ -131,7 +129,7 @@ void Threader_smc::fast_internal_rethread(ARG &a, tuple<float, Branch, float> cu
     } else {
         a.add(a.joining_branches, a.removed_branches);
     }
-    a.smc_sample_recombinations();
+    a.heuristic_sample_recombinations();
     a.clear_remove_info();
     // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_recombs.txt");
 }
