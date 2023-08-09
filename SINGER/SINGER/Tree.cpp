@@ -155,6 +155,7 @@ Branch Tree::find_joining_branch(Branch removed_branch) {
     return Branch(c, p);
 }
 
+/*
 pair<Branch, float> Tree::sample_cut_point() {
     float p = random();
     float q = random();
@@ -173,6 +174,20 @@ pair<Branch, float> Tree::sample_cut_point() {
     }
     assert(branch != Branch());
     return {branch, time};
+}
+*/
+
+pair<Branch, float> Tree::sample_cut_point() {
+    float t_max = branches.rbegin()->lower_node->time;
+    float cut_time = random()*t_max;
+    vector<Branch> candidates = {};
+    for (const Branch &b : branches) {
+        if (b.upper_node->time > cut_time and b.lower_node->time <= cut_time) {
+            candidates.push_back(b);
+        }
+    }
+    int index = (int) floor(candidates.size()*uniform_random());
+    return {candidates[index], cut_time};
 }
 
 void Tree::internal_cut(float cut_time) {

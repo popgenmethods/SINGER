@@ -25,6 +25,8 @@ public:
     float end = 0;
     float cut_time = 0;
     
+    float length = 0;
+    
     map<float, Branch> queries = {};
     set<float> private_mutations = {};
     

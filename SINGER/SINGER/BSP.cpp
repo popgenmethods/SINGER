@@ -694,14 +694,5 @@ float BSP::calculate_penalty(int source_pos) {
 
 
 float BSP::calculate_penalty(int source_pos, float lb, float ub) {
-    int exponent = curr_index - source_pos - grace_period;
-    float t = 0;
-    if (isinf(ub)) {
-        t = lb + log(2);
-    } else {
-        t = ub;
-    }
-    float unit_penalty = 1 - rho_unit;
-    float p = pow(unit_penalty, exponent);
     return 1;
 }

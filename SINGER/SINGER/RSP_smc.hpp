@@ -26,6 +26,8 @@ public:
     
     void sample_recombination(Recombination &r, float cut_time, Tree &tree);
     
+    void approx_sample_recombination(Recombination &r, float cut_time);
+    
 private:
     
     map<float, int> coalescence_rates = {};

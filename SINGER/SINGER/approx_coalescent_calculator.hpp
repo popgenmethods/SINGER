@@ -21,23 +21,26 @@ public:
     
     float cut_time;
     float rho = 0;
-    multiset<float> coalescence_times = {};
+    float first_moment = 0;
+    int n0 = 0;
     
     approx_coalescent_calculator(float t);
     
     ~approx_coalescent_calculator();
     
-    void start(Tree &tree);
+    void start(set<Branch> &branches);
     
     void update(Recombination &r);
     
     pair<float, float> compute_time_weights(float x, float y);
     
+    void compute_first_moment();
+    
     float prob(float x, float y);
     
     float prob_integral(float x);
     
-    float weight_integral(float u);
+    float find_median(float x, float y);
     
 };
 

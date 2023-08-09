@@ -95,8 +95,8 @@ void test_iterative_start() {
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
-    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_0");
-    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_200_0.vcf");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
+    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf");
     sampler.iterative_start();
 }
 
@@ -145,26 +145,24 @@ void test_fast_terminal_sampling() {
 }
 
 void test_internal_sampling() {
-    // set_seed(93723823);
     set_seed(15);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_num_samples(100);
     sampler.set_sequence_length(1e6);
-    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/approx_smc_50_0");
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf");
     sampler.iterative_start();
-    // sampler.recombination_climb(300, 1);
-    sampler.internal_sample(2000, 1);
+    sampler.internal_sample(200, 1);
 }
 
 void test_fast_internal_sampling() {
-    srand(73);
+    // srand(73);
     set_seed(7254);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
-    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/approx_smc_50_0");
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf");
     sampler.fast_iterative_start();
     sampler.fast_internal_sample(2000, 1);
@@ -285,8 +283,8 @@ void test_fast_resume() {
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
-    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
-    sampler.resume_internal_sample(1000, 1, 1999);
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/approx_smc_50_0");
+    sampler.resume_fast_internal_sample(1000, 1, 1032);
 }
 
 void test_tsp() {

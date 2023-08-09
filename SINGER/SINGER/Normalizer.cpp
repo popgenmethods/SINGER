@@ -150,7 +150,7 @@ void Normalizer::normalize(ARG &a) {
     int k = 0;
     vector<float> new_grid = vector<float>(mutation_counts.size());
     new_grid[0] = t;
-    while (c_it->first < INT_MAX) {
+    while (next(c_it) != mutation_counts.end()) {
         float e = 4e-4*ls/num_windows;
         float o = c_it->second;
         float scale = o/e;
@@ -162,13 +162,14 @@ void Normalizer::normalize(ARG &a) {
     float p;
     k = 0;
     c_it = mutation_counts.begin();
-    while (c_it->first < INT_MAX) {
+    while (next(c_it) != mutation_counts.end()) {
         while (i < all_nodes.size() and all_nodes[i]->time < next(c_it)->first) {
             Node_ptr node = all_nodes[i];
             p = (node->time - c_it->first)/(next(c_it)->first - c_it->first);
             t = (1 - p)*new_grid[k] + p*new_grid[k+1];
             if (i > 0 and t <= all_nodes[i-1]->time) {
-                t = all_nodes[i-1]->time + 1e-7f;
+                t = nextafter(all_nodes[i-1]->time, numeric_limits<float>::infinity());
+                assert(t > all_nodes[i-1]->time);
             }
             node->time = t;
             i++;
@@ -223,7 +224,7 @@ void Normalizer::partition_arg(ARG &a) {
 
 void Normalizer::count_mutations(ARG &a) {
     mutation_counts[0] = 0;
-    mutation_counts[INT_MAX] = 0;
+    mutation_counts[all_nodes.back()->time] = 0;
     float lb, ub;
     for (auto &x : a.mutation_branches) {
         for (auto &y : x.second) {

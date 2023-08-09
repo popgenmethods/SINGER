@@ -24,10 +24,8 @@ float RSP_smc::sample_start_time(Branch b, int density, float join_time, float c
     vector<float> weights = {};
     float weight_sum = 0;
     for (int i = 0; i < density; i++) {
-        // t = random()*(ub - lb) + lb;
         t = random_time(lb, ub);
         w = recomb_pdf(t, ub);
-        // w = recomb_pdf(t, join_time)*exp(- ub + t);
         start_times.push_back(t);
         weights.push_back(w);
         weight_sum += w;
@@ -157,6 +155,58 @@ void RSP_smc::sample_recombination(Recombination &r, float cut_time, Tree &tree)
         pair<Branch, float> breakpoint = sample_start_time(source_candidates[0], source_candidates[1], 40, r.inserted_node->time, cut_time);
         r.source_branch = breakpoint.first;
         r.start_time = breakpoint.second;
+    } else {
+        cout << r.pos << " " << source_candidates.size() << endl;
+        cerr << "no candidates in smc sampling" << endl;
+        exit(1);
+    }
+    r.find_target_branch();
+    r.find_recomb_info();
+    assert(r.target_branch != Branch());
+    assert(r.merging_branch != Branch());
+    assert(r.start_time <= r.inserted_node->time);
+    assert(r.start_time > cut_time);
+}
+
+void RSP_smc::approx_sample_recombination(Recombination &r, float cut_time) {
+    if (r.pos == 0) {
+        return;
+    }
+    if (r.start_time > 0) {
+        return;
+    }
+    if (r.deleted_branches.size() == 0) {
+        return;
+    }
+    vector<Branch> source_candidates;
+    for (Branch b : r.deleted_branches) {
+        if (b.upper_node == r.deleted_node and b.lower_node->time < r.inserted_node->time) {
+            Branch candidate_recombined_branch = Branch(b.lower_node, r.inserted_node);
+            if (r.create(candidate_recombined_branch)) {
+                source_candidates.push_back(b);
+            }
+        }
+    }
+    float lb1, lb2, ub1, ub2;
+    if (source_candidates.size() == 1) {
+        r.source_branch = source_candidates[0];
+        lb1 = max(cut_time, r.source_branch.lower_node->time);
+        ub1 = min(r.source_branch.upper_node->time, r.inserted_node->time);
+        r.start_time = 0.99*ub1 + 0.01*lb1;
+    } else if (source_candidates.size() == 2) {
+        lb1 = max(cut_time, source_candidates[0].lower_node->time);
+        lb2 = max(cut_time, source_candidates[1].lower_node->time);
+        ub1 = min(source_candidates[0].upper_node->time, r.inserted_node->time);
+        ub2 = min(source_candidates[1].upper_node->time, r.inserted_node->time);
+        float q = (ub1 - lb1)/(ub1 + ub2 - lb1 - lb2);
+        float p = random();
+        if (p <= q) {
+            r.source_branch = source_candidates[0];
+            r.start_time = 0.99*ub1 + 0.01*lb1;
+        } else {
+            r.source_branch = source_candidates[1];
+            r.start_time = 0.99*ub2 + 0.01*lb2;
+        }
     } else {
         cout << r.pos << " " << source_candidates.size() << endl;
         cerr << "no candidates in smc sampling" << endl;

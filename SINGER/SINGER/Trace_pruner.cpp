@@ -27,7 +27,7 @@ void Trace_pruner::prune_arg(ARG &a) {
         extend(a, x);
     }
     assert(segments.size() == 0);
-    write_reductions(a);
+    // write_reductions(a);
 }
 
 void Trace_pruner::set_check_points(set<float> &p) {
@@ -43,6 +43,8 @@ void Trace_pruner::start_search(ARG &a, float m) {
     float x0 = find_closest_reference(m);
     // seed_trees[m] = a.modify_tree_to(m, seed_trees[x0], x0);
     seed_trees[m] = a.internal_modify_tree_to(m, seed_trees[x0], x0);
+    length += abs(m - x0);
+    // cout << "from " << x0 << " to " << m << endl;
     // seed_trees[m].internal_cut(cut_time);
     for (Branch b : seed_trees[m].branches) {
         if (b.upper_node->time > cut_time) {
@@ -219,20 +221,26 @@ void Trace_pruner::build_match_map(ARG &a) {
     potential_seeds = match_map;
 }
 
+/*
 float Trace_pruner::find_closest_reference(float x) {
     auto tree_it = seed_trees.upper_bound(x);
     tree_it--;
     return tree_it->first;
 }
- 
- /*
-float Trace_pruner::find_minimum_match() {
-    auto it = min_element(potential_seeds.begin(), potential_seeds.end(),
-                          [](const auto& l, const auto& r) { return l.second < r.second;});
-    float x = it->first;
-    return x;
-}
  */
+
+float Trace_pruner::find_closest_reference(float x) {
+    auto r_it = seed_trees.lower_bound(x);
+    auto l_it = seed_trees.upper_bound(x);
+    l_it--;
+    float ld = abs(l_it->first - x);
+    float rd = abs(r_it->first - x);
+    if (ld <= rd) {
+        return l_it->first;
+    } else {
+        return r_it->first;
+    }
+}
 
 float Trace_pruner::find_minimum_match() {
     float x = 0;

@@ -37,10 +37,12 @@ void Threader_smc::thread(ARG &a, Node_ptr n) {
     a.add(new_joining_branches, added_branches);
     cout << get_time() << " : begin sampling recombination" << endl;
     a.smc_sample_recombinations();
+    /*
     vector<float> ed = expected_diff(4e-4);
     vector<float> od = observed_diff(a);
     cout << "Expected diff: " << ed[0] << " " << ed[1] << " " << ed[2] << endl;
     cout << "Observed diff: " << od[0] << " " << od[1] << " " << od[2] << endl;
+     */
     a.clear_remove_info();
     cout << get_time() << " : finish" << endl;
     cout << a.recombinations.size() << endl;
@@ -67,7 +69,8 @@ void Threader_smc::fast_thread(ARG &a, Node_ptr n) {
     cout << get_time() << " : begin adding" << endl;
     a.add(new_joining_branches, added_branches);
     cout << get_time() << " : begin sampling recombination" << endl;
-    a.smc_sample_recombinations();
+    // a.smc_sample_recombinations();
+    a.heuristic_sample_recombinations();
     a.clear_remove_info();
     cout << get_time() << " : finish" << endl;
     cout << a.recombinations.size() << endl;
@@ -121,10 +124,9 @@ void Threader_smc::fast_internal_rethread(ARG &a, tuple<float, Branch, float> cu
     sample_fast_joining_branches(a);
     run_TSP(a);
     sample_joining_points(a);
-    float prev_length = a.get_arg_length(a.joining_branches, a.removed_branches);
-    float next_length = a.get_arg_length(new_joining_branches, added_branches);
+    float ar = acceptance_ratio(a);
     float q = random();
-    if (q < prev_length/next_length) {
+    if (q < ar) {
         a.add(new_joining_branches, added_branches);
     } else {
         a.add(a.joining_branches, a.removed_branches);
@@ -141,7 +143,6 @@ void Threader_smc::fast_terminal_rethread(ARG &a, tuple<float, Branch, float> cu
     set_check_points(a);
     run_pruner(a);
     run_fast_BSP(a);
-    // cout << "BSP avg number of states: " << fbsp.avg_num_states() << endl;
     sample_fast_joining_branches(a);
     run_TSP(a);
     sample_joining_points(a);
@@ -173,7 +174,6 @@ void Threader_smc::run_BSP(ARG &a) {
     bsp.reserve_memory(end_index - start_index);
     bsp.set_cutoff(cutoff);
     bsp.set_emission(e);
-    // bsp.set_emission(eh);
     bsp.start(a.start_tree.branches, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
@@ -213,8 +213,6 @@ void Threader_smc::run_fast_BSP(ARG &a) {
     fbsp.reserve_memory(end_index - start_index);
     fbsp.set_cutoff(cutoff);
     fbsp.set_emission(e);
-    // fbsp.set_emission(eh);
-    fbsp.max_length = INT_MAX;
     set<Interval_info> start_intervals = pruner.insertions.begin()->second;
     fbsp.start(a.start_tree.branches, start_intervals, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
@@ -343,6 +341,7 @@ float Threader_smc::acceptance_ratio(ARG &a) {
 }
  */
 
+/*
 float Threader_smc::acceptance_ratio(ARG &a) {
     auto old_join_it = a.joining_branches.upper_bound(a.cut_pos);
     old_join_it--;
@@ -363,6 +362,28 @@ float Threader_smc::acceptance_ratio(ARG &a) {
         new_length += new_add_it->second.upper_node->time - new_join_it->second.lower_node->time;
     }
     return old_length/new_length;
+}
+ */
+
+float Threader_smc::acceptance_ratio(ARG &a) {
+    float cut_height = a.cut_tree.branches.rbegin()->lower_node->time;
+    float old_height = cut_height;
+    float new_height = cut_height;
+    auto old_join_it = a.joining_branches.upper_bound(a.cut_pos);
+    old_join_it--;
+    auto new_join_it = new_joining_branches.upper_bound(a.cut_pos);
+    new_join_it--;
+    auto old_add_it = a.removed_branches.upper_bound(a.cut_pos);
+    old_add_it--;
+    auto new_add_it = added_branches.upper_bound(a.cut_pos);
+    new_add_it--;
+    if (old_join_it->second.upper_node == a.root) {
+        old_height = old_add_it->second.upper_node->time;
+    }
+    if (new_join_it->second.upper_node == a.root) {
+        new_height = new_add_it->second.upper_node->time;
+    }
+    return old_height/new_height;
 }
 
 float Threader_smc::random() {

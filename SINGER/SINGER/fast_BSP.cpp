@@ -18,32 +18,31 @@ void fast_BSP::reserve_memory(int length) {
     forward_probs.reserve(length);
 }
 
-void fast_BSP::start(set<Interval_info> &intervals, float t) {
+void fast_BSP::start(set<Branch> &start_branches, set<Interval_info> &start_intervals, float t) {
     cut_time = t;
     curr_index = 0;
     set<Interval_info> empty_set = {};
-    update_states(empty_set, intervals);
+    update_states(empty_set, start_intervals);
     float lb = 0;
     float ub = 0;
     float p = 0;
     Interval_ptr new_interval = nullptr;
-    cc = make_shared<Coalescent_calculator>(cut_time);
-    cc->compute(valid_branches);
-    branch_change = false;
-    for (const Branch &b : valid_branches) {
+    cc = make_shared<approx_coalescent_calculator>(cut_time);
+    // cc = make_shared<fast_coalescent_calculator>(cut_time);
+    cc->start(start_branches);
+    for (const Branch &b : reduced_branches) {
         if (b.upper_node->time > cut_time) {
             lb = max(b.lower_node->time, cut_time);
             ub = b.upper_node->time;
-            p = cc->weight(lb, ub);
+            p = cc->prob(lb, ub);
             new_interval = create_interval(b, lb, ub, curr_index);
             curr_intervals.emplace_back(new_interval);
             temp_probs.emplace_back(p);
         }
     }
     forward_probs.emplace_back(temp_probs);
-    weight_sums.emplace_back(0.0);
+    reduced_sums.emplace_back(0.0);
     set_dimensions();
-    interval_change = true;
     compute_interval_info();
     state_spaces[curr_index] = curr_intervals;
     temp_probs.clear();
@@ -67,6 +66,7 @@ void fast_BSP::forward(float rho) {
     } else {
         regular_forward(rho);
     }
+    branch_change = false;
 }
 
 
@@ -75,10 +75,9 @@ void fast_BSP::transfer(Recombination &r) {
     prev_rho = -1;
     prev_theta = -1;
     recomb_sums.emplace_back(0);
-    weight_sums.emplace_back(0);
+    reduced_sums.emplace_back(0);
     sanity_check(r);
     curr_index += 1;
-    valid_prob = 0.0;
     transfer_weights.clear();
     transfer_intervals.clear();
     temp_probs.clear();
@@ -88,24 +87,21 @@ void fast_BSP::transfer(Recombination &r) {
         process_interval(r, i);
     }
     generate_intervals(r);
-    set_dimensions();
     state_spaces[curr_index] = curr_intervals;
-    branch_change = false;
 }
 
 void fast_BSP::regular_forward(float rho) {
     rhos.emplace_back(rho);
     compute_recomb_probs(rho);
-    compute_recomb_weights(rho);
     prev_rho = rho;
     curr_index += 1;
     recomb_sum = inner_product(recomb_probs.begin(), recomb_probs.end(), forward_probs[curr_index - 1].begin(), 0.0);
     forward_probs.emplace_back(recomb_probs);
     for (int i = 0; i < dim; i++) {
-        forward_probs[curr_index][i] = forward_probs[curr_index - 1][i]*(1 - recomb_probs[i]) + recomb_sum*recomb_weights[i];
+        forward_probs[curr_index][i] = forward_probs[curr_index - 1][i]*(1 - recomb_probs[i]) + recomb_sum*join_weights[i];
     }
     recomb_sums.emplace_back(recomb_sum);
-    weight_sums.emplace_back(weight_sum);
+    reduced_sums.emplace_back(reduced_sum);
 }
 
 void fast_BSP::update(float rho) {
@@ -124,14 +120,14 @@ void fast_BSP::update(float rho) {
     for (int i = 0; i < dim; i++) {
         prev_interval = curr_intervals[i];
         prev_branch = prev_interval->branch;
-        if (valid_branches.count(prev_branch) > 0) {
+        if (reduced_branches.count(prev_branch) > 0) {
             temp_intervals.emplace_back(prev_interval);
             p = forward_probs[curr_index - 1][i]*(1 - recomb_probs[i]);
             temp_probs.emplace_back(p);
             covered_branches.insert(prev_branch);
         }
     }
-    for (Branch b : valid_branches) {
+    for (Branch b : reduced_branches) {
         if (covered_branches.count(b) == 0) {
             lb = max(cut_time, b.lower_node->time);
             ub = b.upper_node->time;
@@ -144,21 +140,21 @@ void fast_BSP::update(float rho) {
     curr_intervals = temp_intervals;
     state_spaces[curr_index] = curr_intervals;
     set_dimensions();
-    interval_change = true;
     compute_interval_info();
     compute_recomb_probs(rho);
-    compute_recomb_weights(rho);
     for (int i = 0; i < dim; i++) {
-        forward_probs[curr_index][i] += recomb_sum*recomb_weights[i];
-        assert(!isnan(forward_probs[curr_index][i]));
+        forward_probs[curr_index][i] += recomb_sum*join_weights[i];
+        // assert(!isnan(forward_probs[curr_index][i]) and forward_probs[curr_index][i] >= 0);
     }
+    assert(recomb_sum > 0);
     recomb_sums.emplace_back(recomb_sum);
-    weight_sums.emplace_back(weight_sum);
-    branch_change = false;
+    reduced_sums.emplace_back(reduced_sum);
 }
 
 float fast_BSP::get_recomb_prob(float rho, float t) {
-    float p = rho*(t - cut_time)*exp(-rho*(t - cut_time));
+    // float p = rho*(t - cut_time)*exp(-rho*(t - cut_time));
+    float p = rho*(t - cut_time);
+    assert(p < 0.2);
     return p;
 }
 
@@ -244,7 +240,7 @@ float fast_BSP::avg_num_states() {
 
 /*
 bool fast_BSP::intercept(Interval_ptr interval) {
-    set<Interval_info> &intervals = valid_intervals[interval->branch];
+    set<Interval_info> &intervals = reduced_intervals[interval->branch];
     for (auto &x : intervals) {
         if (interval->lb <= x.ub and interval->ub >= x.lb) {
             return true;
@@ -254,7 +250,7 @@ bool fast_BSP::intercept(Interval_ptr interval) {
 }
 
 bool fast_BSP::intercept(Interval_info &ii) {
-    set<Interval_info> &intervals = valid_intervals[ii.branch];
+    set<Interval_info> &intervals = reduced_intervals[ii.branch];
     for (auto &x : intervals) {
         if (ii.lb <= x.ub and ii.ub >= x.lb) {
             return true;
@@ -267,32 +263,33 @@ bool fast_BSP::intercept(Interval_info &ii) {
 void fast_BSP::update_states(set<Interval_info> &deletions, set<Interval_info> &insertions) {
     for (const Interval_info &ii : deletions) {
         const Branch &b = ii.branch;
-        set<Interval_info> &intervals = valid_intervals[b];
+        set<Interval_info> &intervals = reduced_intervals[b];
         assert(intervals.count(ii) > 0);
         intervals.erase(ii);
         if (intervals.size() == 0) {
-            valid_intervals.erase(b);
-            valid_branches.erase(b);
+            reduced_intervals.erase(b);
+            reduced_branches.erase(b);
             branch_change = true;
         }
     }
     for (const Interval_info &ii : insertions) {
         const Branch b = ii.branch;
-        if (valid_branches.count(b) == 0) {
-            valid_branches.insert(b);
-            valid_intervals[b];
+        if (reduced_branches.count(b) == 0) {
+            reduced_branches.insert(b);
+            reduced_intervals[b];
             branch_change = true;
         }
-        set<Interval_info> &intervals = valid_intervals[b];
+        set<Interval_info> &intervals = reduced_intervals[b];
         intervals.insert(ii);
     }
-    assert(valid_branches.size() == valid_intervals.size() and valid_branches.size() > 0);
+    assert(reduced_branches.size() == reduced_intervals.size() and reduced_branches.size() > 0);
 }
 
 void fast_BSP::set_dimensions() {
     dim = (int) curr_intervals.size();
     recomb_probs.resize(dim); recomb_probs.assign(dim, 0);
-    recomb_weights.resize(dim); recomb_weights.assign(dim, 0);
+    join_times.resize(dim); join_times.assign(dim, 0);
+    join_weights.resize(dim); join_weights.assign(dim, 0);
     null_emit_probs.resize(dim); null_emit_probs.assign(dim, 0);
     mut_emit_probs.resize(dim); mut_emit_probs.assign(dim, 0);
 }
@@ -302,21 +299,7 @@ void fast_BSP::compute_recomb_probs(float rho) {
         return;
     }
     for (int i = 0; i < dim; i++) {
-        recomb_probs[i] = get_recomb_prob(rho, raw_times[i]);
-    }
-}
-
-void fast_BSP::compute_recomb_weights(float rho) {
-    if (prev_rho == rho) {
-        return;
-    }
-    for (int i = 0; i < dim; i++) {
-        recomb_weights[i] = recomb_probs[i]*raw_weights[i];
-    }
-    weight_sum = accumulate(recomb_weights.begin(), recomb_weights.end(), 0.0);
-    for (int i = 0; i < dim; i++) {
-        recomb_weights[i] /= weight_sum;
-        assert(!isnan(recomb_weights[i]));
+        recomb_probs[i] = get_recomb_prob(rho, join_times[i]);
     }
 }
 
@@ -325,65 +308,55 @@ void fast_BSP::compute_null_emit_prob(float theta, Node_ptr query_node) {
         return;
     }
     for (int i = 0; i < dim; i++) {
-        null_emit_probs[i] = eh->null_emit(curr_intervals[i]->branch, raw_times[i], theta, query_node);
+        null_emit_probs[i] = eh->null_emit(curr_intervals[i]->branch, join_times[i], theta, query_node);
     }
 }
 
 void fast_BSP::compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node) {
     for (int i = 0; i < dim; i++) {
-        mut_emit_probs[i] = eh->mut_emit(curr_intervals[i]->branch, raw_times[i], theta, bin_size, mut_set, query_node);
+        mut_emit_probs[i] = eh->mut_emit(curr_intervals[i]->branch, join_times[i], theta, bin_size, mut_set, query_node);
     }
 }
 
-void fast_BSP::transfer_helper(Interval_info &next_interval, Interval_ptr prev_interval, float w) {
-    if (valid_branches.count(next_interval.branch) == 0) {
+void fast_BSP::transfer_helper(Interval_info &next_interval, Interval_ptr &prev_interval, float w) {
+    if (reduced_branches.count(next_interval.branch) == 0) {
         return;
     }
     transfer_weights[next_interval].emplace_back(w);
     transfer_intervals[next_interval].emplace_back(prev_interval);
-    valid_prob += w;
-}
-
-float fast_BSP::compute_transfer_prob() {
-    float p = 0;
-    for (auto &x : transfer_weights) {
-        p += accumulate(x.second.begin(), x.second.end(), 0.0f);
-    }
-    return p;
 }
 
 void fast_BSP::compute_interval_info() {
-    if (branch_change) {
-        cc->compute(valid_branches);
-    }
-    if (true) {
-        dim = (int) curr_intervals.size();
-        raw_times.resize(dim);
-        raw_times.assign(dim, 0);
-        raw_weights.resize(dim);
-        raw_weights.assign(dim, 0);
-        float t;
-        float p;
-        for (int i = 0; i < curr_intervals.size(); i++) {
-            Interval_ptr interval = curr_intervals[i];
-            t = cc->time(interval->lb, interval->ub);
-            raw_times[i] = t;
-            if (interval->full(cut_time)) {
-                p = cc->weight(interval->lb, interval->ub);
-            } else {
-                p = 0.0;
-            }
-            raw_weights[i] = p;
+    float t;
+    float p;
+    for (int i = 0; i < curr_intervals.size(); i++) {
+        Interval_ptr interval = curr_intervals[i];
+        tie(t, p) = cc->compute_time_weights(interval->lb, interval->ub);
+        join_times[i] = t;
+        assert(t > cut_time);
+        if (interval->full(cut_time)) {
+            join_weights[i] = p;
         }
     }
-    assert(raw_times.size() == curr_intervals.size());
-    times_map[curr_index] = raw_times;
-    weights_map[curr_index] = raw_weights;
-    branch_change = false;
-    interval_change = false;
+    reduced_sum = accumulate(join_weights.begin(), join_weights.end(), 0.0f);
+    // assert(reduced_sum <= 1);
+    if (reduced_sum > 1) {
+        for (auto &x : join_weights) {
+            x /= reduced_sum;
+        }
+        reduced_sum = 1;
+    }
+    all_join_times[curr_index] = join_times;
+    all_join_weights[curr_index] = join_weights;
 }
 
 void fast_BSP::sanity_check(Recombination &r) {
+    for (int i = 0; i < curr_intervals.size(); i++) {
+        Interval_ptr interval = curr_intervals[i];
+        if (interval->lb == interval->ub and interval->lb == r.inserted_node->time and interval->branch != r.target_branch) {
+            forward_probs[curr_index][i] = 0;
+        }
+    }
 }
 
 void fast_BSP::get_full_branches(Recombination &r) {
@@ -420,8 +393,8 @@ void fast_BSP::generate_intervals(Recombination &r) {
     auto y = transfer_intervals.begin();
     for (auto x = transfer_weights.begin(); x != transfer_weights.end(); ++x, ++y) {
         interval = x->first;
-        const auto &weights = x->second;
-        const auto &intervals = y->second;
+        auto &weights = x->second;
+        auto &intervals = y->second;
         b = interval.branch;
         lb = interval.lb;
         ub = interval.ub;
@@ -436,7 +409,15 @@ void fast_BSP::generate_intervals(Recombination &r) {
                 new_interval->intervals = move(intervals);
             }
             covered_branches.insert(b);
-        } else if (full_branches.count(b) == 0 or p > cutoff) {
+        } else if (full_branches.count(b) == 0) {
+            new_interval = create_interval(b, lb, ub, curr_index);
+            temp_intervals.emplace_back(new_interval);
+            temp_probs.emplace_back(p);
+            if (weights.size() > 0) {
+                new_interval->source_weights = move(weights);
+                new_interval->intervals = move(intervals);
+            }
+        } else if (p > cutoff) {
             new_interval = create_interval(b, lb, ub, curr_index);
             temp_intervals.emplace_back(new_interval);
             temp_probs.emplace_back(p);
@@ -454,34 +435,38 @@ void fast_BSP::generate_intervals(Recombination &r) {
                 temp_intervals.emplace_back(prev_interval);
                 temp_probs.emplace_back(p);
                 covered_branches.insert(prev_interval->branch);
-            } else if (full_branches.count(prev_interval->branch) == 0 or p > cutoff) {
+            } else if (full_branches.count(prev_interval->branch) == 0) {
+                temp_intervals.emplace_back(prev_interval);
+                temp_probs.emplace_back(p);
+            } else if (p > cutoff) {
                 temp_intervals.emplace_back(prev_interval);
                 temp_probs.emplace_back(p);
             }
         }
     }
-    for (Branch b : valid_branches) {
+    for (Branch b : reduced_branches) {
         if (covered_branches.count(b) == 0) {
             lb = max(cut_time, b.lower_node->time);
             ub = b.upper_node->time;
             new_interval = create_interval(b, lb, ub, curr_index);
             temp_intervals.emplace_back(new_interval);
             temp_probs.emplace_back(0);
-            interval_change = true;
         }
     }
     forward_probs.emplace_back(temp_probs);
     curr_intervals = temp_intervals;
+    set_dimensions();
+    cc->update(r);
     compute_interval_info();
 }
 
 float fast_BSP::get_overwrite_prob(Recombination &r, float lb, float ub) {
-    if (check_points.count(curr_index) > 0) {
+    if (check_points.count(r.pos) > 0) {
         return 0.0;
     }
     float join_time = r.inserted_node->time;
-    float p1 = cc->weight(lb, ub);
-    float p2 = cc->weight(max(cut_time, r.start_time), join_time);
+    float p1 = cc->prob(lb, ub);
+    float p2 = cc->prob(max(cut_time, r.start_time), join_time);
     if (p1 == 0 and p2 == 0) {
         return 1.0;
     }
@@ -493,7 +478,7 @@ void fast_BSP::process_interval(Recombination &r, int i) {
     Interval_ptr &prev_interval = curr_intervals[i];
     Branch &prev_branch = prev_interval->branch;
     if (!r.affect(prev_branch)) {
-        valid_prob += forward_probs[curr_index - 1][i];
+        ;
     } else if (prev_branch == r.source_branch) {
         process_source_interval(r, i);
     } else if (prev_branch == r.target_branch) {
@@ -504,7 +489,6 @@ void fast_BSP::process_interval(Recombination &r, int i) {
 }
 
 void fast_BSP::process_source_interval(Recombination &r, int i) {
-    interval_change = true;
     float w1, w2, lb, ub = 0;
     Interval_ptr prev_interval = curr_intervals[i];
     float p = forward_probs[curr_index - 1][i];
@@ -525,8 +509,8 @@ void fast_BSP::process_source_interval(Recombination &r, int i) {
         next_interval = Interval_info(next_branch, lb, ub);
         transfer_helper(next_interval, prev_interval, p);
     } else {
-        w1 = cc->weight(prev_interval->lb, break_time);
-        w2 = cc->weight(break_time, prev_interval->ub);
+        w1 = cc->prob(prev_interval->lb, break_time);
+        w2 = cc->prob(break_time, prev_interval->ub);
         if (w1 == 0 and w2 == 0) {
             w1 = 1;
             w2 = 0;
@@ -548,7 +532,6 @@ void fast_BSP::process_source_interval(Recombination &r, int i) {
 }
 
 void fast_BSP::process_target_interval(Recombination &r, int i) {
-    interval_change = true;
     float w0, w1, w2, lb, ub = 0;
     Interval_ptr prev_interval = curr_intervals[i];
     float p = forward_probs[curr_index - 1][i];
@@ -575,8 +558,8 @@ void fast_BSP::process_target_interval(Recombination &r, int i) {
         transfer_helper(next_interval, prev_interval, p);
     } else {
         w0 = get_overwrite_prob(r, prev_interval->lb, prev_interval->ub);
-        w1 = cc->weight(prev_interval->lb, join_time);
-        w2 = cc->weight(join_time, prev_interval->ub);
+        w1 = cc->prob(prev_interval->lb, join_time);
+        w2 = cc->prob(join_time, prev_interval->ub);
         if (w1 + w2 == 0) {
             w1 = 0;
             w2 = 0;
@@ -614,7 +597,6 @@ void fast_BSP::process_other_interval(Recombination &r, int i) {
     Branch &next_branch = r.merging_branch;
     Interval_info next_interval = Interval_info(next_branch, lb, ub);
     transfer_helper(next_interval, prev_interval, p);
-    interval_change = true;
 }
 
 float fast_BSP::random() {
@@ -634,14 +616,14 @@ vector<Interval_ptr > &fast_BSP::get_state_space(int x) {
     return state_it->second;
 }
 
-vector<float> &fast_BSP::get_raw_times(int x) {
-    auto time_it = times_map.upper_bound(x);
+vector<float> &fast_BSP::get_join_times(int x) {
+    auto time_it = all_join_times.upper_bound(x);
     time_it--;
     return time_it->second;
 }
 
-vector<float> &fast_BSP::get_raw_weights(int x) {
-    auto weight_it = weights_map.upper_bound(x);
+vector<float> &fast_BSP::get_join_weights(int x) {
+    auto weight_it = all_join_weights.upper_bound(x);
     weight_it--;
     return weight_it->second;
 }
@@ -684,7 +666,7 @@ Interval_ptr fast_BSP::sample_curr_interval(int x) {
 
 Interval_ptr fast_BSP::sample_prev_interval(int x) {
     vector<Interval_ptr > &intervals = get_state_space(x);
-    vector<float> &prev_times = get_raw_times(x);
+    vector<float> &prev_times = get_join_times(x);
     float rho = rhos[x];
     float ws = recomb_sums[x];
     float q = random();
@@ -726,15 +708,14 @@ Interval_ptr fast_BSP::sample_source_interval(Interval_ptr interval, int x) {
 
 Interval_ptr fast_BSP::sample_connection_interval(Interval_ptr interval, int x) {
     vector<Interval_ptr > &prev_intervals = get_state_space(x);
-    vector<float> &prev_times = get_raw_times(x);
-    vector<float> &next_times = get_raw_times(x + 1);
-    vector<float> &next_weights = get_raw_weights(x + 1);
+    vector<float> &prev_times = get_join_times(x);
+    vector<float> &next_weights = get_join_weights(x + 1);
     int n = (int) prev_intervals.size();
     float source_recomb_prob, target_proportion;
     vector<float> weights = vector<float>(n);
     recomb_sum = recomb_sums[x];
-    weight_sum = weight_sums[x + 1];
-    target_proportion = next_weights[sample_index]*get_recomb_prob(rhos[x], next_times[sample_index])/weight_sum;
+    reduced_sum = reduced_sums[x + 1];
+    target_proportion = next_weights[sample_index];
     for (int i = 0; i < n; i++) {
         source_recomb_prob = forward_probs[x][i]*get_recomb_prob(rhos[x], prev_times[i]); // probability that goes out from i-state
         if(interval == prev_intervals[i]) {
@@ -767,20 +748,21 @@ int fast_BSP::trace_back_helper(Interval_ptr interval, int x) {
     float recomb_prob = 0;
     float non_recomb_prob = 0;
     float all_prob = 0;
-    vector<float> &prev_times = get_raw_times(x);
-    vector<float> &prev_weights = get_raw_weights(x);
+    vector<float> &prev_times = get_join_times(x);
+    vector<float> &prev_weights = get_join_weights(x);
     assert(sample_index < prev_times.size());
     float t = prev_times[sample_index];
     float w = prev_weights[sample_index];
     while (x > y) {
         recomb_sum = recomb_sums[x - 1];
-        weight_sum = weight_sums[x];
+        reduced_sum = reduced_sums[x];
         if (recomb_sum == 0) {
             shrinkage = 1;
         } else {
             recomb_prob = get_recomb_prob(rhos[x - 1], t);
             non_recomb_prob = (1 - recomb_prob)*forward_probs[x - 1][sample_index];
-            all_prob = non_recomb_prob + recomb_sum*w*recomb_prob/weight_sum;
+            // all_prob = non_recomb_prob + recomb_sum*w;
+            all_prob = non_recomb_prob + recomb_sum*w + recomb_sum*forward_probs[x - 1][sample_index]*(1 - reduced_sum);
             shrinkage = non_recomb_prob/all_prob;
             assert(!isnan(shrinkage));
             assert(shrinkage >= 0 and shrinkage <= 1);
