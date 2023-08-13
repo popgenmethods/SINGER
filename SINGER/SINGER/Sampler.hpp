@@ -40,6 +40,7 @@ public:
     set<Node_ptr, compare_node> sample_nodes = {};
     vector<Node_ptr> ordered_sample_nodes = {};
     unordered_map<float, set<Node_ptr>> carriers = {};
+    unordered_map<Node_ptr, set<float>> mutation_sets = {};
     
     Sampler(float pop_size, float r, float m);
     
@@ -79,6 +80,8 @@ public:
     
     void recombination_climb(int num_iters, int spacing);
     
+    void mutation_climb(int num_iters, int spacing);
+    
     void fast_recombination_climb(int num_iters, int spacing);
     
     void fast_mutation_climb(int num_iters, int spacing);
@@ -94,6 +97,8 @@ public:
     void resume_internal_sample(int num_iters, int spacing, int resume_point);
     
     void resume_fast_internal_sample(int num_iters, int spacing, int resume_point);
+    
+    void resume_internal_sample(int num_iters, int spacing, int resume_point, int seed);
     
     void resume_fast_internal_sample(int num_iters, int spacing, int resume_point, int seed);
     

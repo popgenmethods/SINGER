@@ -25,6 +25,7 @@ public:
     vector<float> all_spans = {};
     set<float> mutation_ages = {};
     map<float, float> mutation_counts = {};
+    vector<float> all_branch_length = {};
     
     Normalizer();
     
@@ -39,6 +40,8 @@ public:
     void randomized_normalize(ARG &a);
     
     void normalize(ARG &a);
+    
+    void normalize(ARG &a, float theta);
     
     void partition_arg(ARG &a);
     

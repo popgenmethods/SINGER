@@ -18,7 +18,7 @@ class Trace_pruner : public Pruner {
     
 public:
     
-    float cutoff = 0.01;
+    float cutoff = 1e-2;
     float mut_prob = 4e-4;
     float max_time = 100;
     float start = 0;

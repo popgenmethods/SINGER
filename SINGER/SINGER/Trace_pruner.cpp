@@ -34,6 +34,7 @@ void Trace_pruner::set_check_points(set<float> &p) {
     check_points = p;
 }
 
+/*
 void Trace_pruner::start_search(ARG &a, float m) {
     seed_scores.clear();
     Node_ptr n = get_node_at(m);
@@ -50,6 +51,39 @@ void Trace_pruner::start_search(ARG &a, float m) {
         if (b.upper_node->time > cut_time) {
             mismatch = count_mismatch(b, n, m);
             if (mismatch == 0) {
+                lb = max(cut_time, b.lower_node->time);
+                ub = b.upper_node->time;
+                interval = Interval_info(b, lb, ub);
+                interval.seed_pos = m;
+                seed_scores[interval] = 1;
+            }
+        }
+    }
+    potential_seeds.erase(m);
+    assert(seed_scores.size() > 0);
+}
+ */
+
+void Trace_pruner::start_search(ARG &a, float m) {
+    seed_scores.clear();
+    Node_ptr n = get_node_at(m);
+    float mismatch = 0;
+    float lb, ub;
+    Interval_info interval;
+    float x0 = find_closest_reference(m);
+    seed_trees[m] = a.internal_modify_tree_to(m, seed_trees[x0], x0);
+    length += abs(m - x0);
+    float min_mismatch = INT_MAX;
+    for (Branch b : seed_trees[m].branches) {
+        if (b.upper_node->time > cut_time) {
+            mismatch = count_mismatch(b, n, m);
+            min_mismatch = min(mismatch, min_mismatch);
+        }
+    }
+    for (Branch b : seed_trees[m].branches) {
+        if (b.upper_node->time > cut_time) {
+            mismatch = count_mismatch(b, n, m);
+            if (mismatch == min_mismatch) {
                 lb = max(cut_time, b.lower_node->time);
                 ub = b.upper_node->time;
                 interval = Interval_info(b, lb, ub);
@@ -167,19 +201,6 @@ Node_ptr Trace_pruner::get_node_at(float x) {
     return query_it->second.lower_node;
 }
 
-/*
-float Trace_pruner::count_mismatch(Branch branch, Node_ptr n, float m) {
-    float s0 = n->get_state(m);
-    float sl = branch.lower_node->get_state(m);
-    float su = branch.upper_node->get_state(m);
-    if (abs(sl - s0) > 0.5 and abs(su - s0) > 0.5) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
- */
-
 float Trace_pruner::count_mismatch(Branch branch, Node_ptr n, float m) {
     float s0 = n->get_state(m);
     float sl = branch.lower_node->get_state(m);
@@ -247,6 +268,9 @@ float Trace_pruner::find_minimum_match() {
     if (potential_seeds.size() == 2) {
         auto it = segments.begin();
         x = 0.5*(it->first + it->second);
+        if (floor(x) == x) {
+            x += 0.5; // x better not be a integer, just for programming convenience
+        }
         match_map[x] = 0.0;
     } else {
         auto it = min_element(potential_seeds.begin(), potential_seeds.end(),
@@ -711,7 +735,6 @@ float Trace_pruner::get_match_time(set<Branch> &branches, float m, Node_ptr n) {
     }
     assert(valid_count == 1);
     const Branch &b = *branches.rbegin(); // the single valid mutation branch, which must be the highest branch
-    // assert(b.upper_node->index != -1);
     if (b.lower_node->get_state(m) == state) { // a matching branch
         return max(b.lower_node->time, cut_time) - cut_time;
     } else if (b.upper_node->index == -1) {

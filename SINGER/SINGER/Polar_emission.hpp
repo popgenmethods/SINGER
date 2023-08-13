@@ -18,7 +18,7 @@ class Polar_emission : public Emission {
     
 public:
     
-    float ancestral_prob = 0.999;
+    float ancestral_prob = 0.99;
     float reverse_penalty = 1e-4;
     float root_reward = 1;
     

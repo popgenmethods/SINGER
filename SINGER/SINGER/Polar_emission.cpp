@@ -43,6 +43,7 @@ float Polar_emission::mut_emit(Branch &branch, float time, float theta, float bi
     old_prob *= null_prob(theta*(ll + lu));
     emit_prob /= old_prob;
     emit_prob *= root_reward;
+    emit_prob = max(emit_prob, 1e-9f);
     assert(emit_prob != 0);
     return emit_prob;
 }

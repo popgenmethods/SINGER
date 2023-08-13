@@ -140,6 +140,49 @@ void Normalizer::randomized_normalize(ARG &a) {
     a.heuristic_sample_recombinations();
 }
 
+void Normalizer::normalize(ARG &a, float theta) {
+    get_root_span(a);
+    get_node_span(a);
+    partition_arg(a);
+    count_mutations(a);
+    auto c_it = mutation_counts.begin();
+    float t = 1.0/a.Ne;
+    int k = 0;
+    vector<float> new_grid = vector<float>(mutation_counts.size());
+    new_grid[0] = t;
+    while (next(c_it) != mutation_counts.end()) {
+        float e = theta*ls/num_windows;
+        float o = c_it->second;
+        float scale = o/e;
+        new_grid[k+1] = new_grid[k] + scale*(next(c_it)->first - c_it->first);
+        c_it++;
+        k++;
+    }
+    int i = 0;
+    float p;
+    k = 0;
+    c_it = mutation_counts.begin();
+    while (next(c_it) != mutation_counts.end()) {
+        while (i < all_nodes.size() and all_nodes[i]->time < next(c_it)->first) {
+            Node_ptr node = all_nodes[i];
+            p = (node->time - c_it->first)/(next(c_it)->first - c_it->first);
+            t = (1 - p)*new_grid[k] + p*new_grid[k+1];
+            if (i > 0 and t <= all_nodes[i-1]->time) {
+                t = nextafter(all_nodes[i-1]->time, numeric_limits<float>::infinity());
+                assert(t > all_nodes[i-1]->time);
+            }
+            node->time = t;
+            i++;
+        }
+        c_it++;
+        k++;
+    }
+    for (auto &x : a.recombinations) {
+        x.second.start_time = -1;
+    }
+    a.heuristic_sample_recombinations();
+}
+
 void Normalizer::normalize(ARG &a) {
     get_root_span(a);
     get_node_span(a);
@@ -219,7 +262,6 @@ void Normalizer::partition_arg(ARG &a) {
         }
         t = n->time;
     }
-    // assert(mutation_counts.size() == num_windows - 1);
 }
 
 void Normalizer::count_mutations(ARG &a) {

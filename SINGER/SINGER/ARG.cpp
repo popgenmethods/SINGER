@@ -586,17 +586,18 @@ void ARG::remap_mutations() {
     Branch lower_branch = Branch();
     Branch upper_branch = Branch();
     while (mut_it->first < y) {
-        while (join_it->first < mut_it->first) {
+        while (join_it->first <= mut_it->first) {
             joining_branch = join_it->second;
             assert(joining_branch != Branch());
             join_it++;
         }
-        while (remove_it->first < mut_it->first) {
+        while (remove_it->first <= mut_it->first) {
             removed_branch = remove_it->second;
             joining_node = removed_branch.upper_node;
             assert(joining_node != nullptr);
             remove_it++;
         }
+        assert(removed_branch != Branch());
         lower_branch = Branch(joining_branch.lower_node, joining_node);
         upper_branch = Branch(joining_node, joining_branch.upper_node);
         if (mut_it->second.count(removed_branch) > 0) {
@@ -691,6 +692,7 @@ void ARG::check_mapping() {
             }
         }
         count = max(0, count);
+        count = min(1, count);
         total_count += count;
         mut_it++;
     }
@@ -727,9 +729,13 @@ void ARG::check_incompatibility() {
         set<Branch> &branches = x.second;
         if (branches.size() > 1) {
             if (branches.rbegin()->upper_node == root) {
-                count += branches.size() - 2;
+                if (branches.size() > 2) {
+                    count += 1;
+                }
             } else {
-                count += branches.size() - 1;
+                if (branches.size() > 1) {
+                    count += 1;
+                }
             }
         }
     }

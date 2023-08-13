@@ -59,4 +59,8 @@ void test_tsp();
 
 void test_debug_resume();
 
+void test_african_dataset();
+
+void test_resume_african_dataset();
+
 #endif /* Test_hpp */

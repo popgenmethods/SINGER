@@ -245,11 +245,11 @@ void test_normalization() {
 
 void test_normalizer() {
     ARG a = ARG(2e4, 1e6);
-    a.read("/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0_fast_nodes_internal_999.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0_fast_branches_internal_999.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0_fast_recombs_internal_999.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0_fast_muts_internal_999.txt");
+    a.read("/Users/yun_deng/Desktop/SINGER/arg_files/african_16_fast_start_nodes_0.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/african_16_fast_start_branches_0.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/african_16_fast_start_recombs_0.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/african_16_fast_start_muts_0.txt");
     for (int i = 0; i < 10; i++) {
         Normalizer nm = Normalizer();
-        nm.normalize(a);
-        a.write("/Users/yun_deng/Desktop/SINGER/arg_files/normalized_500_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_500_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_500_recombs.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_500_mutations.txt");
+        nm.normalize(a, 2e4*1.25e-8);
+        a.write("/Users/yun_deng/Desktop/SINGER/arg_files/normalized_african_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_african_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_african_recombs.txt");
     }
 }
 
@@ -314,4 +314,25 @@ void test_debug_resume() {
     sampler.set_sequence_length(1e6);
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
     sampler.resume_fast_internal_sample(500, 1, 1640, 1066149215);
+}
+
+void test_african_dataset() {
+    // set_seed(72);
+    set_seed(15);
+    Sampler sampler = Sampler(8e4, 1e-8, 1.25e-8);
+    sampler.set_precision(0.01, 0.05);
+    sampler.set_sequence_length(1e6);
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/african_16");
+    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/16.phased_subset.0_1.vcf");
+    sampler.optimal_ordering();
+    sampler.fast_iterative_start();
+    sampler.fast_internal_sample(500, 1);
+}
+
+void test_resume_african_dataset() {
+    Sampler sampler = Sampler(6e4, 1e-8, 1.25e-8);
+    sampler.set_precision(0.01, 0.05);
+    sampler.set_sequence_length(1e6);
+    sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/african_16");
+    sampler.resume_fast_internal_sample(500, 1, 1079, 913090935);
 }

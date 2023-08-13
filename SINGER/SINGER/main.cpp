@@ -20,7 +20,7 @@ int main(int argc, const char * argv[]) {
     // test_terminal_sampling();
     // test_fast_terminal_sampling();
     // test_internal_sampling();
-    test_fast_internal_sampling();
+    // test_fast_internal_sampling();
     // test_fast_larger_internal_sampling();
     // test_optimal_ordering();
     // test_succint_bsp();
@@ -35,6 +35,8 @@ int main(int argc, const char * argv[]) {
     // test_resume_fast_larger_internal_sampling();
     // test_tsp();
     // test_debug_resume();
+    test_african_dataset();
+    // test_resume_african_dataset();
     std::cout << "Hello, World!\n";
     return 0;
 }
