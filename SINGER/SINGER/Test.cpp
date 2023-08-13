@@ -244,11 +244,12 @@ void test_normalization() {
  */
 
 void test_normalizer() {
-    ARG a = ARG(2e4, 1e6);
-    a.read("/Users/yun_deng/Desktop/SINGER/arg_files/african_16_fast_start_nodes_0.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/african_16_fast_start_branches_0.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/african_16_fast_start_recombs_0.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/african_16_fast_start_muts_0.txt");
+    ARG a = ARG(8e4, 1e6);
+    // a.read("/Users/yun_deng/Desktop/SINGER/arg_files/african_16_start_nodes_0.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/african_16_start_branches_0.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/african_16_start_recombs_0.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/african_16_start_muts_0.txt");
+    a.read("/Users/yun_deng/Desktop/SINGER/arg_files/debug_fts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_fts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_fts_recombs.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_fts_muts.txt");
     for (int i = 0; i < 10; i++) {
         Normalizer nm = Normalizer();
-        nm.normalize(a, 2e4*1.25e-8);
+        nm.normalize(a, 8e4*1.25e-8);
         a.write("/Users/yun_deng/Desktop/SINGER/arg_files/normalized_african_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_african_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/normalized_african_recombs.txt");
     }
 }
@@ -324,7 +325,7 @@ void test_african_dataset() {
     sampler.set_sequence_length(1e6);
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/african_16");
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/16.phased_subset.0_1.vcf");
-    sampler.optimal_ordering();
+    // sampler.optimal_ordering();
     sampler.fast_iterative_start();
     sampler.fast_internal_sample(500, 1);
 }

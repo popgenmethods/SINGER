@@ -297,6 +297,7 @@ void Sampler::iterative_start() {
         cout << "Number of flippings: " << arg.count_flipping() << endl;
         it++;
     }
+    arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_recombs.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_muts.txt");
     cout << "orignal ARG length: " << arg.get_arg_length() << endl;
     normalize();
     cout << "rescaled ARG length: " << arg.get_arg_length() << endl;
@@ -352,11 +353,14 @@ void Sampler::fast_iterative_start() {
         } else {
             threader.thread(arg, n);
         }
+        if (arg.sample_nodes.size() % 5 == 4) {
+            normalize();
+        }
         arg.check_incompatibility();
-        arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_recombs.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_ts_muts.txt");
         cout << "Number of flippings: " << arg.count_flipping() << endl;
         it++;
     }
+    arg.write("/Users/yun_deng/Desktop/SINGER/arg_files/debug_fts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_fts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_fts_recombs.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/debug_fts_muts.txt");
     normalize();
     string node_file = output_prefix + "_fast_start_nodes_" + to_string(sample_index) + ".txt";
     string branch_file= output_prefix + "_fast_start_branches_" + to_string(sample_index) + ".txt";
