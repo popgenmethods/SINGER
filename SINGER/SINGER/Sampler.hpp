@@ -58,7 +58,7 @@ public:
     
     void set_num_samples(int n);
     
-    void load_vcf(string vcf_file);
+    void load_vcf(string vcf_file, float start_pos, float end_pos);
     
     void optimal_ordering();
     
@@ -93,6 +93,8 @@ public:
     void fast_terminal_sample(int num_iters);
     
     void fast_internal_sample(int num_iters, int spacing);
+    
+    void start_fast_internal_sample(int num_iters, int spacing);
     
     void resume_internal_sample(int num_iters, int spacing, int resume_point);
     

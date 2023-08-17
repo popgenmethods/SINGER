@@ -20,8 +20,6 @@ class RSP_smc {
     
 public:
     
-    // float min_time = 0.005;
-    
     RSP_smc();
     
     void sample_recombination(Recombination &r, float cut_time, Tree &tree);
@@ -43,6 +41,8 @@ private:
     float random();
     
     float random_time(float lb, float ub);
+    
+    float random_time(float lb, float ub, float q);
     
 };
 

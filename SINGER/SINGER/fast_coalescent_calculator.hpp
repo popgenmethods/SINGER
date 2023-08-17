@@ -40,7 +40,7 @@ public:
     float get_num_lineages(float x);
     
     float get_integral(float x);
-    
+
 };
 
 #endif /* fast_coalescent_calculator_hpp */

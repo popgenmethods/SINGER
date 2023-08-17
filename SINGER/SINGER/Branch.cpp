@@ -22,22 +22,6 @@ float Branch::length() {
     return upper_node->time - lower_node->time;
 }
 
-/*
-bool Branch::operator<(const Branch &other) const {
-    if (upper_node->time != other.upper_node->time) {
-        return upper_node->time < other.upper_node->time;
-    } else if (lower_node->time != other.lower_node->time) {
-        return lower_node->time < other.lower_node->time;
-    } else if (upper_node->index != other.upper_node->index) {
-        return upper_node->index < other.upper_node->index;
-    } else if (lower_node->index != other.lower_node->index) {
-        return lower_node->index < other.lower_node->index;
-    } else {
-        return lower_node < other.lower_node;
-    }
-}
- */
-
 bool Branch::operator<(const Branch &other) const {
     static compare_node cn;
     if (cn(upper_node, other.upper_node)) {
@@ -52,7 +36,6 @@ bool Branch::operator<(const Branch &other) const {
         return false;
     }
 }
-
 
 bool Branch::operator==(const Branch &other) const {
     if (lower_node == other.lower_node and upper_node == other.upper_node) {

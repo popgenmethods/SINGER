@@ -36,7 +36,8 @@ void Threader_smc::thread(ARG &a, Node_ptr n) {
     cout << get_time() << " : begin adding" << endl;
     a.add(new_joining_branches, added_branches);
     cout << get_time() << " : begin sampling recombination" << endl;
-    a.smc_sample_recombinations();
+    // a.smc_sample_recombinations();
+    a.heuristic_sample_recombinations();
     /*
     vector<float> ed = expected_diff(4e-4);
     vector<float> od = observed_diff(a);
@@ -90,7 +91,8 @@ void Threader_smc::internal_rethread(ARG &a, tuple<float, Branch, float> cut_poi
     } else {
         a.add(a.joining_branches, a.removed_branches);
     }
-    a.smc_sample_recombinations();
+    // a.smc_sample_recombinations();
+    a.heuristic_sample_recombinations();
     a.clear_remove_info();
 }
 

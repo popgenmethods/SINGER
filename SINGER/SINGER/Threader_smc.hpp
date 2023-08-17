@@ -20,6 +20,7 @@
 #include "reduced_BSP.hpp"
 #include "sub_BSP.hpp"
 #include "fast_BSP.hpp"
+#include "approx_BSP.hpp"
 #include "TSP_smc.hpp"
 #include "Parsimony_pruner.hpp"
 #include "Trace_pruner.hpp"
@@ -52,12 +53,8 @@ public:
     int start_index = 0;
     int end_index = 0;
     Trace_pruner pruner = Trace_pruner();
-    BSP bsp = BSP();
-    // succint_BSP bsp = succint_BSP();
-    // fast_BSP_smc fbsp = fast_BSP_smc();
-    // fast_BSP fbsp = fast_BSP();
-    // reduced_BSP fbsp = reduced_BSP();
-    // sub_BSP fbsp = sub_BSP();
+    // BSP bsp = BSP();
+    approx_BSP bsp = approx_BSP();
     fast_BSP fbsp = fast_BSP();
     TSP_smc tsp = TSP_smc();
     float gap;

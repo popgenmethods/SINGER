@@ -1,12 +1,12 @@
 //
-//  BSP.hpp
+//  approx_BSP.hpp
 //  SINGER
 //
-//  Created by Yun Deng on 7/10/23.
+//  Created by Yun Deng on 8/15/23.
 //
 
-#ifndef BSP_hpp
-#define BSP_hpp
+#ifndef approx_BSP_hpp
+#define approx_BSP_hpp
 
 #include <stdio.h>
 #include <fstream>
@@ -18,7 +18,7 @@
 
 using Interval_ptr = shared_ptr<Interval>;
 
-class BSP {
+class approx_BSP {
     
 public:
     
@@ -47,7 +47,7 @@ public:
     map<int, vector<float>> weights = {{INT_MAX, {}}};
     
     // coalescent computation
-    shared_ptr<Coalescent_calculator> cc;
+    shared_ptr<approx_coalescent_calculator> cc;
     
     // transfer at recombinations
     map<Interval_info, vector<Interval_ptr>> transfer_intervals = {};
@@ -77,15 +77,13 @@ public:
     bool states_change = false;
     set<Branch> valid_branches = {};
     
-    BSP();
+    approx_BSP();
     
-    ~BSP();
+    ~approx_BSP();
     
     void reserve_memory(int length);
     
     void start(set<Branch> &branches, float t);
-    
-    void start(unordered_set<Branch, branch_hash> &branches, float t);
     
     void set_cutoff(float x);
     
@@ -104,10 +102,6 @@ public:
     void mut_emit(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node);
     
     map<float, Branch> sample_joining_branches(int start_index, vector<float> &coordinates);
-    
-    void write_forward_probs(string filename);
-    
-    void update_states(set<Branch> &deletions, set<Branch> &insertions);
     
     void set_dimensions();
     
@@ -163,15 +157,8 @@ public:
     
     int trace_back_helper(Interval_ptr interval, int x);
     
-    int min_source_pos(vector<Interval_ptr> &intervals);
-    
     float avg_num_states();
     
-    void write_recomb_weight_sums(string filename);
-    
-    float calculate_penalty(int source_pos);
-    
-    float calculate_penalty(int source_pos, float lb, float ub);
 };
 
-#endif /* BSP_hpp */
+#endif /* approx_BSP_hpp */

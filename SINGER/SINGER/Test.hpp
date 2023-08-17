@@ -61,6 +61,8 @@ void test_debug_resume();
 
 void test_african_dataset();
 
+void test_start_african_sampling();
+
 void test_resume_african_dataset();
 
 #endif /* Test_hpp */

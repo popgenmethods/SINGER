@@ -24,6 +24,7 @@ public:
     float start = 0;
     float end = 0;
     float cut_time = 0;
+    int band_width = 10;
     
     float length = 0;
     
@@ -76,8 +77,6 @@ public:
     
     float min_reduction_error();
     
-    // void write_changes(ARG &a);
-    
     void write_reductions(ARG &a);
     
     Node_ptr get_node_at(float x);
@@ -119,6 +118,8 @@ public:
     float backward_overwrite_prob(Recombination &r, float lb, float ub);
     
     void remove_segment(float x, float y);
+    
+    void restrict_search();
 };
 
 #endif /* Trace_pruner_hpp */

@@ -145,4 +145,3 @@ float fast_coalescent_calculator::get_integral(float x) {
     }
     return integral;
 }
-

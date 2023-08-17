@@ -115,6 +115,7 @@ void Tree::add(Branch added_branch, Branch joining_branch, Node_ptr n) {
     }
 }
 
+/*
 Node_ptr Tree::find_sibling(Node_ptr n) {
     Node_ptr p = parents[n];
     Branch b = Branch(n, p);
@@ -129,8 +130,8 @@ Node_ptr Tree::find_sibling(Node_ptr n) {
     Node_ptr s = (*branch_it).lower_node;
     return s;
 }
+ */
 
-/*
 Node_ptr Tree::find_sibling(Node_ptr n) {
     Node_ptr p = parents[n];
     unordered_set<Node_ptr> &candidates = children[p];
@@ -143,7 +144,6 @@ Node_ptr Tree::find_sibling(Node_ptr n) {
     }
     return c;
 }
- */
 
 Branch Tree::find_joining_branch(Branch removed_branch) {
     if (removed_branch == Branch()) {

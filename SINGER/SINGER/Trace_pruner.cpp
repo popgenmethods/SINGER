@@ -92,8 +92,9 @@ void Trace_pruner::start_search(ARG &a, float m) {
             }
         }
     }
+    restrict_search();
     potential_seeds.erase(m);
-    assert(seed_scores.size() > 0);
+    assert(seed_scores.size() > 0 and seed_scores.size() <= band_width);
 }
 
 void Trace_pruner::write_reduction_distance(ARG &a, string filename) {
@@ -201,7 +202,6 @@ Node_ptr Trace_pruner::get_node_at(float x) {
     return query_it->second.lower_node;
 }
 
-/*
 float Trace_pruner::count_mismatch(Branch branch, Node_ptr n, float m) {
     float s0 = n->get_state(m);
     float sl = branch.lower_node->get_state(m);
@@ -222,8 +222,8 @@ float Trace_pruner::count_mismatch(Branch branch, Node_ptr n, float m) {
         }
     }
 }
- */
 
+/*
 float Trace_pruner::count_mismatch(Branch branch, Node_ptr n, float m) {
     if (private_mutations.count(m) > 0) {
         return 0.3;
@@ -247,6 +247,7 @@ float Trace_pruner::count_mismatch(Branch branch, Node_ptr n, float m) {
         }
     }
 }
+ */
 
 void Trace_pruner::build_match_map(ARG &a) {
     float m = 0;
@@ -450,6 +451,7 @@ void Trace_pruner::forward_transition(Recombination &r, const Interval_info &int
     Interval_info new_interval;
     Branch b;
     float p = curr_scores[interval];
+    p = max(p, cutoff*0.1f);
     float l = interval.lb;
     float u = interval.ub;
     if (!r.affect(interval.branch)) {
@@ -495,6 +497,7 @@ void Trace_pruner::forward_transition(Recombination &r, const Interval_info &int
         new_interval = Interval_info(r.merging_branch, l, u);
         forward_transition_helper(interval, new_interval, r.pos, p);
     }
+    assert(!r.affect(interval.branch) or deletions[r.pos].count(interval) > 0);
 }
 
 void Trace_pruner::backward_transition(Recombination &r, const Interval_info &interval) {
@@ -503,6 +506,7 @@ void Trace_pruner::backward_transition(Recombination &r, const Interval_info &in
     Interval_info new_interval;
     Branch b;
     float p = curr_scores[interval];
+    p = max(p, cutoff*0.1f);
     float l = interval.lb;
     float u = interval.ub;
     float x = r.pos;
@@ -553,6 +557,7 @@ void Trace_pruner::backward_transition(Recombination &r, const Interval_info &in
         new_interval = Interval_info(r.target_branch, l, u);
         backward_transition_helper(interval, new_interval, r.pos, p);
     }
+    assert(!r.affect(interval.branch) or insertions[r.pos].count(interval) > 0);
 }
 
 void Trace_pruner::forward_transition_helper(Interval_info prev_interval, Interval_info next_interval, float x, float p) {
@@ -715,7 +720,6 @@ void Trace_pruner::remove_segment(float x, float y) {
     }
 }
 
-/*
 float Trace_pruner::get_match_time(set<Branch> &branches, float m, Node_ptr n) {
     float state = n->get_state(m);
     assert(state == 0 or state == 1);
@@ -741,8 +745,8 @@ float Trace_pruner::get_match_time(set<Branch> &branches, float m, Node_ptr n) {
         return max_time - max(cut_time, b.lower_node->time) - cut_time;
     }
 }
-*/
 
+/*
 float Trace_pruner::get_match_time(set<Branch> &branches, float m, Node_ptr n) {
     float state = n->get_state(m);
     assert(state == 0 or state == 1);
@@ -773,3 +777,21 @@ float Trace_pruner::get_match_time(set<Branch> &branches, float m, Node_ptr n) {
         return max_time - max(cut_time, b.lower_node->time) - cut_time;
     }
 }
+ */
+
+void Trace_pruner::restrict_search() {
+    if (seed_scores.size() <= band_width) {
+        return; // If size is less than or equal to band_with, do nothing
+    }
+    vector<Interval_info> seeds;
+    transform(seed_scores.begin(), seed_scores.end(), back_inserter(seeds),
+                       [](const auto& pair) { return pair.first; });
+    // Shuffle using existing random_engine
+    shuffle(seeds.begin(), seeds.end(), random_engine);
+
+    for (int i = band_width; i < seeds.size(); ++i) {
+        seed_scores.erase(seeds[i]);
+    }
+    assert(seed_scores.size() <= band_width);
+}
+
