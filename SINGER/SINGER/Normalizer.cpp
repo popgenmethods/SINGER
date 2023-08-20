@@ -164,7 +164,7 @@ void Normalizer::normalize(ARG &a, float theta) {
     float p;
     k = 0;
     while (k < new_grid.size() - 1) {
-        while (i < all_nodes.size() and all_nodes[i]->time < old_grid[k+1]) {
+        while (i < all_nodes.size() and all_nodes[i]->time <= old_grid[k+1]) {
             Node_ptr node = all_nodes[i];
             p = (node->time - old_grid[k])/(old_grid[k+1] - old_grid[k]);
             t = (1 - p)*new_grid[k] + p*new_grid[k+1];
