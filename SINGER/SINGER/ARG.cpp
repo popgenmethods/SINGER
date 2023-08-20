@@ -600,6 +600,7 @@ void ARG::remap_mutations() {
         assert(removed_branch != Branch());
         lower_branch = Branch(joining_branch.lower_node, joining_node);
         upper_branch = Branch(joining_node, joining_branch.upper_node);
+        /*
         if (mut_it->second.count(removed_branch) > 0) {
             mut_it->second.erase(removed_branch);
         }
@@ -607,6 +608,10 @@ void ARG::remap_mutations() {
             mut_it->second.erase(lower_branch);
             mut_it->second.erase(upper_branch);
         }
+         */
+        mut_it->second.erase(removed_branch);
+        mut_it->second.erase(lower_branch);
+        mut_it->second.erase(upper_branch);
         float sl = lower_branch.lower_node->get_state(mut_it->first);
         float su = upper_branch.upper_node->get_state(mut_it->first);
         if (sl != su) {
@@ -699,30 +704,6 @@ void ARG::check_mapping() {
     cout << "Number of incompatibilities: " << total_count << endl;
 }
 
-/*
-void ARG::check_incompatibility() {
-    Tree tree = Tree();
-    auto recomb_it = recombinations.begin();
-    auto mut_it = mutation_sites.begin();
-    int total_count = 0;
-    int count = 0;
-    while (mut_it != prev(mutation_sites.end())) {
-        float m = *mut_it;
-        while (recomb_it->first < m) {
-            Recombination &r = recomb_it->second;
-            tree.forward_update(r);
-            recomb_it++;
-        }
-        count = count_incompatibility(tree, m);
-        set<Branch> &mapping = mutation_branches[m];
-        assert(count + 1 >= mapping.size());
-        total_count += count;
-        mut_it++;
-    }
-    cout << "Number of incompatibilities: " << total_count << endl;
-}
- */
-
 void ARG::check_incompatibility() {
     int count = 0;
     for (auto &x : mutation_branches) {
@@ -741,6 +722,27 @@ void ARG::check_incompatibility() {
     }
     cout << "Number of incompatibilities: " << count << endl;
 }
+
+/*
+void ARG::check_incompatibility() {
+    int count = 0;
+    for (auto &x : mutation_branches) {
+        set<Branch> &branches = x.second;
+        if (branches.size() > 1) {
+            if (branches.rbegin()->upper_node == root) {
+                if (branches.size() > 2) {
+                    count += branches.size() - 2;
+                }
+            } else {
+                if (branches.size() > 1) {
+                    count += branches.size() - 1;
+                }
+            }
+        }
+    }
+    cout << "Number of incompatibilities: " << count << endl;
+}
+ */
 
 void ARG::clear_remove_info() {
     removed_branches.clear();

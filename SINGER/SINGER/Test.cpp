@@ -148,7 +148,7 @@ void test_internal_sampling() {
     set_seed(15);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
-    sampler.set_num_samples(100);
+    // sampler.set_num_samples(100);
     sampler.set_sequence_length(1e6);
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/approx_smc_50_0");
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf", 0, 1e6);
@@ -326,7 +326,8 @@ void test_african_dataset() {
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/african_subsample_16.0_1");
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/16.subsampled.0_999999.vcf", 0, 1e6);
     sampler.iterative_start();
-    sampler.internal_sample(500, 1);
+    sampler.terminal_sample(500);
+    // sampler.mutation_climb(500, 1);
 }
 
 void test_start_african_sampling() {

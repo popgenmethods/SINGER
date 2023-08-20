@@ -18,11 +18,15 @@ class Polar_emission : public Emission {
     
 public:
     
+    float penalty = 0.001;
     float ancestral_prob = 0.99;
     float reverse_penalty = 1e-4;
     float root_reward = 1;
     
     vector<float> diff = vector<float>(4);
+    
+    map<float, float> num_unmapped = {};
+    float num_muts = 0;
     
     Polar_emission();
     

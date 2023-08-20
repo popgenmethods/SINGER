@@ -18,6 +18,9 @@ class Binary_emission : public Emission {
     
 public:
     
+    map<float, float> num_unmapped = {};
+    float penalty = 0.1;
+    
     vector<float> diff = vector<float>(4);
     
     Binary_emission();

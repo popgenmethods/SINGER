@@ -78,6 +78,7 @@ void Threader_smc::fast_thread(ARG &a, Node_ptr n) {
 void Threader_smc::internal_rethread(ARG &a, tuple<float, Branch, float> cut_point) {
     cut_time = get<2>(cut_point);
     a.remove(cut_point);
+    // a.check_incompatibility();
     get_boundary(a);
     set_check_points(a);
     run_BSP(a);
@@ -91,9 +92,9 @@ void Threader_smc::internal_rethread(ARG &a, tuple<float, Branch, float> cut_poi
     } else {
         a.add(a.joining_branches, a.removed_branches);
     }
-    // a.smc_sample_recombinations();
     a.heuristic_sample_recombinations();
     a.clear_remove_info();
+    // a.check_incompatibility();
 }
 
 

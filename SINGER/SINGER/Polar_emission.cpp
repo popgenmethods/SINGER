@@ -23,7 +23,6 @@ float Polar_emission::null_emit(Branch &branch, float time, float theta, Node_pt
     } else {
         old_prob = 1;
     }
-    // old_prob = null_prob(theta*(ll + lu));
     emit_prob /= old_prob;
     return emit_prob;
 }
@@ -43,8 +42,8 @@ float Polar_emission::mut_emit(Branch &branch, float time, float theta, float bi
     old_prob *= null_prob(theta*(ll + lu));
     emit_prob /= old_prob;
     emit_prob *= root_reward;
-    emit_prob = max(emit_prob, 1e-9f);
-    assert(emit_prob != 0);
+    emit_prob = max(emit_prob, 1e-20f);
+    assert(emit_prob > 0);
     return emit_prob;
 }
 
@@ -59,7 +58,6 @@ float Polar_emission::emit(Branch &branch, float time, float theta, float bin_si
     emit_prob *= null_prob(theta, ll, lu, l0);
     old_prob *= null_prob(theta*(ll + lu));
     emit_prob /= old_prob;
-    // assert(emit_prob != 0);
     return emit_prob;
 }
 
@@ -68,6 +66,9 @@ float Polar_emission::mut_prob(float theta, float bin_size, float ll, float lu, 
     prob *= mut_prob(ll*theta, bin_size, sl);
     prob *= mut_prob(lu*theta, bin_size, su);
     prob *= mut_prob(l0*theta, bin_size, s0);
+    if (s0 >= 1) {
+        prob *= penalty;
+    }
     return prob;
 }
 
@@ -80,19 +81,6 @@ float Polar_emission::null_prob(float theta, float ll, float lu, float l0) {
     prob *= null_prob(l0*theta);
     return prob;
 }
-
-/*
-float Polar_emission::mut_prob(float theta, float bin_size, int s) {
-    if (isinf(theta)) {
-        return 1.0;
-    }
-    float unit_theta = theta/bin_size;
-    if (s < 0) {
-        unit_theta *= reverse_penalty;
-    }
-    return pow(unit_theta, abs(s));
-}
- */
 
 float Polar_emission::mut_prob(float theta, float bin_size, int s) {
     if (isinf(theta)) {
@@ -124,7 +112,9 @@ void Polar_emission::get_diff(float m, Branch branch, Node_ptr node) {
     }
     if (branch.upper_node->index == -1) {
         if (sm == 0 and sl == 1) {
-            root_reward = 1/(1 - ancestral_prob);
+            root_reward = ancestral_prob/(1 - ancestral_prob);
+        } else {
+            root_reward = 1;
         }
     } else {
         root_reward = 1;

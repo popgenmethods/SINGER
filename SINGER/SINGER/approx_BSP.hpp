@@ -15,6 +15,7 @@
 #include "approx_coalescent_calculator.hpp"
 #include "Interval.hpp"
 #include "Emission.hpp"
+#include "Binary_emission.hpp"
 
 using Interval_ptr = shared_ptr<Interval>;
 

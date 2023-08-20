@@ -161,3 +161,10 @@ int main(int argc, const char * argv[]) {
     }
     return 0;
 }
+
+/*
+int main(int argc, const char * argv[]) {
+    // test_internal_sampling();
+    test_african_dataset();
+}
+*/

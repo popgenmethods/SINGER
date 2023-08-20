@@ -684,15 +684,6 @@ void BSP::write_recomb_weight_sums(string filename) {
     out_file.close();
 }
 
-/*
-float BSP::calculate_penalty(int source_pos) {
-    int exponent = curr_index - source_pos - grace_period;
-    float p = pow(penalty, exponent);
-    return p;
-}
-*/
-
-
 float BSP::calculate_penalty(int source_pos, float lb, float ub) {
     return 1;
 }

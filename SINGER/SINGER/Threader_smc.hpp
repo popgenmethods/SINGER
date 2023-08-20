@@ -53,13 +53,13 @@ public:
     int start_index = 0;
     int end_index = 0;
     Trace_pruner pruner = Trace_pruner();
-    // BSP bsp = BSP();
     approx_BSP bsp = approx_BSP();
+    // BSP bsp = BSP();
     fast_BSP fbsp = fast_BSP();
     TSP_smc tsp = TSP_smc();
     float gap;
     float cutoff;
-    shared_ptr<Emission> eh;
+    shared_ptr<Emission> eh = make_shared<Binary_emission>();
     shared_ptr<Emission> e = make_shared<Polar_emission>();
     map<float, Branch> new_joining_branches = {};
     map<float, Branch> added_branches = {};
