@@ -547,7 +547,6 @@ void Sampler::internal_sample(int num_iters, int spacing) {
         sample_index += 1;
         cout << "Number of trees: " << arg.recombinations.size() << endl;
         cout << "Number of flippings: " << arg.count_flipping() << endl;
-        // cout << "Data likelihood: " << arg.data_likelihood(2e-8) << endl;
     }
 }
 

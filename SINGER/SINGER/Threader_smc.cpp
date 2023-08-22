@@ -18,8 +18,6 @@ Threader_smc::~Threader_smc() {
 
 void Threader_smc::thread(ARG &a, Node_ptr n) {
     cout << "Iteration: " << a.sample_nodes.size() << endl;
-    // cut_time = min(0.005, 0.1/a.sample_nodes.size());
-    // cut_time = 0.0005;
     cut_time = 0;
     a.cut_time = cut_time;
     a.add_sample(n);
@@ -36,14 +34,7 @@ void Threader_smc::thread(ARG &a, Node_ptr n) {
     cout << get_time() << " : begin adding" << endl;
     a.add(new_joining_branches, added_branches);
     cout << get_time() << " : begin sampling recombination" << endl;
-    // a.smc_sample_recombinations();
     a.heuristic_sample_recombinations();
-    /*
-    vector<float> ed = expected_diff(4e-4);
-    vector<float> od = observed_diff(a);
-    cout << "Expected diff: " << ed[0] << " " << ed[1] << " " << ed[2] << endl;
-    cout << "Observed diff: " << od[0] << " " << od[1] << " " << od[2] << endl;
-     */
     a.clear_remove_info();
     cout << get_time() << " : finish" << endl;
     cout << a.recombinations.size() << endl;

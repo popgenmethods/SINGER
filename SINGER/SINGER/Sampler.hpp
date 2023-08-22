@@ -34,6 +34,7 @@ public:
     ARG arg;
     double bsp_c;
     double tsp_q;
+    float penalty = 1;
     int random_seed = 0;
     shared_ptr<Emission> eh = make_shared<Binary_emission>();
     int sample_index = 0;

@@ -15,6 +15,7 @@ int main(int argc, const char * argv[]) {
     int spacing = 1;
     float start_pos = -1, end_pos = -1;
     string input_filename = "", output_prefix = "";
+    float penalty = 1;
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
         if (arg == "-fast") {
@@ -58,6 +59,18 @@ int main(int argc, const char * argv[]) {
                 m = stod(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -r flag expects a number. " << endl;
+                return 1;
+            }
+        }
+        else if (arg == "-p") {
+            if (i + 1 >= argc || argv[i+1][0] == '-') {
+                cerr << "Error: -p flag cannot be empty. " << endl;
+                return 1;
+            }
+            try {
+                penalty = stod(argv[++i]);
+            } catch (const invalid_argument&) {
+                cerr << "Error: -p flag expects a number. " << endl;
                 return 1;
             }
         }
