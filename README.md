@@ -27,7 +27,7 @@ path_to_singer/bin/singer -fast -Ne 1e4 -m 1.25e08 -r 1e-8
 We specify the details of the arguments here:
 
 |flag|required?|details|  
-|--------|-----|--------------|  
+|--------|-----|-----------|  
 |**-fast**|optional|you will run fast-SINGER with this flag, otherwise regular full SINGER|
 |**-Ne**|required|the diploid effective population size, which means the haploid effective population size will be **2*Ne**|
 |**-m**|required|per base pair per generation mutation rate|
