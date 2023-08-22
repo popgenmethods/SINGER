@@ -246,6 +246,7 @@ void approx_BSP::add_new_branches(Recombination &r) { // add recombined branch a
     }
 }
 
+/*
 void approx_BSP::compute_interval_info() {
     float t;
     float p;
@@ -253,8 +254,32 @@ void approx_BSP::compute_interval_info() {
         Interval_ptr interval = curr_intervals[i];
         p = cc->prob(interval->lb, interval->ub);
         t = cc->find_median(interval->lb, interval->ub);
+        interval->weight = p;
+        interval->time = t;
         raw_weights[i] = p;
         time_points[i] = t;
+    }
+    times[curr_index] = time_points;
+    weights[curr_index] = raw_weights;
+}
+ */
+
+void approx_BSP::compute_interval_info() {
+    float t;
+    float p;
+    for (int i = 0; i < curr_intervals.size(); i++) {
+        Interval_ptr interval = curr_intervals[i];
+        if (interval->start_pos == curr_index) {
+            p = cc->prob(interval->lb, interval->ub);
+            t = cc->find_median(interval->lb, interval->ub);
+            interval->weight = p;
+            interval->time = t;
+            raw_weights[i] = p;
+            time_points[i] = t;
+        } else {
+            raw_weights[i] = interval->weight;
+            time_points[i] = interval->time;
+        }
     }
     times[curr_index] = time_points;
     weights[curr_index] = raw_weights;
@@ -262,7 +287,7 @@ void approx_BSP::compute_interval_info() {
 
 void approx_BSP::sanity_check(Recombination &r) {
     for (int i = 0; i < curr_intervals.size(); i++) {
-        Interval_ptr interval = curr_intervals[i];
+        const Interval_ptr& interval = curr_intervals[i];
         if (interval->lb == interval->ub and interval->lb == r.inserted_node->time and interval->branch != r.target_branch) {
             forward_probs[curr_index][i] = 0;
         }
