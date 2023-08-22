@@ -111,13 +111,15 @@ void approx_BSP::null_emit(float theta, Node_ptr query_node) {
     prev_theta = theta;
     prev_node = query_node;
     float ws = 0;
+    auto &curr_probs = forward_probs[curr_index];
     for (int i = 0; i < dim; i++) {
-        forward_probs[curr_index][i] *= null_emit_probs[i];
+        curr_probs[i] *= null_emit_probs[i];
+        ws += curr_probs[i];
     }
-    ws = accumulate(forward_probs[curr_index].begin(), forward_probs[curr_index].end(), 0.0f);
+    // ws = accumulate(forward_probs[curr_index].begin(), forward_probs[curr_index].end(), 0.0f);
     assert(ws > 0);
     for (int i = 0; i < dim; i++) {
-        forward_probs[curr_index][i] /= ws;
+        curr_probs[i] /= ws;
     }
 }
 
@@ -268,7 +270,7 @@ void approx_BSP::compute_interval_info() {
     float t;
     float p;
     for (int i = 0; i < curr_intervals.size(); i++) {
-        Interval_ptr interval = curr_intervals[i];
+        const Interval_ptr &interval = curr_intervals[i];
         if (interval->start_pos == curr_index) {
             p = cc->prob(interval->lb, interval->ub);
             t = cc->find_median(interval->lb, interval->ub);
@@ -332,7 +334,7 @@ void approx_BSP::generate_intervals(Recombination &r) {
         }
     }
     forward_probs.push_back(temp);
-    curr_intervals = temp_intervals;
+    curr_intervals = move(temp_intervals);
 }
 
 float approx_BSP::get_overwrite_prob(Recombination &r, float lb, float ub) {
