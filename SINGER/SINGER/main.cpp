@@ -16,6 +16,8 @@ int main(int argc, const char * argv[]) {
     float start_pos = -1, end_pos = -1;
     string input_filename = "", output_prefix = "";
     float penalty = 1;
+    float epsilon_hmm = 0.01;
+    float epsilon_psmc = 0.05;
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
         if (arg == "-fast") {
@@ -69,6 +71,30 @@ int main(int argc, const char * argv[]) {
             }
             try {
                 penalty = stod(argv[++i]);
+            } catch (const invalid_argument&) {
+                cerr << "Error: -p flag expects a number. " << endl;
+                return 1;
+            }
+        }
+        else if (arg == "-hmm_epsilon") {
+            if (i + 1 >= argc || argv[i+1][0] == '-') {
+                cerr << "Error: -hmm_epsilon flag cannot be empty. " << endl;
+                return 1;
+            }
+            try {
+                epsilon_hmm = stod(argv[++i]);
+            } catch (const invalid_argument&) {
+                cerr << "Error: -hmm_epsilon flag expects a number. " << endl;
+                return 1;
+            }
+        }
+        else if (arg == "-psmc_bins") {
+            if (i + 1 >= argc || argv[i+1][0] == '-') {
+                cerr << "Error: -psmc_epsilon flag cannot be empty. " << endl;
+                return 1;
+            }
+            try {
+                epsilon_psmc = 1/stod(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -p flag expects a number. " << endl;
                 return 1;
@@ -159,6 +185,7 @@ int main(int argc, const char * argv[]) {
         cerr << "-thinning flag is invalid. " << endl;
     }
     Sampler sampler = Sampler(Ne, r, m);
+    sampler.penalty = penalty;
     sampler.set_precision(0.01, 0.05);
     sampler.set_output_file_prefix(output_prefix);
     sampler.load_vcf(input_filename, start_pos, end_pos);
