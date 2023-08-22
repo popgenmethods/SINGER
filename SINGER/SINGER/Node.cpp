@@ -44,6 +44,42 @@ void Node::write_state(float pos, float s) {
     return;
 }
 
+/*
+float Node::get_state(float pos) {
+    if (it == mutation_sites.begin()) {
+        it = mutation_sites.upper_bound(pos);
+        it--;
+    } else if (*prev(it) > pos or *next(it) < pos) {
+        it = mutation_sites.upper_bound(pos);
+        it--;
+    }
+    if (*it == pos) {
+        return 1;
+    } else if (pos > *it) {
+        if (*next(it) == pos) {
+            it++;
+            return 1;
+        }
+    } else if (pos < *it) {
+        if (*prev(it) == pos) {
+            it--;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void Node::write_state(float pos, float s) {
+    if (s == 0) {
+        mutation_sites.erase(pos);
+        return;
+    } else if (s == 1) {
+        mutation_sites.insert(pos);
+    }
+    return;
+}
+ */
+
 void Node::read_mutation(string filename) {
     ifstream fin(filename);
     if (!fin.good()) {
