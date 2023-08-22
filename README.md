@@ -37,6 +37,7 @@ We specify the details of the arguments here:
 |**-n**|optional|MCMC iterations to run, default at 0, only getting initialization|
 |**-thinning**|optional|we sample the ARG from MCMC every this number of iterations, default at 1|
 |**-penalty**|optional|extra penaly for violation of infinite sites model, default at 1 (no penalty)|
+|**-_seed**|optional|the seed for random number generator, default at 5498u in C++ standard|
 
 Here are some other parameters of the software which we **DON'T** recommend changing:
 
