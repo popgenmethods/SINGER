@@ -27,7 +27,7 @@ path_to_singer/bin/singer -fast -Ne 1e4 -m 1.25e08 -r 1e-8
 We specify the details of the arguments here:
 
 |flag|required?|details|  
-|--------|-----|-----------|  
+|-------------------|-----|-----------|  
 |**-fast**|optional|you will run fast-SINGER with this flag, otherwise regular full SINGER|
 |**-Ne**|required|the diploid effective population size, which means the haploid effective population size will be **2*Ne**|
 |**-m**|required|per base pair per generation mutation rate|
@@ -37,15 +37,14 @@ We specify the details of the arguments here:
 |**-n**|optional|MCMC iterations to run, default at 0, only getting initialization|
 |**-thinning**|optional|we sample the ARG from MCMC every this number of iterations, default at 1|
 |**-penalty**|optional|extra penaly for violation of infinite sites model, default at 1 (no penalty)|
-|**-_seed**|optional|the seed for random number generator, default at 5498u in C++ standard|
+|**-seed**|optional|the seed for random number generator, default at 5498u in C++ standard|
 
 Here are some other parameters of the software which we **DON'T** recommend changing:
 
 |flag|required?|details|  
 |-----|-----|--------------|  
-|-segment_length|optional|we cut the genome into segments of this size, default at 1e6|
 |-hmm_epsilon|optional|the precison parameter in branch-HMM, default at 0.01|
-|-psmc_epsilon|optional|the number of PSMC time bins will be inverse of this value, default at 0.05|
+|-psmc_bins|optional|the number of PSMC time bins, default at 20|
 
 ## Suggestions from developer
 
