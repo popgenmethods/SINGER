@@ -75,10 +75,6 @@ public:
     
     void fast_iterative_start();
     
-    void multiple_iterative_start(int num_iters);
-    
-    void multiple_fast_iterative_start(int num_iters);
-    
     void recombination_climb(int num_iters, int spacing);
     
     void mutation_climb(int num_iters, int spacing);
@@ -106,6 +102,12 @@ public:
     void resume_fast_internal_sample(int num_iters, int spacing, int resume_point, int seed);
     
     void normalize();
+    
+    void start_log();
+    
+    void write_iterative_start();
+    
+    void write_sample();
 };
 
 #endif /* Sampler_hpp */

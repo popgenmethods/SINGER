@@ -64,15 +64,15 @@ int main(int argc, const char * argv[]) {
                 return 1;
             }
         }
-        else if (arg == "-p") {
+        else if (arg == "-penalty") {
             if (i + 1 >= argc || argv[i+1][0] == '-') {
-                cerr << "Error: -p flag cannot be empty. " << endl;
+                cerr << "Error: -penalty flag cannot be empty. " << endl;
                 return 1;
             }
             try {
                 penalty = stod(argv[++i]);
             } catch (const invalid_argument&) {
-                cerr << "Error: -p flag expects a number. " << endl;
+                cerr << "Error: -penalty flag expects a number. " << endl;
                 return 1;
             }
         }
@@ -94,7 +94,7 @@ int main(int argc, const char * argv[]) {
                 return 1;
             }
             try {
-                epsilon_psmc = 1/stod(argv[++i]);
+                epsilon_psmc = 1.0/stod(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -p flag expects a number. " << endl;
                 return 1;

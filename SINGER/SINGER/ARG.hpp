@@ -135,6 +135,8 @@ public:
 
     void check_mapping();
     
+    int num_unmapped();
+    
     void check_incompatibility();
     
     void clear_remove_info();

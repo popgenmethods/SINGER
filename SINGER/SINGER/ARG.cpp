@@ -639,40 +639,6 @@ void ARG::map_mutation(Tree tree, float x) {
     mutation_branches[x] = branches;
 }
 
-/*
-void ARG::clear_memory() {
-    set<Node_ptr, compare_node> reduced_node_set = {};
-    set<Node_ptr > deleted_nodes = {};
-    Recombination &r = recombinations.begin()->second;
-    for (Branch b : r.inserted_branches) {
-        reduced_node_set.insert(b.lower_node);
-    }
-    for (auto &x : recombinations) {
-        if (x.first > 0 and x.first < sequence_length) {
-            reduced_node_set.insert(x.second.inserted_node);
-        }
-    }
-    for (Node_ptr n : node_set) {
-        if (reduced_node_set.count(n) == 0 and n->index != -1) {
-            deleted_nodes.insert(n);
-        }
-    }
-    for (Node_ptr n : deleted_nodes) {
-        delete n;
-    }
-    node_set.clear();
-    node_set = reduced_node_set;
-}
- */
-
-/*
-void ARG::check_mapping() {
-    for (Node_ptr n : node_set) {
-        assert(n->ambiguous_sites.size() == 0);
-    }
-}
- */
-
 void ARG::check_mapping() {
     int total_count = 0;
     int count = 0;
@@ -702,6 +668,25 @@ void ARG::check_mapping() {
         mut_it++;
     }
     cout << "Number of incompatibilities: " << total_count << endl;
+}
+
+int ARG::num_unmapped() {
+    int count = 0;
+    for (auto &x : mutation_branches) {
+        set<Branch> &branches = x.second;
+        if (branches.size() > 1) {
+            if (branches.rbegin()->upper_node == root) {
+                if (branches.size() > 2) {
+                    count += 1;
+                }
+            } else {
+                if (branches.size() > 1) {
+                    count += 1;
+                }
+            }
+        }
+    }
+    return count;
 }
 
 void ARG::check_incompatibility() {
