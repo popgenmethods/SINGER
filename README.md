@@ -45,10 +45,12 @@ Here are some other parameters of the software which we **DON'T** recommend chan
 |-----|-----|--------------|  
 |-hmm_epsilon|optional|the precison parameter in branch-HMM, default at 0.01|
 |-psmc_bins|optional|the number of PSMC time bins, default at 20|
+|-ancestral_prob|optional|the proportion of correctly polarized variants, default at 99%|  
 
 ## Suggestions from developer
 
 1. As a Bayesian sampling method, SINGER works best when you sample some ARGs from posterior, **only using one single sample is NOT ideal**. To this point, we highly encourage specifying **-n, -thinning** flags. You can find how we run SINGER on real datasets on:
 2. To decide whether to run SINGER or fast-SINGER, the best way is to run both on a subset of data (with subsampled individuals on a small genomic region), and compare the inference results from them. If fast-SINGER agrees with SINGER well then it is good to go with fast-SINGER to save computational time. 
-3. It is of importance to carefully choose the parameters, such as -Ne and -r, you can get an estimate of Ne simply by average pairwise differences. If you are not so sure about the recombination rate, use a value from the lower side and let the algorithm tell you more. 
-4. Unfortunately for now we only support phased, high-quality genomes, and polymorphic sites with missingness will be excluded. We are working on incorporating missingness and unphased data. ARGweaver has better support in these regards.
+3. It is of importance to carefully choose the parameters, such as -Ne and -r, you can get an estimate of Ne simply by average pairwise differences. If you are not so sure about the recombination rate, use a value from the lower side and let the algorithm tell you more.
+4. You should use the **-penalty** flag for **real data**, to make most mutations follow Infinite Sites Model. We used -penalty 0.001 for the African dataset and no penalty for simulation dataset. 
+5. Unfortunately for now we only support phased, high-quality genomes, and polymorphic sites with missingness will be excluded. We are working on incorporating missingness and unphased data. ARGweaver has better support in these regards.
