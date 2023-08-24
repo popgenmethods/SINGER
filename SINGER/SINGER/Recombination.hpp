@@ -50,6 +50,10 @@ public:
     
     Branch trace_backward(float t, Branch curr_branch);
     
+    Branch next_joining_branch(Branch removed_branch, Branch joining_branch);
+    
+    Branch prev_joining_branch(Branch removed_branch, Branch joining_branch);
+    
     void remove(Branch prev_removed_branch, Branch next_removed_branch, Branch prev_split_branch, Branch next_split_branch, Node_ptr cut_node);
     
     void remove(Branch prev_removed_branch, Branch next_removed_branch, Branch prev_split_branch, Branch next_split_branch);

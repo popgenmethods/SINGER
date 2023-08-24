@@ -99,49 +99,6 @@ void Normalizer::randomize_mutation_ages(ARG &a) {
     mutation_ages.insert(INT_MAX);
 }
 
-/*
-void Normalizer::randomized_normalize(ARG &a) {
-    get_root_span(a);
-    get_node_span(a);
-    randomize_mutation_ages(a);
-    float active_lineages = accumulate(all_spans.begin(), all_spans.end(), 0);
-    active_lineages += accumulate(all_root_spans.begin(), all_root_spans.end(), 0);
-    float active_length = a.sequence_length;
-    float mean_num_lineages = 0;
-    float delta_k = 0;
-    float prior_rate = 0;
-    float theta = 0;
-    float m = 0;
-    float t = 0.0005;
-    auto m_it = mutation_ages.begin();
-    int j = 0;
-    for (int i = 0; i < all_nodes.size(); i++) {
-        Node_ptr n = all_nodes[i];
-        m = 0;
-        while (*m_it < n->time) {
-            m += 1;
-            m_it++;
-        }
-        mean_num_lineages = active_lineages/active_length;
-        theta = active_lineages*4e-4;
-        t += max(m/theta, 1e-6f);
-        all_nodes[i]->time = t;
-        delta_k = all_spans[i]/active_lineages;
-        prior_rate = mean_num_lineages*(mean_num_lineages - delta_k)/2/delta_k;
-        active_lineages -= all_spans[i];
-        if (n == all_root_nodes[j]) {
-            active_lineages -= all_root_spans[j];
-            active_length -= all_root_spans[j];
-            j++;
-        }
-    }
-    for (auto &x : a.recombinations) {
-        x.second.start_time = -1;
-    }
-    a.heuristic_sample_recombinations();
-}
- */
-
 void Normalizer::randomized_normalize(ARG &a) {}
 
 void Normalizer::normalize(ARG &a, float theta) {
@@ -181,6 +138,7 @@ void Normalizer::normalize(ARG &a, float theta) {
         x.second.start_time = -1;
     }
     a.heuristic_sample_recombinations();
+    // a.adjust_recombinations();
 }
 
 /*

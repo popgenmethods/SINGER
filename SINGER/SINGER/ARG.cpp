@@ -209,16 +209,23 @@ void ARG::remove(tuple<float, Branch, float> cut_point) {
         if (prev_removed_branch.upper_node == root) {
             prev_removed_branch = Branch();
         }
+        if (prev_removed_branch == Branch()) {
+            backward_tree.forward_update(r);
+        }
         prev_joining_branch = backward_tree.find_joining_branch(prev_removed_branch);
         r.remove(prev_removed_branch, next_removed_branch, prev_joining_branch, next_joining_branch, cut_node);
         next_removed_branch = prev_removed_branch;
     }
-    remove_empty_recombinations();
-    remap_mutations();
     start = removed_branches.begin()->first;
     end = removed_branches.rbegin()->first;
+    remove_empty_recombinations();
+    remap_mutations();
     cut_tree.remove(center_branch, cut_node);
-    start_tree = modify_tree_to(start, cut_tree, cut_pos);
+    // start_tree = modify_tree_to(start, cut_tree, cut_pos);
+    backward_tree.remove(removed_branches.begin()->second, cut_node);
+    // assert(start_tree.branches == backward_tree.branches);
+    start_tree = move(backward_tree);
+    end_tree = move(forward_tree);
 }
 
 void ARG::remove(map<float, Branch> seed_branches) {
@@ -319,20 +326,6 @@ void ARG::add(map<float, Branch> &new_joining_branches, map<float, Branch> &adde
     start_tree.add(added_branches.begin()->second, new_joining_branches.begin()->second, cut_node);
 }
 
-/*
-void ARG::smc_sample_recombinations() {
-    RSP_smc rsp = RSP_smc();
-    Tree tree = Tree();
-    for (auto &x : recombinations) {
-        if (x.first != 0 and x.first < sequence_length) {
-            rsp.sample_recombination(x.second, cut_time, tree);
-            assert(x.second.start_time > 0);
-        }
-        tree.forward_update(x.second);
-    }
-}
- */
-
 void ARG::smc_sample_recombinations() {
     RSP_smc rsp = RSP_smc();
     Tree tree = start_tree;
@@ -361,22 +354,18 @@ void ARG::heuristic_sample_recombinations() {
     }
 }
 
-/*
-void ARG::heuristic_sample_recombinations() {
+void ARG::adjust_recombinations() {
     RSP_smc rsp = RSP_smc();
-    Tree tree = get_tree_at(0);
     auto it = recombinations.upper_bound(0);
     while (it->first < sequence_length) {
         Recombination &r = it->second;
         if (r.pos != 0 and r.pos < sequence_length) {
-            rsp.sample_recombination(r, 0, tree);
+            rsp.adjust(r, 0);
             assert(r.start_time > 0);
         }
-        tree.forward_update(r);
         it++;
     }
 }
- */
 
 int ARG::count_incompatibility() {
     Tree tree = Tree();
@@ -440,13 +429,11 @@ void ARG::write_coordinates(string filename) {
 }
 
 void ARG::write(string node_file, string branch_file) {
-    // sort_nodes();
     write_nodes(node_file);
     write_branches(branch_file);
 }
 
 void ARG::write(string node_file, string branch_file, string recomb_file) {
-    // sort_nodes();
     write_nodes(node_file);
     write_branches(branch_file);
     write_recombs(recomb_file);
@@ -768,7 +755,6 @@ float ARG::smc_prior_likelihood(float r) {
 }
 
 float ARG::data_likelihood(float m) {
-    // impute_nodes(0, bin_num);
     float theta = 0;
     float log_likelihood = 0;
     Tree tree = get_tree_at(0);
@@ -875,8 +861,8 @@ float ARG::random() {
 }
 
 void ARG::remove_empty_recombinations() {
-    auto recomb_it = recombinations.begin();
-    while (recomb_it != recombinations.end()) {
+    auto recomb_it = recombinations.lower_bound(start);
+    while (recomb_it->first <= end) {
         Recombination &r = recomb_it->second;
         if (r.deleted_branches.size() == 0 and r.inserted_branches.size() == 0 and r.pos < sequence_length) {
             recomb_it = recombinations.erase(recomb_it);
@@ -1256,11 +1242,12 @@ tuple<float, Branch, float> ARG::sample_internal_cut() {
  */
 
 tuple<float, Branch, float> ARG::sample_internal_cut() {
-    if (end >= sequence_length) {
+    if (end >= sequence_length - 0.1) {
         cut_pos = 0;
         cut_tree = get_tree_at(0);
+        
     } else {
-        cut_tree = modify_tree_to(end, start_tree, start);
+        cut_tree = move(end_tree);
         cut_pos = end;
     }
     Branch b;
@@ -1268,6 +1255,22 @@ tuple<float, Branch, float> ARG::sample_internal_cut() {
     tie(b, t) = cut_tree.sample_cut_point();
     return {cut_pos, b, t};
 }
+
+/*
+tuple<float, Branch, float> ARG::sample_internal_cut() {
+    if (end >= sequence_length) {
+        cut_pos = 0;
+        cut_tree = get_tree_at(0);
+    } else {
+        cut_tree = move(end_tree);
+        cut_pos = end;
+    }
+    Branch b;
+    float t;
+    tie(b, t) = cut_tree.sample_cut_point();
+    return {cut_pos, b, t};
+}
+ */
 
 tuple<float, Branch, float> ARG::sample_recombination_cut() {
     auto recomb_it = recombinations.begin();
@@ -1330,112 +1333,6 @@ tuple<float, Branch, float> ARG::sample_terminal_cut() {
     }
     return {0, branch, time};
 }
-
-/*
-void ARG::normalize(float t, Distribution &d) {
-    map<Node_ptr, float, compare_node> node_span = {};
-    map<Node_ptr, float> node_start = {};
-    for (const Branch &b : recombinations.begin()->second.inserted_branches) {
-        if (b.upper_node->time < t) {
-            node_start[b.upper_node] = 0;
-        }
-    }
-    auto r_it = next(recombinations.begin());
-    while (next(r_it) != recombinations.end()) {
-        Node_ptr dn = r_it->second.deleted_node;
-        Node_ptr in = r_it->second.inserted_node;
-        if (dn->time < t) {
-            assert(node_start.count(dn) > 0);
-            node_span[dn] += r_it->first - node_start[dn];
-            node_start.erase(dn);
-        }
-        if (in->time < t) {
-            node_start[in] = r_it->first;
-        }
-        r_it++;
-    }
-    for (auto x : node_start) {
-        Node_ptr n = x.first;
-        node_span[n] += sequence_length - node_start[n];
-    }
-    float ws = 0;
-    for (auto x : node_span) {
-        ws += x.second;
-    }
-    float q0 = d.get_cdf(t);
-    float w = 0;
-    float q = 0;
-    float correction = 0;
-    for (auto x : node_span) {
-        w += x.second;
-        q = q0*w/ws;
-        correction = d.get_quantile(q);
-        x.first->time = correction;
-    }
-    cut_time = 0;
-    for (auto &x : recombinations) {
-        x.second.start_time = -1;
-    }
-    smc_sample_recombinations();
-}
-
-void ARG::normalize() {
-    set<float> mutation_ages = {};
-    float lb, ub, m;
-    for (auto &x : mutation_branches) {
-        for (auto &y : x.second) {
-            lb = y.lower_node->time;
-            ub = y.upper_node->time;
-            m = random()*(ub - lb) + lb;
-            mutation_ages.insert(m);
-        }
-    }
-    map<Node_ptr, float, compare_node> node_span = {};
-    map<Node_ptr, float> node_start = {};
-    for (const Branch &b : recombinations.begin()->second.inserted_branches) {
-        if (b.upper_node->time < INT_MAX) {
-            node_start[b.upper_node] = 0;
-        }
-    }
-    auto r_it = next(recombinations.begin());
-    while (next(r_it) != recombinations.end()) {
-        Node_ptr dn = r_it->second.deleted_node;
-        Node_ptr in = r_it->second.inserted_node;
-        if (dn->time < INT_MAX) {
-            assert(node_start.count(dn) > 0);
-            node_span[dn] += r_it->first - node_start[dn];
-            node_start.erase(dn);
-        }
-        if (in->time < INT_MAX) {
-            node_start[in] = r_it->first;
-        }
-        r_it++;
-    }
-    for (auto x : node_start) {
-        Node_ptr n = x.first;
-        node_span[n] += sequence_length - node_start[n];
-    }
-    float num_lineages = sample_nodes.size()*sequence_length;
-    float theta = 4e-4;
-    float count = 0;
-    float correction = 0;
-    auto n_it = node_span.begin();
-    auto m_it = mutation_ages.begin();
-    while (n_it != node_span.end()) {
-        Node_ptr n = n_it->first;
-        count = 0;
-        while (*m_it < n->time) {
-            count += 1;
-            m_it++;
-        }
-        correction += max(count/num_lineages/theta, 1e-6f);
-        n->time = correction;
-        num_lineages -= n_it->second;
-        n_it++;
-    }
-    smc_sample_recombinations();
-}
-*/
 
 bool compare_edge(const tuple<int, int, float, float>& edge1, const tuple<int, int, float, float>& edge2) {
     if (get<0>(edge1) < get<0>(edge2)) {

@@ -83,6 +83,19 @@ Branch Recombination::trace_backward(float t, Branch curr_branch) {
     }
 }
 
+Branch Recombination::prev_joining_branch(Branch removed_branch, Branch joining_branch) {
+    if (not affect(removed_branch) and not affect(joining_branch)) {
+        return joining_branch;
+    }
+    if (removed_branch == source_branch) {
+        return target_branch;
+    }
+    if (removed_branch == target_branch) {
+        
+    }
+    return Branch();
+}
+
 void Recombination::remove(Branch prev_removed_branch, Branch next_removed_branch, Branch prev_split_branch, Branch next_split_branch, Node_ptr cut_node) {
     if (deleted_branches.size() == 0 and inserted_branches.size() == 0) {
         return;

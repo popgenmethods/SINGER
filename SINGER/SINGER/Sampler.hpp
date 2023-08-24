@@ -108,6 +108,8 @@ public:
     void write_iterative_start();
     
     void write_sample();
+    
+    void write_sample(tuple<float, Branch, float> cut_point);
 };
 
 #endif /* Sampler_hpp */

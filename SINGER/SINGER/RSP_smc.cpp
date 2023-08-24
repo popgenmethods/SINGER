@@ -193,6 +193,22 @@ void RSP_smc::approx_sample_recombination(Recombination &r, float cut_time) {
     assert(r.start_time > cut_time);
 }
 
+void RSP_smc::adjust(Recombination &r, float cut_time) {
+    if (r.pos == 0) {
+        return;
+    }
+    if (r.start_time > 0) {
+        return;
+    }
+    if (r.deleted_branches.size() == 0) {
+        return;
+    }
+    float lb, ub;
+    lb = max(cut_time, r.source_branch.lower_node->time);
+    ub = min(r.source_branch.upper_node->time, r.inserted_node->time);
+    r.start_time = random_time(lb, ub, 0.005);
+}
+
 // private methods:
 
 float RSP_smc::recomb_pdf(float s, float t) {
@@ -228,18 +244,12 @@ void RSP_smc::get_coalescence_rate(Tree &tree, Recombination &r, float cut_time)
     }
 }
 
-float RSP_smc::random() {
-    float p = uniform_random();
-    p = 0.1 + 0.9*p;
-    return p;
-}
-
 float RSP_smc::random_time(float lb, float ub) {
-    float t = (0.01*random() + 0.99)*(ub - lb) + lb;
+    float t = (uniform_random()*0.01 + 0.99)*(ub - lb) + lb;
     return t;
 }
 
 float RSP_smc::random_time(float lb, float ub, float q) {
-    float t = (q*random() + (1 - q))*(ub - lb) + lb;
+    float t = (q*uniform_random() + (1 - q))*(ub - lb) + lb;
     return t;
 }

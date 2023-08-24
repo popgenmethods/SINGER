@@ -911,6 +911,9 @@ float TSP_smc::exp_median(float lb, float ub) {
     if (ub - lb <= 0.005) {
         return (0.45 + 0.1*random())*(ub - lb) + lb;
     }
+    if (lb > 10) {
+        return (0.45 + 0.1*random())*(ub - lb) + lb;
+    }
     float lq = 1 - exp(-lb);
     float uq = 1 - exp(-ub);
     float mq = (0.45 + 0.1*random())*(uq - lq) + lq;

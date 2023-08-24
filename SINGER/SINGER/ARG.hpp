@@ -44,6 +44,7 @@ public:
     float cut_pos = 0;
     Tree cut_tree;
     Tree start_tree;
+    Tree end_tree;
     
     ARG();
     
@@ -86,6 +87,8 @@ public:
     void smc_sample_recombinations();
     
     void heuristic_sample_recombinations();
+    
+    void adjust_recombinations();
     
     int count_incompatibility();
     

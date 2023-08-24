@@ -43,6 +43,7 @@ void approx_BSP::start(set<Branch> &branches, float t) {
             temp.push_back(p);
         }
     }
+    cutoff = min(0.01f, cutoff/curr_intervals.size()); // adjust cutoff based on number of states;
     forward_probs.push_back(temp);
     weight_sums.push_back(0.0);
     set_dimensions();
