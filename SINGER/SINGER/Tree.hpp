@@ -20,9 +20,11 @@ class Tree {
 
 public:
     
-    set<Branch> branches = {};
+    // set<Branch> branches = {};
     map<Node_ptr, Node_ptr, compare_node> parents = {};
     unordered_map<Node_ptr, unordered_set<Node_ptr>> children = {};
+    
+    float root_time = 0;
     
     Tree();
     

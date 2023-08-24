@@ -74,14 +74,16 @@ void Trace_pruner::start_search(ARG &a, float m) {
     seed_trees[m] = a.internal_modify_tree_to(m, seed_trees[x0], x0);
     length += abs(m - x0);
     float min_mismatch = INT_MAX;
-    for (Branch b : seed_trees[m].branches) {
-        if (b.upper_node->time > cut_time) {
+    for (auto &x : seed_trees[m].parents) {
+        if (x.second->time > cut_time) {
+            Branch b = Branch(x.first, x.second);
             mismatch = count_mismatch(b, n, m);
             min_mismatch = min(mismatch, min_mismatch);
         }
     }
-    for (Branch b : seed_trees[m].branches) {
-        if (b.upper_node->time > cut_time) {
+    for (auto &x : seed_trees[m].parents) {
+        if (x.second->time > cut_time) {
+            Branch b = Branch(x.first, x.second);
             mismatch = count_mismatch(b, n, m);
             if (mismatch == min_mismatch) {
                 lb = max(cut_time, b.lower_node->time);
@@ -124,7 +126,7 @@ void Trace_pruner::write_reduction_distance(ARG &a, string filename) {
         int min_distance = INT_MAX;
         int distance = INT_MAX;
         for (Branch b : reduced_set) {
-            assert(tree.branches.count(b) > 0);
+            assert(tree.parents[b.lower_node] == b.upper_node);
             distance = tree.distance(joining_branch.lower_node, b.lower_node);
             min_distance = min(min_distance, distance);
         }

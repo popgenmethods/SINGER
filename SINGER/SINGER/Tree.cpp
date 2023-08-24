@@ -10,6 +10,7 @@
 Tree::Tree() {
 }
 
+/*
 float Tree::length() {
     float l = 0;
     for (Branch b : branches) {
@@ -19,11 +20,22 @@ float Tree::length() {
     }
     return l;
 }
+ */
+
+float Tree::length() {
+    float l = 0;
+    for (auto &x : parents) {
+        if (x.second->index != -1) {
+            l += x.second->time - x.first->time;
+        }
+    }
+    return l;
+}
 
 void Tree::delete_branch(const Branch &b) {
     assert(b.upper_node != nullptr and b.lower_node != nullptr);
-    assert(branches.count(b) > 0);
-    branches.erase(b);
+    // assert(branches.count(b) > 0);
+    // branches.erase(b);
     parents.erase(b.lower_node);
     unordered_set<Node_ptr> &children_nodes = children[b.upper_node];
     if (children_nodes.size() == 1) {
@@ -35,18 +47,21 @@ void Tree::delete_branch(const Branch &b) {
 
 void Tree::insert_branch(const Branch &b) {
     assert(b.upper_node != nullptr and b.lower_node != nullptr);
-    assert(branches.count(b) == 0);
-    branches.insert(b);
+    // assert(branches.count(b) == 0);
+    // branches.insert(b);
     parents[b.lower_node] = b.upper_node;
     children[b.upper_node].insert(b.lower_node);
+    if (isinf(b.upper_node->time)) {
+        root_time = b.lower_node->time;
+    }
 }
 
 void Tree::internal_insert_branch(const Branch &b, float cut_time) {
     if (b.upper_node->time <= cut_time) {
         return;
     }
-    assert(branches.count(b) == 0);
-    branches.insert(b);
+    // assert(branches.count(b) == 0);
+    // branches.insert(b);
     parents[b.lower_node] = b.upper_node;
     children[b.upper_node].insert(b.lower_node);
 }
@@ -55,8 +70,8 @@ void Tree::internal_delete_branch(const Branch &b, float cut_time) {
     if (b.upper_node->time <= cut_time) {
         return;
     }
-    assert(branches.count(b) > 0);
-    branches.erase(b);
+    // assert(branches.count(b) > 0);
+    // branches.erase(b);
     parents.erase(b.lower_node);
     unordered_set<Node_ptr> &children_nodes = children[b.upper_node];
     if (children_nodes.size() == 1) {
@@ -85,7 +100,7 @@ void Tree::backward_update(Recombination &r) {
 }
 
 void Tree::remove(Branch b, Node_ptr n) {
-    assert(branches.count(b) > 0);
+    // assert(branches.count(b) > 0);
     assert(b.upper_node->index >= 0);
     Branch joining_branch = find_joining_branch(b);
     Node_ptr sibling = find_sibling(b.lower_node);
@@ -94,8 +109,8 @@ void Tree::remove(Branch b, Node_ptr n) {
     Branch parent_branch = Branch(b.upper_node, parent);
     Branch cut_branch = Branch(b.lower_node, n);
     delete_branch(b);
-    assert(branches.count(sibling_branch) > 0);
-    assert(branches.count(parent_branch) > 0);
+    // assert(branches.count(sibling_branch) > 0);
+    // assert(branches.count(parent_branch) > 0);
     delete_branch(sibling_branch);
     delete_branch(parent_branch);
     insert_branch(joining_branch);
@@ -178,12 +193,11 @@ pair<Branch, float> Tree::sample_cut_point() {
 */
 
 pair<Branch, float> Tree::sample_cut_point() {
-    float t_max = branches.rbegin()->lower_node->time;
-    float cut_time = random()*t_max;
+    float cut_time = random()*root_time;
     vector<Branch> candidates = {};
-    for (const Branch &b : branches) {
-        if (b.upper_node->time > cut_time and b.lower_node->time <= cut_time) {
-            candidates.push_back(b);
+    for (auto &x : parents) {
+        if (x.second->time > cut_time and x.first->time <= cut_time) {
+            candidates.push_back(Branch(x.first, x.second));
         }
     }
     int index = (int) floor(candidates.size()*uniform_random());
@@ -191,10 +205,9 @@ pair<Branch, float> Tree::sample_cut_point() {
 }
 
 void Tree::internal_cut(float cut_time) {
-    for (auto it = branches.begin(); it != branches.end();) {
-        if (it->upper_node->time <= cut_time) {
-            parents.erase(it->lower_node);
-            it = branches.erase(it);
+    for (auto it = parents.begin(); it != parents.end();) {
+        if (it->second->time <= cut_time) {
+            it = parents.erase(it);
         } else {
             ++it;
         }
@@ -222,10 +235,10 @@ void Tree::internal_backward_update(Recombination &r, float cut_time) {
 float Tree::prior_likelihood() {
     float log_likelihood = 0;
     set<float> coalescence_times = {};
-    int num_leaves = (int) (branches.size() + 1)/2;
-    for (Branch b : branches) {
-        coalescence_times.insert(b.lower_node->time);
-        coalescence_times.insert(b.upper_node->time);
+    int num_leaves = (int) (parents.size() + 1)/2;
+    for (auto &x : parents) {
+        coalescence_times.insert(x.first->time);
+        coalescence_times.insert(x.second->time);
     }
     vector<float> sorted_coalescence_times = vector(coalescence_times.begin(), coalescence_times.end());
     for (int i = 0; i < num_leaves - 1; i++) {
@@ -239,7 +252,8 @@ float Tree::prior_likelihood() {
 float Tree::data_likelihood(float theta, float pos) {
     float log_likelihood = 0;
     float branch_likelihood = 0;
-    for (Branch b : branches) {
+    for (auto &x : parents) {
+        Branch b = Branch(x.first, x.second);
         if (b.length() != numeric_limits<float>::infinity()) {
             float sl = b.lower_node->get_state(pos);
             float su = b.upper_node->get_state(pos);
@@ -272,9 +286,9 @@ float Tree::transition_likelihood(Recombination &r) {
     float log_likelihood = 0;
     log_likelihood -= log(length());
     set<float> coalescence_times = {};
-    for (Branch b : branches) {
-        if (b.upper_node->time > r.start_time) {
-            coalescence_times.insert(b.upper_node->time);
+    for (auto &x : parents) {
+        if (x.second->time > r.start_time) {
+            coalescence_times.insert(x.second->time);
         }
     }
     vector<float> sorted_coalescence_times = vector(coalescence_times.begin(), coalescence_times.end());
@@ -340,8 +354,8 @@ void Tree::impute_states(float m, set<Branch> &mutation_branches) {
         states[b.lower_node] = b.lower_node->get_state(m);
         states[b.upper_node] = b.upper_node->get_state(m);
     }
-    for (const Branch &b : branches) {
-        impute_states_helper(b.lower_node, states);
+    for (auto &x : parents) {
+        impute_states_helper(x.first, states);
     }
     for (auto &x : states) {
         x.first->write_state(m, x.second);

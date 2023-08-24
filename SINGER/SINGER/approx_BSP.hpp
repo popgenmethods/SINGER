@@ -86,6 +86,8 @@ public:
     
     void start(set<Branch> &branches, float t);
     
+    void start(Tree &tree, float t);
+    
     void set_cutoff(float x);
     
     void set_emission(shared_ptr<Emission> e);

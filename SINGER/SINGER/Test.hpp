@@ -15,10 +15,6 @@
 
 void test_read_arg();
 
-void test_parsimony_pruner();
-
-void test_pruner_efficiency();
-
 void test_trace_pruner();
 
 void test_iterative_start();

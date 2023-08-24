@@ -166,7 +166,7 @@ void Threader_smc::run_BSP(ARG &a) {
     bsp.reserve_memory(end_index - start_index);
     bsp.set_cutoff(cutoff);
     bsp.set_emission(e);
-    bsp.start(a.start_tree.branches, cut_time);
+    bsp.start(a.start_tree, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
     auto query_it = a.removed_branches.begin();
@@ -206,7 +206,7 @@ void Threader_smc::run_fast_BSP(ARG &a) {
     fbsp.set_cutoff(cutoff);
     fbsp.set_emission(e);
     set<Interval_info> start_intervals = pruner.insertions.begin()->second;
-    fbsp.start(a.start_tree.branches, start_intervals, cut_time);
+    fbsp.start(a.start_tree, start_intervals, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
     auto query_it = a.removed_branches.begin();
@@ -358,7 +358,7 @@ float Threader_smc::acceptance_ratio(ARG &a) {
  */
 
 float Threader_smc::acceptance_ratio(ARG &a) {
-    float cut_height = a.cut_tree.branches.rbegin()->lower_node->time;
+    float cut_height = a.cut_tree.root_time;
     float old_height = cut_height;
     float new_height = cut_height;
     auto old_join_it = a.joining_branches.upper_bound(a.cut_pos);

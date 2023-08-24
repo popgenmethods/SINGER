@@ -52,6 +52,40 @@ void approx_BSP::start(set<Branch> &branches, float t) {
     temp.clear();
 }
 
+void approx_BSP::start(Tree &tree, float t) {
+    cut_time = t;
+    curr_index = 0;
+    for (auto &x : tree.parents) {
+        if (x.second->time > cut_time) {
+            valid_branches.insert(Branch(x.first, x.second));
+        }
+    }
+    float lb = 0;
+    float ub = 0;
+    float p = 0;
+    Interval_ptr new_interval = nullptr;
+    cc = make_shared<approx_coalescent_calculator>(cut_time);
+    cc->start(valid_branches);
+    for (auto &x : tree.parents) {
+        if (x.second->time > cut_time) {
+            lb = max(x.first->time, cut_time);
+            ub = x.second->time;
+            p = cc->prob(lb, ub);
+            new_interval = create_interval(Branch(x.first, x.second), lb, ub, curr_index);
+            new_interval->source_pos = curr_index;
+            curr_intervals.push_back(new_interval);
+            temp.push_back(p);
+        }
+    }
+    cutoff = min(0.01f, cutoff/curr_intervals.size()); // adjust cutoff based on number of states;
+    forward_probs.push_back(temp);
+    weight_sums.push_back(0.0);
+    set_dimensions();
+    compute_interval_info();
+    state_spaces[curr_index] = curr_intervals;
+    temp.clear();
+}
+
 void approx_BSP::set_cutoff(float x) {
     cutoff = x;
 }

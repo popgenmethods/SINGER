@@ -83,7 +83,7 @@ public:
     
     void start(set<Branch> &start_branches, set<Interval_info> &start_intervals, float t);
     
-    void start(unordered_set<Branch, branch_hash> &start_branches, set<Interval_info> &start_intervals, float t);
+    void start(Tree &tree, set<Interval_info> &start_intervals, float t);
     
     // void start(set<Branch> &branches, float t);
     

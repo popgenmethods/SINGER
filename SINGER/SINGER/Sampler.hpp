@@ -12,7 +12,6 @@
 #include <chrono>
 #include <sstream>
 #include "ARG.hpp"
-#include "Parsimony_pruner.hpp"
 #include "Threader_smc.hpp"
 #include "Binary_emission.hpp"
 #include "Emission.hpp"
@@ -35,7 +34,7 @@ public:
     double bsp_c;
     double tsp_q;
     float penalty = 1;
-    int random_seed = 0;
+    int random_seed = 5319;
     shared_ptr<Emission> eh = make_shared<Binary_emission>();
     int sample_index = 0;
     set<Node_ptr, compare_node> sample_nodes = {};

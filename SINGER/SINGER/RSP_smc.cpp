@@ -231,9 +231,9 @@ float RSP_smc::recomb_pdf(float s, float t) {
 void RSP_smc::get_coalescence_rate(Tree &tree, Recombination &r, float cut_time) {
     coalescence_rates.clear();
     vector<float> coalescence_times = {cut_time};
-    for (Branch b : tree.branches) {
-        if (b.lower_node->time > cut_time and b.lower_node != r.deleted_node) {
-            coalescence_times.push_back(b.lower_node->time);
+    for (auto &x : tree.parents) {
+        if (x.first->time > cut_time and x.second != r.deleted_node) {
+            coalescence_times.push_back(x.first->time);
         }
     }
     coalescence_times.push_back(numeric_limits<float>::infinity());

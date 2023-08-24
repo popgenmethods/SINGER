@@ -39,9 +39,9 @@ void Fitch_reconstruction::fill_tree_info(Tree tree) {
     node_set.clear();
     children_nodes.clear();
     parent_node.clear();
-    for (Branch b : tree.branches) {
-        Node_ptr u = b.upper_node;
-        Node_ptr l = b.lower_node;
+    for (auto &x : tree.parents) {
+        Node_ptr u = x.second;
+        Node_ptr l = x.first;
         node_set.insert(l);
         parent_node.insert({l, u});
         if (children_nodes.count(u) > 0) {

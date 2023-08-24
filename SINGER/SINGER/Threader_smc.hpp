@@ -22,7 +22,6 @@
 #include "fast_BSP.hpp"
 #include "approx_BSP.hpp"
 #include "TSP_smc.hpp"
-#include "Parsimony_pruner.hpp"
 #include "Trace_pruner.hpp"
 
 class Threader_smc {

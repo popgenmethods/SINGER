@@ -616,11 +616,11 @@ void ARG::map_mutation(Tree tree, float x) {
     set<Branch> branches = {};
     float sl = 0;
     float su = 0;
-    for (Branch b : tree.branches) {
-        sl = b.lower_node->get_state(x);
-        su = b.upper_node->get_state(x);
+    for (auto &y : tree.parents) {
+        sl = y.first->get_state(x);
+        su = y.second->get_state(x);
         if (sl != su) {
-            branches.insert({b});
+            branches.insert({Branch(y.first, y.second)});
         }
     }
     mutation_branches[x] = branches;
@@ -641,10 +641,10 @@ void ARG::check_mapping() {
             recomb_it++;
         }
         count = -1;
-        for (const Branch &b : tree.branches) {
-            if (b.upper_node->get_state(m) != b.lower_node->get_state(m)) {
-                assert(mapped_branches.count(b) > 0);
-                if (b.upper_node != root) {
+        for (auto &x : tree.parents) {
+            if (x.second->get_state(m) != x.first->get_state(m)) {
+                assert(mapped_branches.count(Branch(x.first, x.second)) > 0);
+                if (x.second != root) {
                     count += 1;
                 }
             }
@@ -874,10 +874,10 @@ void ARG::remove_empty_recombinations() {
 
 int ARG::count_incompatibility(Tree tree, float x) {
     int count = -1;
-    for (Branch b : tree.branches) {
-        if (b.upper_node->index >= 0) {
-            int i1 = b.upper_node->get_state(x);
-            int i2 = b.lower_node->get_state(x);
+    for (auto &y : tree.parents) {
+        if (y.second->index >= 0) {
+            int i1 = y.second->get_state(x);
+            int i2 = y.first->get_state(x);
             if (i1 != i2) {
                 count += 1;
             }
@@ -1325,9 +1325,9 @@ tuple<float, Branch, float> ARG::sample_terminal_cut() {
     int index = rand() % nodes.size();
     Node_ptr terminal_node = nodes[index];
     cut_tree = get_tree_at(0);
-    for (Branch b : cut_tree.branches) {
-        if (b.lower_node == terminal_node) {
-            branch = b;
+    for (auto &x : cut_tree.parents) {
+        if (x.first == terminal_node) {
+            branch = Branch(x.first, x.second);
             break;
         }
     }
