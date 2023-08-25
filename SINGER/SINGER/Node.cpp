@@ -15,10 +15,18 @@ void Node::set_index(int index) {
     this->index = index;
 }
 
+/*
 void Node::add_mutation(float pos) {
     mutation_sites.insert(pos);
 }
+ */
 
+void Node::add_mutation(float pos) {
+    mutation_sites[pos] = 1;
+}
+
+
+/*
 float Node::get_state(float pos) {
     if (mutation_sites.count(pos) > 0) {
         return 1;
@@ -40,6 +48,32 @@ void Node::write_state(float pos, float s) {
     } else if (s == 1) {
         ambiguous_sites.erase(pos);
         mutation_sites.insert(pos);
+    }
+    return;
+}
+ */
+
+float Node::get_state(float pos) {
+    auto it = mutation_sites.find(pos);
+    if (it == mutation_sites.end()) {
+        return 0;
+    } else {
+        return it->second;
+    }
+}
+
+void Node::write_state(float pos, float s) {
+    auto it = mutation_sites.find(pos);
+    if (s == 0) {
+        if (it != mutation_sites.end()) {
+            mutation_sites.erase(pos);
+        }
+    } else {
+        if (it == mutation_sites.end()) {
+            mutation_sites[pos] = s;
+        } else {
+            it->second = s;
+        }
     }
     return;
 }

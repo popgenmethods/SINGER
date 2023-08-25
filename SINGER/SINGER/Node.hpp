@@ -13,6 +13,7 @@
 #include <fstream>
 #include <vector>
 #include <set>
+#include <map>
 #include <unordered_set>
 #include <cassert>
 #include <climits>
@@ -25,9 +26,10 @@ class Node {
     
 public:
     
-    unordered_set<float> mutation_sites = {};
-    unordered_set<float> ambiguous_sites = {};
+    // unordered_set<float> mutation_sites = {};
+    // unordered_set<float> ambiguous_sites = {};
     // set<float>::iterator it = mutation_sites.begin();
+    map<float, float> mutation_sites = {};
     
     int index = 0;
     

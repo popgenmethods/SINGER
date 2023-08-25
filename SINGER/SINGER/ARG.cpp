@@ -71,8 +71,8 @@ void ARG::build_singleton_arg(Node_ptr n) {
 
 void ARG::add_sample(Node_ptr n) {
     sample_nodes.insert(n);
-    for (float x : n->mutation_sites) {
-        mutation_sites.insert(x);
+    for (auto &x : n->mutation_sites) {
+        mutation_sites.insert(x.first);
     }
     removed_branches.clear();
     removed_branches[0] = Branch(n, root);
