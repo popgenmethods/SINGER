@@ -53,6 +53,7 @@ void Node::write_state(float pos, float s) {
 }
  */
 
+/*
 float Node::get_state(float pos) {
     auto it = mutation_sites.find(pos);
     if (it == mutation_sites.end()) {
@@ -77,28 +78,14 @@ void Node::write_state(float pos, float s) {
     }
     return;
 }
-
-/*
+*/
+ 
 float Node::get_state(float pos) {
-    if (it == mutation_sites.begin()) {
-        it = mutation_sites.upper_bound(pos);
-        it--;
-    } else if (*prev(it) > pos or *next(it) < pos) {
-        it = mutation_sites.upper_bound(pos);
-        it--;
-    }
-    if (*it == pos) {
-        return 1;
-    } else if (pos > *it) {
-        if (*next(it) == pos) {
-            it++;
-            return 1;
-        }
-    } else if (pos < *it) {
-        if (*prev(it) == pos) {
-            it--;
-            return 1;
-        }
+    move_iterator(pos);
+    if (it->first == pos) {
+        return it->second;
+    } else {
+        return 0;
     }
     return 0;
 }
@@ -106,13 +93,15 @@ float Node::get_state(float pos) {
 void Node::write_state(float pos, float s) {
     if (s == 0) {
         mutation_sites.erase(pos);
+        if (it->first == pos) {
+            it = mutation_sites.begin();
+        }
         return;
     } else if (s == 1) {
-        mutation_sites.insert(pos);
+        mutation_sites[pos] = s;
     }
     return;
 }
- */
 
 void Node::read_mutation(string filename) {
     ifstream fin(filename);
@@ -128,4 +117,35 @@ void Node::read_mutation(string filename) {
 
 shared_ptr<Node> new_node(float t) {
     return make_shared<Node>(t);
+}
+
+void Node::move_iterator(float m) {
+    if (it->first == m) {
+        return;
+    }
+    float next_pos = next(it)->first;
+    float prev_pos = prev(it)->first;
+    if (it->first < m) {
+        if (next_pos == m) {
+            ++it;
+            return;
+        } else if (next_pos > m) {
+            return;
+        }
+    } else if (it->first > m and prev_pos <= m) {
+        --it;
+        return;
+    }
+    if (abs(it->first - m) < 20) {
+        while (it != mutation_sites.begin() and it->first > m) {
+            --it;
+        }
+        while (next(it) != mutation_sites.end() and next(it)->first <= m) {
+            ++it;
+        }
+    } else {
+        it = mutation_sites.upper_bound(m);
+        --it;
+    }
+    assert(it->first <= m and next(it)->first > m);
 }

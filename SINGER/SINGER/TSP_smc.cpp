@@ -7,6 +7,8 @@
 
 #include "TSP_smc.hpp"
 
+int TSP_smc::counter = 0;
+
 TSP_smc::TSP_smc() {
 }
 
@@ -932,6 +934,8 @@ Node_ptr TSP_smc::sample_joining_node(Interval *interval) {
     } else {
         t = sample_time(interval->lb, interval->ub);
         n = new_node(t);
+        n->set_index(counter);
+        counter += 1;
     }
     assert(n != nullptr);
     return n;

@@ -24,6 +24,7 @@ public:
     float epsilon = 1e-7;
     set<float> check_points = {};
     shared_ptr<Emission> eh;
+    static int counter;
     
     TSP_smc();
     

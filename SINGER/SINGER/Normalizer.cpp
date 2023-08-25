@@ -106,7 +106,6 @@ void Normalizer::normalize(ARG &a, float theta) {
     get_node_span(a);
     partition_arg(a);
     count_mutations(a);
-    calculate_branch_length(a, 8e4);
     float t = 1.0/a.Ne;
     int k = 0;
     new_grid.resize(old_grid.size());
@@ -137,8 +136,8 @@ void Normalizer::normalize(ARG &a, float theta) {
     for (auto &x : a.recombinations) {
         x.second.start_time = -1;
     }
-    a.heuristic_sample_recombinations();
-    // a.adjust_recombinations();
+    // a.heuristic_sample_recombinations();
+    a.adjust_recombinations();
 }
 
 /*

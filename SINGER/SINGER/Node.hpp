@@ -13,6 +13,7 @@
 #include <fstream>
 #include <vector>
 #include <set>
+#include <unordered_map>
 #include <map>
 #include <unordered_set>
 #include <cassert>
@@ -29,7 +30,8 @@ public:
     // unordered_set<float> mutation_sites = {};
     // unordered_set<float> ambiguous_sites = {};
     // set<float>::iterator it = mutation_sites.begin();
-    map<float, float> mutation_sites = {};
+    map<float, float> mutation_sites = {{-2, 0}, {-1, 0}, {INT_MAX, 0}};
+    map<float, float>::iterator it = next(mutation_sites.begin());
     
     int index = 0;
     
@@ -48,6 +50,8 @@ public:
     void write_state(float pos, float s);
     
     void read_mutation(string filename);
+    
+    void move_iterator(float m);
 };
 
 shared_ptr<Node> new_node(float t);
@@ -60,6 +64,10 @@ struct compare_node {
         } else if (n1->index != n2->index) {
             return n1->index < n2->index;
         } else {
+            if (n1 != n2) {
+                cerr << "bad comparison" << endl;
+                exit(1);
+            }
             return n1 < n2;
         }
     }
