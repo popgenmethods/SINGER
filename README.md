@@ -1,5 +1,5 @@
 # SINGER
-SINGER stands for Sampling and inference of genealogies with recombination, and it is a Bayesian method to do posterior sampling of Ancestral Recombination Graph under Sequentially Markovian Coalescent. 
+SINGER stands for Sampling and inference of genealogies with recombination, and it is a Bayesian method to do posterior sampling of Ancestral Recombination Graph under Sequentially Markovian Coalescent. SINGER works by iterative threading one haplotype to the partially-built ARG, until the ARG for all haplotypes have been built. After initialization, MCMC will be performed to update the ARG to explore the posterior distribution. For a full description and cite our method, use:
 
 
 Here we maintained the version which is under active development, but you can still direclty download the binary files for all past versions. 
@@ -37,13 +37,14 @@ We specify the details of the arguments here:
 |**-n**|optional|MCMC iterations to run, default at 0, only getting initialization|
 |**-thin**|optional|we sample the ARG from MCMC every this number of iterations, default at 1|
 |**-seed**|optional|the seed for random number generator, default at 5498u in C++ standard|
+|**-bandwith**|optional|the bandwidth of the search in fast-SINGER, default at INT_MAX|
 
 Here are some other parameters of the software which we **DON'T** recommend changing, unless you really understand what they do in the algorithms and then feel necesary to do so:
 
 |flag|required?|details|  
 |-----|-----|--------------|  
-|-penalty|optional|extra penaly for violation of infinite sites model, default at 0.01|
-|-polar_penalty|optional|the proportion of incorrectly polarized variants, default at 0.01|  
+|-penalty|optional|extra penalty for violation of infinite sites model, default at 0.01|
+|-polar_penalty|optional|extra penalty for flipping mutation ancestral states, default at 0.01|  
 |-hmm_epsilon|optional|the precison parameter in branch-HMM, default at 0.01|
 |-psmc_bins|optional|the number of PSMC time bins, default at 20|
 
