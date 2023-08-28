@@ -38,13 +38,13 @@ We specify the details of the arguments here:
 |**-thin**|optional|we sample the ARG from MCMC every this number of iterations, default at 1|
 |**-seed**|optional|the seed for random number generator, default at 5498u in C++ standard|
 |**-bandwith**|optional|the bandwidth of the search in fast-SINGER, default at INT_MAX|
+|**-polar**|optional|the probability of incorrectly phased probability, default at 0.01|
 
 Here are some other parameters of the software which we **DON'T** recommend changing, unless you really understand what they do in the algorithms and then feel necesary to do so:
 
 |flag|required?|details|  
 |-----|-----|--------------|  
 |-penalty|optional|extra penalty for violation of infinite sites model, default at 0.01|
-|-polar_penalty|optional|extra penalty for flipping mutation ancestral states, default at 0.01|  
 |-hmm_epsilon|optional|the precison parameter in branch-HMM, default at 0.01|
 |-psmc_bins|optional|the number of PSMC time bins, default at 20|
 
