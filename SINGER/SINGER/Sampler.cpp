@@ -134,7 +134,8 @@ void Sampler::load_vcf(string prefix, float start, float end) {
     string index_file = prefix + ".index";
     ifstream idx_stream(index_file);
     if (!idx_stream.is_open()) {
-        throw("Index file not found: " + index_file);
+        cerr << "Index file not found: " + index_file << endl;
+        exit(1);
     }
     string line;
     long byte_offset = -1;
@@ -149,11 +150,12 @@ void Sampler::load_vcf(string prefix, float start, float end) {
         }
     }
     if (byte_offset == -1) {
-        throw("Start position not found in index file: " + index_file);
+        cerr << "Start position not found in index file: " + index_file << endl;
+        exit(1);
     }
     ifstream vcf_stream(vcf_file, ios::binary);
     if (!vcf_stream.is_open()) {
-        throw("VCF file not found: " + vcf_file);
+        cerr << "VCF file not found: " + vcf_file << endl;
     }
     vcf_stream.seekg(byte_offset, ios::beg);
     int prev_pos = -1;
@@ -224,7 +226,7 @@ void Sampler::load_vcf(string prefix, float start, float end) {
         }
     }
     if (valid_mutation < 3) {
-        throw("there are too few variants in this region, algorithm not run");
+        cerr << "there are too few variants in this region, algorithm not run" << endl;
     }
     num_samples = (int) sample_nodes.size();
     ordered_sample_nodes = vector<Node_ptr>(sample_nodes.begin(), sample_nodes.end());

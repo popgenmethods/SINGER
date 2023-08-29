@@ -207,166 +207,177 @@ int main(int argc, const char * argv[]) {
         if (arg == "-fast") {
             if (i + 1 < argc && argv[i+1][0] != '-') {
                 cerr << "Error: -fast flag doesn't take any value. " << endl;
-                return 1;
+                exit(1);
             }
             fast = true;
         }
         else if (arg == "-Ne") {
             if (i + 1 >= argc || argv[i+1][0] == '-') {
                 cerr << "Error: -Ne flag cannot be empty. " << endl;
-                return 1;
+                exit(1);
             }
             try {
                 Ne = stod(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -Ne flag expects a number. " << endl;
-                return 1;
+                exit(1);
             }
             Ne = 2*Ne;
         }
         else if (arg == "-r") {
             if (i + 1 >= argc || argv[i+1][0] == '-') {
                 cerr << "Error: -r flag cannot be empty. " << endl;
-                return 1;
+                exit(1);
             }
             try {
                 r = stod(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -r flag expects a number. " << endl;
-                return 1;
+                exit(1);
             }
         }
         else if (arg == "-m") {
             if (i + 1 >= argc || argv[i+1][0] == '-') {
                 cerr << "Error: -m flag cannot be empty. " << endl;
-                return 1;
+                exit(1);
             }
             try {
                 m = stod(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -r flag expects a number. " << endl;
-                return 1;
+                exit(1);
             }
         }
         else if (arg == "-penalty") {
             if (i + 1 >= argc || argv[i+1][0] == '-') {
                 cerr << "Error: -penalty flag cannot be empty. " << endl;
-                return 1;
+                exit(1);
             }
             try {
                 penalty = stod(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -penalty flag expects a number. " << endl;
-                return 1;
+                exit(1);
             }
         }
         else if (arg == "-hmm_epsilon") {
             if (i + 1 >= argc || argv[i+1][0] == '-') {
                 cerr << "Error: -hmm_epsilon flag cannot be empty. " << endl;
-                return 1;
+                exit(1);
             }
             try {
                 epsilon_hmm = stod(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -hmm_epsilon flag expects a number. " << endl;
-                return 1;
+                exit(1);
             }
         }
         else if (arg == "-psmc_bins") {
             if (i + 1 >= argc || argv[i+1][0] == '-') {
                 cerr << "Error: -psmc_epsilon flag cannot be empty. " << endl;
-                return 1;
+                exit(1);
             }
             try {
                 epsilon_psmc = 1.0/stod(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -p flag expects a number. " << endl;
-                return 1;
+                exit(1);
             }
         }
         else if (arg == "-start") {
             if (i + 1 >= argc || argv[i+1][0] == '-') {
                 cerr << "Error: -start flag cannot be empty. " << endl;
-                return 1;
+                exit(1);
             }
             try {
                 start_pos = stod(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -start flag expects a number. " << endl;
-                return 1;
+                exit(1);
             }
         }
         else if (arg == "-end") {
             if (i + 1 >= argc || argv[i+1][0] == '-') {
                 cerr << "Error: -end flag cannot be empty. " << endl;
-                return 1;
+                exit(1);
             }
             try {
                 end_pos = stod(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -end flag expects a number. " << endl;
-                return 1;
+                exit(1);
             }
         }
         else if (arg == "-input") {
             if (i + 1 > argc || argv[i+1][0] == '-') {
                 cerr << "Error: -input flag cannot be empty. " << endl;
+                exit(1);
             }
             input_filename = argv[++i];
         }
         else if (arg == "-output") {
             if (i + 1 > argc || argv[i+1][0] == '-') {
                 cerr << "Error: -output flag cannot be empty. " << endl;
+                exit(1);
             }
             output_prefix = argv[++i];
         }
         else if (arg == "-n") {
             if (i + 1 > argc || argv[i+1][0] == '-') {
                 cerr << "Error: -n flag cannot be empty. " << endl;
+                exit(1);
             }
             try {
                 num_iters = stoi(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -n flag expects a number. " << endl;
-                return 1;
+                exit(1);
             }
         }
         else if (arg == "-thinning") {
             if (i + 1 > argc || argv[i+1][0] == '-') {
                 cerr << "Error: -thinning flag cannot be empty. " << endl;
+                exit(1);
             }
             try {
                 spacing = stoi(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -thinning flag expects a number. " << endl;
-                return 1;
+                exit(1);
             }
         }
         else {
             cerr << "Error: Unknown flag. " << arg << endl;
-            return 1;
+            exit(1);
         }
     }
     if (r < 0) {
         cerr << "-r flag missing or invalid value. " << endl;
+        exit(1);
     }
     if (m < 0) {
         cerr << "-m flag missing or invalid value. " << endl;
+        exit(1);
     }
     if (Ne < 0) {
         cerr << "-Ne flag missing or invalid value. " << endl;
+        exit(1);
     }
     if (input_filename.size() == 0) {
         cerr << "-input flag missing or invalid value. " << endl;
+        exit(1);
     }
     if (output_prefix.size() == 0) {
         cerr << "-output flag missing or invalid value. " << endl;
+        exit(1);
     }
     if (num_iters < 0) {
         cerr << "-num_iters flag is invalid. " << endl;
+        exit(1);
     }
     if (spacing < 1) {
         cerr << "-thinning flag is invalid. " << endl;
+        exit(1);
     }
     Sampler sampler = Sampler(Ne, r, m);
     sampler.penalty = penalty;
