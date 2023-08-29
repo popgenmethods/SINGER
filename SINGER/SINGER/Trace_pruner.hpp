@@ -24,7 +24,7 @@ public:
     float start = 0;
     float end = 0;
     float cut_time = 0;
-    int band_width = 10;
+    int band_width = 20;
     
     float length = 0;
     

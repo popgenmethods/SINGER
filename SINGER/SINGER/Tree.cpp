@@ -51,9 +51,6 @@ void Tree::insert_branch(const Branch &b) {
     // branches.insert(b);
     parents[b.lower_node] = b.upper_node;
     children[b.upper_node].insert(b.lower_node);
-    if (isinf(b.upper_node->time)) {
-        root_time = b.lower_node->time;
-    }
 }
 
 void Tree::internal_insert_branch(const Branch &b, float cut_time) {
@@ -193,6 +190,7 @@ pair<Branch, float> Tree::sample_cut_point() {
 */
 
 pair<Branch, float> Tree::sample_cut_point() {
+    float root_time = parents.rbegin()->first->time;
     float cut_time = random()*root_time;
     vector<Branch> candidates = {};
     for (auto &x : parents) {

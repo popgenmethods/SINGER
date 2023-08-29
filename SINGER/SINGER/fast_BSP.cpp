@@ -58,7 +58,8 @@ void fast_BSP::start(Tree &tree, set<Interval_info> &start_intervals, float t) {
     float p = 0;
     Interval_ptr new_interval = nullptr;
     cc = make_shared<approx_coalescent_calculator>(cut_time);
-    cc->start(reduced_branches);
+    // cc->start(reduced_branches);
+    cc->start(tree);
     for (const Branch &b : reduced_branches) {
         if (b.upper_node->time > cut_time) {
             lb = max(b.lower_node->time, cut_time);

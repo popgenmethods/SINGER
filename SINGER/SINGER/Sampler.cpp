@@ -42,6 +42,7 @@ void Sampler::set_num_samples(int n) {
     num_samples = n;
 }
 
+/*
 void Sampler::load_vcf(string vcf_file, float start_pos, float end_pos) {
     ifstream file(vcf_file);
     string line;
@@ -126,6 +127,111 @@ void Sampler::load_vcf(string vcf_file, float start_pos, float end_pos) {
     cout << "valid mutations: " << valid_mutation << endl;
     cout << "removed mutations: " << removed_mutation << endl;
 }
+ */
+
+void Sampler::load_vcf(string prefix, float start, float end) {
+    string vcf_file = prefix + ".vcf";
+    string index_file = prefix + ".index";
+    ifstream idx_stream(index_file);
+    if (!idx_stream.is_open()) {
+        cerr << "Index file not found: " + index_file << endl;
+        exit(1);
+    }
+    string line;
+    long byte_offset = -1;
+    while (getline(idx_stream, line)) {
+        istringstream iss(line);
+        float segment_start;
+        long offset;
+        iss >> segment_start >> offset;
+        if (segment_start == start) {
+            byte_offset = offset;
+            break;
+        }
+    }
+    if (byte_offset == -1) {
+        cerr << "Start position not found in index file: " + index_file << endl;
+        exit(1);
+    }
+    ifstream vcf_stream(vcf_file, ios::binary);
+    if (!vcf_stream.is_open()) {
+        cerr << "VCF file not found: " + vcf_file << endl;
+    }
+    vcf_stream.seekg(byte_offset, ios::beg);
+    int prev_pos = -1;
+    vector<Node_ptr> nodes = {};
+    int valid_mutation = 0;
+    int removed_mutation = 0;
+    vector<float> genotypes = {};
+    while (getline(vcf_stream, line)) {
+        istringstream iss(line);
+        string chrom, id, ref, alt, qual, filter, info, format, genotype;
+        int pos;
+        iss >> chrom >> pos >> id >> ref >> alt >> qual >> filter >> info >> format;
+        if (pos == prev_pos) {continue;} // skip multi-allelic sites
+        if (pos >= end) {break;} // variant out of scope
+        if (ref.size() > 1 or alt.size() > 1) {
+            removed_mutation += 1;
+            continue;
+        } // skip multi-allelic sites or structural variant
+        streampos old_pos = vcf_stream.tellg();
+        string next_line;
+        if (getline(vcf_stream, next_line)) {
+            istringstream next_iss(next_line);
+            string next_chrom;
+            int next_pos;
+            next_iss >> next_chrom >> next_pos;
+            if (next_pos == pos) {
+                removed_mutation += 1;
+                prev_pos = pos;
+                continue;
+            }
+            vcf_stream.seekg(old_pos);
+        }
+        int individual_index = 0;
+        while (iss >> genotype) {
+            if (genotypes.size() < 2*individual_index + 2) {
+                genotypes.resize(2*individual_index + 2);
+            }
+            if (genotype[0] == '1') {
+                genotypes[2*individual_index] = 1;
+            } else {
+                genotypes[2*individual_index] = 0;
+            }
+            if (genotype[2] == '1') {
+                genotypes[2*individual_index + 1] = 1;
+            } else {
+                genotypes[2*individual_index + 1] = 0;
+            }
+            individual_index += 1;
+        }
+        if (nodes.size() == 0) {
+            nodes.resize(genotypes.size());
+            for (int i = 0; i < nodes.size(); i++) {
+                nodes[i] = new_node(0.0);
+                nodes[i]->set_index(i);
+                sample_nodes.insert(nodes[i]);
+            }
+        } else {
+            assert(nodes.size() == genotypes.size());
+        }
+        int genotype_sum = accumulate(genotypes.begin(), genotypes.end(), 0.0);
+        if (genotype_sum >= 1 and genotype_sum < genotypes.size()) {
+            valid_mutation += 1;
+            for (int i = 0; i < genotypes.size(); i++) {
+                if (genotypes[i] == 1) {
+                    nodes[i]->add_mutation(pos - start);
+                }
+            }
+        }
+    }
+    num_samples = (int) sample_nodes.size();
+    ordered_sample_nodes = vector<Node_ptr>(sample_nodes.begin(), sample_nodes.end());
+    shuffle(ordered_sample_nodes.begin(), ordered_sample_nodes.end(), random_engine);
+    sequence_length = end - start;
+    cout << "valid mutations: " << valid_mutation << endl;
+    cout << "removed mutations: " << removed_mutation << endl;
+}
 
 void Sampler::optimal_ordering() {
     ordered_sample_nodes.clear();
@@ -199,7 +305,7 @@ void Sampler::iterative_start() {
         cout << "Number of flippings: " << arg.count_flipping() << endl;
         it++;
         random_seed = random_engine();
-        // write_iterative_start();
+        write_iterative_start();
     }
     cout << "orignal ARG length: " << arg.get_arg_length() << endl;
     normalize();
@@ -388,11 +494,11 @@ void Sampler::internal_sample(int num_iters, int spacing) {
             threader.internal_rethread(arg, cut_point);
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
-            write_sample(cut_point);
+            // write_sample(cut_point);
         }
         normalize();
         random_seed = random_engine();
-        // write_sample();
+        write_sample();
         arg.check_incompatibility();
         cout << "Start: " << arg.start << " , End: " << arg.end << endl;
         string node_file = output_prefix + "_nodes_" + to_string(sample_index) + ".txt";
@@ -491,8 +597,8 @@ void Sampler::resume_internal_sample(int num_iters, int spacing, int resume_poin
         set_seed(random_seed);
         while (updated_length < spacing*arg.sequence_length) {
             Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
-            tuple<float, Branch, float> cut_point = arg.sample_internal_cut();
-            threader.internal_rethread(arg, cut_point);
+            tuple<float, Branch, float> cut_point = arg.sample_terminal_cut();
+            threader.terminal_rethread(arg, cut_point);
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
         }
@@ -502,7 +608,7 @@ void Sampler::resume_internal_sample(int num_iters, int spacing, int resume_poin
         string branch_file= output_prefix + "_branches_" + to_string(sample_index) + ".txt";
         string recomb_file = output_prefix + "_recombs_" + to_string(sample_index) + ".txt";
         string mut_file = output_prefix + "_muts_" + to_string(sample_index) + ".txt";
-        arg.write(node_file, branch_file, recomb_file, mut_file);
+        // arg.write(node_file, branch_file, recomb_file, mut_file);
         sample_index += 1;
         cout << "Number of trees: " << arg.recombinations.size() << endl;
         cout << "Number of flippings: " << arg.count_flipping() << endl;

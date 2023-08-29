@@ -38,8 +38,6 @@ void TSP_smc::set_check_points(set<float> &p) {
 void TSP_smc::reserve_memory(int length) {
     forward_probs.reserve(length);
     rhos.reserve(length);
-    // forward_probs.resize(length);
-    // rhos.resize(length);
 }
 
 void TSP_smc::start(Branch &branch, float t) {

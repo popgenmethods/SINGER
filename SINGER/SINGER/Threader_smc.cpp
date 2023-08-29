@@ -358,7 +358,7 @@ float Threader_smc::acceptance_ratio(ARG &a) {
  */
 
 float Threader_smc::acceptance_ratio(ARG &a) {
-    float cut_height = a.cut_tree.root_time;
+    float cut_height = a.cut_tree.parents.rbegin()->first->time;
     float old_height = cut_height;
     float new_height = cut_height;
     auto old_join_it = a.joining_branches.upper_bound(a.cut_pos);

@@ -43,8 +43,6 @@ public:
     
     void randomized_normalize(ARG &a);
     
-    // void normalize(ARG &a);
-    
     void normalize(ARG &a, float theta);
     
     void partition_arg(ARG &a);

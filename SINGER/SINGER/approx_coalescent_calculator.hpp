@@ -30,6 +30,8 @@ public:
     
     void start(set<Branch> &branches);
     
+    void start(Tree &tree);
+    
     void update(Recombination &r);
     
     pair<float, float> compute_time_weights(float x, float y);

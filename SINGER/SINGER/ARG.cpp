@@ -587,15 +587,6 @@ void ARG::remap_mutations() {
         assert(removed_branch != Branch());
         lower_branch = Branch(joining_branch.lower_node, joining_node);
         upper_branch = Branch(joining_node, joining_branch.upper_node);
-        /*
-        if (mut_it->second.count(removed_branch) > 0) {
-            mut_it->second.erase(removed_branch);
-        }
-        if (mut_it->second.count(lower_branch) > 0 or mut_it->second.count(upper_branch) > 0) {
-            mut_it->second.erase(lower_branch);
-            mut_it->second.erase(upper_branch);
-        }
-         */
         mut_it->second.erase(removed_branch);
         mut_it->second.erase(lower_branch);
         mut_it->second.erase(upper_branch);
@@ -976,7 +967,7 @@ void ARG::write_mutations(string filename) {
     for (auto &x : mutation_branches) {
         float m = x.first;
         for (auto &y : x.second) {
-            if (m < sequence_length) {
+            if (m < sequence_length and m > 0) {
                 file << m << " " << y.lower_node->index << " " << y.upper_node->index << " " << y.lower_node->get_state(m) << endl;
             }
         }

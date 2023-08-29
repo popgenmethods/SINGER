@@ -30,7 +30,7 @@ float RSP_smc::sample_start_time(Branch b, int density, float join_time, float c
         weights.push_back(w);
         weight_sum += w;
     }
-    p = random();
+    p = uniform_random();
     weight_sum = weight_sum*p;
     for (int i = 0; i < density; i++) {
         weight_sum -= weights[i];
@@ -80,7 +80,7 @@ pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density
         weight_sum += w;
         branch_indices.push_back(2);
     }
-    p = random();
+    p = uniform_random();
     weight_sum = weight_sum*p;
     for (int i = 0; i < density; i++) {
         weight_sum -= weights[i];
@@ -172,7 +172,7 @@ void RSP_smc::approx_sample_recombination(Recombination &r, float cut_time) {
         ub1 = min(source_candidates[0].upper_node->time, r.inserted_node->time);
         ub2 = min(source_candidates[1].upper_node->time, r.inserted_node->time);
         float q = (ub1 - lb1)/(ub1 + ub2 - lb1 - lb2);
-        float p = random();
+        float p = uniform_random();
         if (p <= q) {
             r.source_branch = source_candidates[0];
             r.start_time = random_time(lb1, ub1, 0.005);
@@ -184,6 +184,9 @@ void RSP_smc::approx_sample_recombination(Recombination &r, float cut_time) {
         cout << r.pos << " " << source_candidates.size() << endl;
         cerr << "no candidates in smc sampling" << endl;
         exit(1);
+    }
+    if (r.deleted_node->time == r.inserted_node->time) {
+        r.inserted_node->time = nextafter(r.inserted_node->time, numeric_limits<float>::infinity());
     }
     r.find_target_branch();
     r.find_recomb_info();

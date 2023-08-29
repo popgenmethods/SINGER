@@ -235,6 +235,12 @@ void Normalizer::count_mutations(ARG &a) {
             }
         }
     }
+    float num_muts = a.mutation_sites.size() - 1;
+    float num_mapped_muts = accumulate(observed_mutation_counts.begin(), observed_mutation_counts.end(), 0.0);
+    float r = num_muts/num_mapped_muts;
+    for (auto &x : observed_mutation_counts) {
+        x *= r;
+    }
 }
 
 void Normalizer::add_mutation(float lb, float ub) {

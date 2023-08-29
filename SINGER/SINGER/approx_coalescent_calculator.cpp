@@ -21,6 +21,14 @@ void approx_coalescent_calculator::start(set<Branch> &branches) {
     }
 }
 
+void approx_coalescent_calculator::start(Tree &tree) {
+    for (auto &x : tree.parents) {
+        if (x.second->time > cut_time and x.first->time <= cut_time) {
+            n0 += 1;
+        }
+    }
+}
+
 void approx_coalescent_calculator::update(Recombination &r) {
     if (r.deleted_node->time > cut_time) {
         n0 -= 1;
