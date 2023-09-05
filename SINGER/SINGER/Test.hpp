@@ -51,6 +51,8 @@ void test_fast_resume();
 
 void test_resume_fast_larger_internal_sampling();
 
+void test_resume_internal_sampling();
+
 void test_tsp();
 
 void test_debug_resume();

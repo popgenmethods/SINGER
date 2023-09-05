@@ -497,7 +497,6 @@ void Sampler::internal_sample(int num_iters, int spacing) {
             threader.internal_rethread(arg, cut_point);
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
-            // write_sample(cut_point);
         }
         normalize();
         random_seed = random_engine();
@@ -611,11 +610,10 @@ void Sampler::resume_internal_sample(int num_iters, int spacing, int resume_poin
         string branch_file= output_prefix + "_branches_" + to_string(sample_index) + ".txt";
         string recomb_file = output_prefix + "_recombs_" + to_string(sample_index) + ".txt";
         string mut_file = output_prefix + "_muts_" + to_string(sample_index) + ".txt";
-        // arg.write(node_file, branch_file, recomb_file, mut_file);
+        arg.write(node_file, branch_file, recomb_file, mut_file);
         sample_index += 1;
         cout << "Number of trees: " << arg.recombinations.size() << endl;
         cout << "Number of flippings: " << arg.count_flipping() << endl;
-        // cout << "Data likelihood: " << arg.data_likelihood(2e-8) << endl;
     }
 }
 
@@ -657,7 +655,7 @@ void Sampler::resume_fast_internal_sample(int num_iters, int spacing, int resume
     }
 }
 
-void Sampler::resume_internal_sample(int num_iters, int spacing, int resume_point, int seed) {
+void Sampler::resume_internal_sample(int num_iters, int spacing, int resume_point, int seed, float cut_pos) {
     arg = ARG(Ne, sequence_length);
     string node_file = output_prefix + "_nodes_" + to_string(resume_point) + ".txt";
     string branch_file= output_prefix + "_branches_" + to_string(resume_point) + ".txt";
@@ -667,15 +665,14 @@ void Sampler::resume_internal_sample(int num_iters, int spacing, int resume_poin
     arg.read(node_file, branch_file, recomb_file, mut_file);
     arg.read_coordinates(coord_file);
     arg.compute_rhos_thetas(recomb_rate, mut_rate);
-    arg.start = 0;
-    arg.end = 0;
+    arg.start = cut_pos;
     arg.start_tree = arg.get_tree_at(arg.start);
     sample_index = resume_point + 1;
-    for (int i = 0; i < num_iters; i++) {
+    for (int i = 0; i < resume_point + num_iters; i++) {
         cout << get_time() << " Iteration: " << to_string(i) << endl;
         float updated_length = 0;
-        random_seed = rand();
-        set_seed(random_seed);
+        cout << "Random seed: " << random_seed << endl;
+        random_engine.seed(random_seed);
         while (updated_length < spacing*arg.sequence_length) {
             Threader_smc threader = Threader_smc(bsp_c, tsp_q, eh);
             tuple<float, Branch, float> cut_point = arg.sample_internal_cut();
@@ -684,6 +681,7 @@ void Sampler::resume_internal_sample(int num_iters, int spacing, int resume_poin
             arg.clear_remove_info();
         }
         normalize();
+        random_seed = random_engine();
         arg.check_incompatibility();
         string node_file = output_prefix + "_nodes_" + to_string(sample_index) + ".txt";
         string branch_file= output_prefix + "_branches_" + to_string(sample_index) + ".txt";
@@ -696,7 +694,7 @@ void Sampler::resume_internal_sample(int num_iters, int spacing, int resume_poin
     }
 }
 
-void Sampler::resume_fast_internal_sample(int num_iters, int spacing, int resume_point, int seed) {
+void Sampler::resume_fast_internal_sample(int num_iters, int spacing, int resume_point, int seed, float cut_pos) {
     arg = ARG(Ne, sequence_length);
     string node_file = output_prefix + "_fast_nodes_" + to_string(resume_point) + ".txt";
     string branch_file= output_prefix + "_fast_branches_" + to_string(resume_point) + ".txt";
@@ -706,8 +704,7 @@ void Sampler::resume_fast_internal_sample(int num_iters, int spacing, int resume
     arg.read(node_file, branch_file, recomb_file, mut_file);
     arg.read_coordinates(coord_file);
     arg.compute_rhos_thetas(recomb_rate, mut_rate);
-    arg.start = 140720;
-    arg.end = 718690.5;
+    arg.start = cut_pos;
     arg.start_tree = arg.get_tree_at(arg.start);
     sample_index = resume_point + 1;
     bsp_c = 0.1;
@@ -755,7 +752,7 @@ void Sampler::start_log() {
         cerr << "Error opening the file: " << filename << endl;
         return;
     }
-    file << "Time" << "\t" << "Seed" << "\t" << "Threading type" << "\t" << "#Recombinations" << "\t" << "#Mutations_not_uniquely_mapped" << endl;
+    file << "Time" << "\t" << "Seed" << "\t" << "Threading_type" << "\t" << "#Recombinations" << "\t" << "#Mutations_not_uniquely_mapped" << "\t" << "Last_updated_pos" << endl;
     file.close();
 }
 
@@ -766,7 +763,7 @@ void Sampler::write_iterative_start() {
         cerr << "Error opening the file: " << filename << endl;
         return;
     }
-    file << get_time() << "\t" << random_seed << "\t" << "initial_thread" << "\t" << arg.recombinations.size() - 2 << "\t" << arg.num_unmapped() << endl;
+    file << get_time() << "\t" << random_seed << "\t" << "initial_thread" << "\t" << arg.recombinations.size() - 2 << "\t" << arg.num_unmapped() << "\t" << arg.end << endl;
 }
 
 void Sampler::write_sample() {
@@ -776,7 +773,7 @@ void Sampler::write_sample() {
         cerr << "Error opening the file: " << filename << endl;
         return;
     }
-    file << get_time() << "\t" << random_seed << "\t" << "rethread" << "\t" << arg.recombinations.size() - 2 << "\t" << arg.num_unmapped() << endl;
+    file << get_time() << "\t" << random_seed << "\t" << "rethread" << "\t" << arg.recombinations.size() - 2 << "\t" << arg.num_unmapped() << "\t" << arg.end << endl;
 }
 
 void Sampler::write_sample(tuple<float, Branch, float> cut_point) {

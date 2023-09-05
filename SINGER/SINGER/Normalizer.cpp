@@ -136,49 +136,8 @@ void Normalizer::normalize(ARG &a, float theta) {
     for (auto &x : a.recombinations) {
         x.second.start_time = -1;
     }
-    // a.heuristic_sample_recombinations();
     a.adjust_recombinations();
 }
-
-/*
-void Normalizer::partition_arg(ARG &a) {
-    float active_lineages = accumulate(all_spans.begin(), all_spans.end(), 0);
-    active_lineages += accumulate(all_root_spans.begin(), all_root_spans.end(), 0);
-    float t = 0;
-    int j = 0;
-    for (int i = 0; i < all_spans.size(); i++) {
-        Node_ptr n = all_nodes[i];
-        ls += (n->time - t)*active_lineages;
-        active_lineages -= all_spans[i];
-        if (all_root_nodes[j] == n) {
-            active_lineages -= all_root_spans[j];
-            j++;
-        }
-        t = n->time;
-    }
-    float l = 0;
-    float x = 0;
-    t = 0;
-    j = 0;
-    active_lineages = accumulate(all_spans.begin(), all_spans.end(), 0);
-    active_lineages += accumulate(all_root_spans.begin(), all_root_spans.end(), 0);
-    for (int i = 0; i < all_spans.size(); i++) {
-        Node_ptr n = all_nodes[i];
-        l += (n->time - t)*active_lineages;
-        while (l > ls/num_windows and mutation_counts.size() < num_windows - 1) {
-            l -= ls/num_windows;
-            x = n->time - l/active_lineages;
-            mutation_counts[x] = 0;
-        }
-        active_lineages -= all_spans[i];
-        if (all_root_nodes[j] == n) {
-            active_lineages -= all_root_spans[j];
-            j++;
-        }
-        t = n->time;
-    }
-}
- */
 
 void Normalizer::partition_arg(ARG &a) {
     float active_lineages = accumulate(all_spans.begin(), all_spans.end(), 0);

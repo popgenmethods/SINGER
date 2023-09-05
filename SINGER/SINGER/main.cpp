@@ -9,8 +9,8 @@
 #include "Test.hpp"
 
 struct Config {
-    bool fast = false;
     bool resume = false;
+    bool fast = false;
     int num_iters = 0;
     int spacing = 1;
     float start_pos = -1, end_pos = -1;
@@ -192,8 +192,10 @@ Config parse_argument(int argc, const char* argv[]) {
     return config;
 }
 
+/*
 int main(int argc, const char * argv[]) {
     bool fast = false;
+    int resume_point = -1;
     float r = -1, m = -1, Ne = -1;
     int num_iters = 0;
     int spacing = 1;
@@ -202,6 +204,7 @@ int main(int argc, const char * argv[]) {
     float penalty = 1;
     float epsilon_hmm = 0.01;
     float epsilon_psmc = 0.05;
+    unsigned seed = -1;
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
         if (arg == "-fast") {
@@ -210,6 +213,18 @@ int main(int argc, const char * argv[]) {
                 exit(1);
             }
             fast = true;
+        }
+        else if (arg == "-resume") {
+            if (i + 1 >= argc || argv[i+1][0] == '-') {
+                cerr << "Error: -resume flag cannot be empty. " << endl;
+                exit(1);
+            }
+            try {
+                resume_point = stoi(argv[++i]);
+            } catch (const invalid_argument&) {
+                cerr << "Error: -resume flag expects a number. " << endl;
+                exit(1);
+            }
         }
         else if (arg == "-Ne") {
             if (i + 1 >= argc || argv[i+1][0] == '-') {
@@ -346,6 +361,18 @@ int main(int argc, const char * argv[]) {
                 exit(1);
             }
         }
+        else if (arg == "-seed") {
+            if (i + 1 > argc || argv[i+1][0] == '-') {
+                cerr << "Error: -seed flag cannot be empty. " << endl;
+                exit(1);
+            }
+            try {
+                seed  = stoi(argv[++i]);
+            } catch (const invalid_argument&) {
+                cerr << "Error: -seed flag expects a number. " << endl;
+                exit(1);
+            }
+        }
         else {
             cerr << "Error: Unknown flag. " << arg << endl;
             exit(1);
@@ -384,6 +411,14 @@ int main(int argc, const char * argv[]) {
     sampler.set_precision(0.01, 0.05);
     sampler.set_output_file_prefix(output_prefix);
     sampler.load_vcf(input_filename, start_pos, end_pos);
+    if (resume_point > 0) {
+        if (fast) {
+            sampler.resume_fast_internal_sample(num_iters, spacing, resume_point, seed, 561618);
+        } else {
+            sampler.random_seed = seed;
+            sampler.resume_internal_sample(num_iters, spacing, resume_point, seed, 561618);
+        }
+    }
     if (fast) {
         sampler.fast_iterative_start();
     } else {
@@ -396,10 +431,10 @@ int main(int argc, const char * argv[]) {
     }
     return 0;
 }
+*/
 
-/*
+
 int main(int argc, const char * argv[]) {
     test_internal_sampling();
     // test_african_dataset();
 }
- */

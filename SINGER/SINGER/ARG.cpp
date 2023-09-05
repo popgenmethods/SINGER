@@ -346,9 +346,11 @@ void ARG::heuristic_sample_recombinations() {
     auto it = recombinations.upper_bound(0);
     while (it->first < sequence_length) {
         Recombination &r = it->second;
-        if (r.pos != 0 and r.pos < sequence_length) {
-            rsp.approx_sample_recombination(r, 0);
+        if (r.pos > 0 and r.pos < sequence_length) {
+            rsp.approx_sample_recombination(r, cut_time);
             assert(r.start_time > 0);
+            assert(r.start_time < r.inserted_node->time);
+            assert(r.start_time < r.deleted_node->time);
         }
         it++;
     }
@@ -362,6 +364,8 @@ void ARG::adjust_recombinations() {
         if (r.pos != 0 and r.pos < sequence_length) {
             rsp.adjust(r, 0);
             assert(r.start_time > 0);
+            assert(r.start_time < r.inserted_node->time);
+            assert(r.start_time < r.deleted_node->time);
         }
         it++;
     }
@@ -1078,6 +1082,10 @@ void ARG::read_recombs(string filename) {
                 x.second.find_target_branch();
                 x.second.find_recomb_info();
             }
+        }
+        if (pos > 0 and pos < sequence_length) {
+            assert(x.second.start_time < x.second.deleted_node->time);
+            assert(x.second.start_time < x.second.inserted_node->time);
         }
     }
     node_set.clear();

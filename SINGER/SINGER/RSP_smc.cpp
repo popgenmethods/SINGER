@@ -165,20 +165,23 @@ void RSP_smc::approx_sample_recombination(Recombination &r, float cut_time) {
         r.source_branch = source_candidates[0];
         lb1 = max(cut_time, r.source_branch.lower_node->time);
         ub1 = min(r.source_branch.upper_node->time, r.inserted_node->time);
-        r.start_time = random_time(lb1, ub1, 0.005);
+        // r.start_time = random_time(lb1, ub1, 0.5);
+        r.start_time = choose_time(lb1, ub1);
     } else if (source_candidates.size() == 2) {
         lb1 = max(cut_time, source_candidates[0].lower_node->time);
         lb2 = max(cut_time, source_candidates[1].lower_node->time);
         ub1 = min(source_candidates[0].upper_node->time, r.inserted_node->time);
         ub2 = min(source_candidates[1].upper_node->time, r.inserted_node->time);
         float q = (ub1 - lb1)/(ub1 + ub2 - lb1 - lb2);
-        float p = uniform_random();
+        float p = 0.5;
         if (p <= q) {
             r.source_branch = source_candidates[0];
-            r.start_time = random_time(lb1, ub1, 0.005);
+            // r.start_time = random_time(lb1, ub1, 0.5);
+            r.start_time = choose_time(lb1, ub1);
         } else {
             r.source_branch = source_candidates[1];
-            r.start_time = random_time(lb2, ub2, 0.005);
+            // r.start_time = random_time(lb2, ub2, 0.5);
+            r.start_time = choose_time(lb2, ub2);
         }
     } else {
         cout << r.pos << " " << source_candidates.size() << endl;
@@ -192,8 +195,12 @@ void RSP_smc::approx_sample_recombination(Recombination &r, float cut_time) {
     r.find_recomb_info();
     assert(r.target_branch != Branch());
     assert(r.merging_branch != Branch());
-    assert(r.start_time <= r.inserted_node->time);
     assert(r.start_time > cut_time);
+    float ub = min(r.deleted_node->time, r.inserted_node->time);
+    if (r.start_time >= ub) {
+        r.start_time = nextafter(ub, -numeric_limits<float>::infinity());
+    }
+    assert(r.start_time < ub);
 }
 
 void RSP_smc::adjust(Recombination &r, float cut_time) {
@@ -208,8 +215,13 @@ void RSP_smc::adjust(Recombination &r, float cut_time) {
     }
     float lb, ub;
     lb = max(cut_time, r.source_branch.lower_node->time);
-    ub = min(r.source_branch.upper_node->time, r.inserted_node->time);
-    r.start_time = random_time(lb, ub, 0.005);
+    ub = min(r.deleted_node->time, r.inserted_node->time);
+    // r.start_time = random_time(lb, ub, 0.5);
+    r.start_time = choose_time(lb, ub);
+    if (r.start_time >= ub) {
+        r.start_time = 0.5*(lb + ub);
+    }
+    assert(r.start_time < ub);
 }
 
 // private methods:
@@ -255,4 +267,17 @@ float RSP_smc::random_time(float lb, float ub) {
 float RSP_smc::random_time(float lb, float ub, float q) {
     float t = (q*uniform_random() + (1 - q))*(ub - lb) + lb;
     return t;
+}
+
+float RSP_smc::choose_time(float lb, float ub) {
+    assert(!isinf(ub));
+    float l = exp(lb);
+    float u = exp(ub);
+    float m = 0.5*(l + u);
+    float mt = log(m);
+    if (ub - lb < 0.01) {
+        mt = 0.5*(lb + ub);
+    }
+    assert(mt >= lb and mt <= ub);
+    return mt;
 }

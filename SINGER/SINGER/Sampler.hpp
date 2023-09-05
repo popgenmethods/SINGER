@@ -98,9 +98,9 @@ public:
     
     void resume_fast_internal_sample(int num_iters, int spacing, int resume_point);
     
-    void resume_internal_sample(int num_iters, int spacing, int resume_point, int seed);
+    void resume_internal_sample(int num_iters, int spacing, int resume_point, int seed, float cut_pos);
     
-    void resume_fast_internal_sample(int num_iters, int spacing, int resume_point, int seed);
+    void resume_fast_internal_sample(int num_iters, int spacing, int resume_point, int seed, float cut_pos);
     
     void normalize();
     

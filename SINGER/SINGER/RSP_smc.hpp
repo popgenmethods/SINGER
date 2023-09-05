@@ -44,6 +44,8 @@ private:
     
     float random_time(float lb, float ub, float q);
     
+    float choose_time(float lb, float ub);
+    
 };
 
 #endif /* RSP_smc_hpp */

@@ -19,7 +19,7 @@ class Polar_emission : public Emission {
 public:
     
     float penalty = 0.01;
-    float ancestral_prob = 0.5;
+    float ancestral_prob = 0.99;
     float root_reward = 1;
     
     vector<float> diff = vector<float>(4);

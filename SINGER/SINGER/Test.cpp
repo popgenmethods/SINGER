@@ -106,10 +106,9 @@ void test_internal_sampling() {
     set_seed(15);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
-    // sampler.set_num_samples(100);
     sampler.set_sequence_length(1e6);
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/approx_smc_50_0");
-    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf", 0, 1e6);
+    sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0", 0, 1e6);
     sampler.iterative_start();
     sampler.internal_sample(2000, 1);
 }
@@ -140,7 +139,6 @@ void test_fast_larger_internal_sampling() {
 void test_optimal_ordering() {
     srand(93723823);
     set_seed(93723823);
-    // set_seed(38);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.set_precision(0.01, 0.05);
     sampler.set_num_samples(50);
@@ -152,7 +150,6 @@ void test_optimal_ordering() {
 
 void test_load_vcf() {
     set_seed(93723823);
-    // set_seed(38);
     Sampler sampler = Sampler(2e4, 2e-8, 2e-8);
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf", 0, 1e6);
     sampler.optimal_ordering();
@@ -272,7 +269,7 @@ void test_debug_resume() {
     sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
-    sampler.resume_fast_internal_sample(500, 1, 1640, 1066149215);
+    // sampler.resume_fast_internal_sample(500, 1, 1640, 1066149215);
 }
 
 void test_african_dataset() {
@@ -303,5 +300,5 @@ void test_resume_african_dataset() {
     sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/african_16");
-    sampler.resume_fast_internal_sample(500, 1, 1079, 913090935);
+    // sampler.resume_fast_internal_sample(500, 1, 1079, 913090935);
 }

@@ -768,7 +768,7 @@ void TSP_smc::set_interval_constraint(Recombination &r) {
     Interval *interval;
     for (int i = 0; i < intervals.size(); i++) {
         interval = intervals[i];
-        if (interval->ub < r.start_time) {
+        if (interval->ub <= r.start_time) {
             forward_probs[curr_index-1][i] = 0; // curr_index - 1 because the index has already moved forward
         } else {
             interval->lb = max(r.start_time, interval->lb);
