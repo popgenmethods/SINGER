@@ -28,7 +28,9 @@ class Threader_smc {
     
 public:
     
-    Threader_smc(float c, float q, shared_ptr<Emission> e);
+    // Threader_smc(float c, float q, shared_ptr<Emission> e);
+    
+    Threader_smc(float c, float q);
     
     ~Threader_smc();
     
@@ -53,13 +55,12 @@ public:
     int end_index = 0;
     Trace_pruner pruner = Trace_pruner();
     approx_BSP bsp = approx_BSP();
-    // BSP bsp = BSP();
     fast_BSP fbsp = fast_BSP();
     TSP_smc tsp = TSP_smc();
     float gap;
     float cutoff;
-    shared_ptr<Emission> eh = make_shared<Binary_emission>();
-    shared_ptr<Emission> e = make_shared<Polar_emission>();
+    shared_ptr<Binary_emission> be = make_shared<Binary_emission>();
+    shared_ptr<Polar_emission> pe = make_shared<Polar_emission>();
     map<float, Branch> new_joining_branches = {};
     map<float, Branch> added_branches = {};
     

@@ -8,6 +8,7 @@
 #include <iostream>
 #include "Test.hpp"
 
+/*
 struct Config {
     bool resume = false;
     bool fast = false;
@@ -191,18 +192,20 @@ Config parse_argument(int argc, const char* argv[]) {
     }
     return config;
 }
+ */
 
-/*
 int main(int argc, const char * argv[]) {
     bool fast = false;
     int resume_point = -1;
+    float cut_pos = 0;
     float r = -1, m = -1, Ne = -1;
     int num_iters = 0;
     int spacing = 1;
     float start_pos = -1, end_pos = -1;
     string input_filename = "", output_prefix = "";
-    float penalty = 1;
-    float epsilon_hmm = 0.01;
+    float penalty = 0.01;
+    float polar = 0.5;
+    float epsilon_hmm = 0.1;
     float epsilon_psmc = 0.05;
     unsigned seed = -1;
     for (int i = 1; i < argc; ++i) {
@@ -223,6 +226,18 @@ int main(int argc, const char * argv[]) {
                 resume_point = stoi(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -resume flag expects a number. " << endl;
+                exit(1);
+            }
+        }
+        else if (arg == "-cut") {
+            if (i + 1 >= argc || argv[i+1][0] == '-') {
+                cerr << "Error: -cut flag cannot be empty. " << endl;
+                exit(1);
+            }
+            try {
+                 cut_pos = stod(argv[++i]);
+            } catch (const invalid_argument&) {
+                cerr << "Error: -cut flag expects a number. " << endl;
                 exit(1);
             }
         }
@@ -272,6 +287,18 @@ int main(int argc, const char * argv[]) {
                 penalty = stod(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -penalty flag expects a number. " << endl;
+                exit(1);
+            }
+        }
+        else if (arg == "-polar") {
+            if (i + 1 >= argc || argv[i+1][0] == '-') {
+                cerr << "Error: -polar flag cannot be empty. " << endl;
+                exit(1);
+            }
+            try {
+                polar = stod(argv[++i]);
+            } catch (const invalid_argument&) {
+                cerr << "Error: -polar flag expects a number. " << endl;
                 exit(1);
             }
         }
@@ -408,15 +435,15 @@ int main(int argc, const char * argv[]) {
     }
     Sampler sampler = Sampler(Ne, r, m);
     sampler.penalty = penalty;
-    sampler.set_precision(0.01, 0.05);
+    sampler.set_precision(epsilon_hmm, epsilon_psmc);
     sampler.set_output_file_prefix(output_prefix);
     sampler.load_vcf(input_filename, start_pos, end_pos);
     if (resume_point > 0) {
         if (fast) {
-            sampler.resume_fast_internal_sample(num_iters, spacing, resume_point, seed, 561618);
+            sampler.resume_fast_internal_sample(num_iters, spacing, resume_point, seed, cut_pos);
         } else {
             sampler.random_seed = seed;
-            sampler.resume_internal_sample(num_iters, spacing, resume_point, seed, 561618);
+            sampler.resume_internal_sample(num_iters, spacing, resume_point, seed, cut_pos);
         }
     }
     if (fast) {
@@ -431,10 +458,10 @@ int main(int argc, const char * argv[]) {
     }
     return 0;
 }
-*/
 
-
+/*
 int main(int argc, const char * argv[]) {
-    test_internal_sampling();
+    // test_internal_sampling();
     // test_african_dataset();
 }
+*/

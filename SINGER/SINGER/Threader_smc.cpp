@@ -7,10 +7,9 @@
 
 #include "Threader_smc.hpp"
 
-Threader_smc::Threader_smc(float c, float q, shared_ptr<Emission> e) {
+Threader_smc::Threader_smc(float c, float q) {
     cutoff = c;
     gap = q;
-    eh = e;
 }
 
 Threader_smc::~Threader_smc() {
@@ -163,7 +162,7 @@ void Threader_smc::run_pruner(ARG &a) {
 void Threader_smc::run_BSP(ARG &a) {
     bsp.reserve_memory(end_index - start_index);
     bsp.set_cutoff(cutoff);
-    bsp.set_emission(e);
+    bsp.set_emission(pe);
     bsp.start(a.start_tree, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
@@ -202,7 +201,7 @@ void Threader_smc::run_BSP(ARG &a) {
 void Threader_smc::run_fast_BSP(ARG &a) {
     fbsp.reserve_memory(end_index - start_index);
     fbsp.set_cutoff(cutoff);
-    fbsp.set_emission(e);
+    fbsp.set_emission(pe);
     set<Interval_info> start_intervals = pruner.insertions.begin()->second;
     fbsp.start(a.start_tree, start_intervals, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);
@@ -247,7 +246,7 @@ void Threader_smc::run_TSP(ARG &a) {
     tsp.reserve_memory(end_index - start_index);
     tsp.set_gap(gap);
     // tsp.set_emission(eh);
-    tsp.set_emission(e);
+    tsp.set_emission(be);
     Branch start_branch = new_joining_branches.begin()->second;
     tsp.start(start_branch, cut_time);
     auto recomb_it = a.recombinations.upper_bound(start);

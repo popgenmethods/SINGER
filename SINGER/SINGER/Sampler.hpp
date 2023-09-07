@@ -31,11 +31,11 @@ public:
     float sequence_length = 0;
     int num_samples = 0;
     ARG arg;
-    double bsp_c;
-    double tsp_q;
-    float penalty = 1;
+    float bsp_c = 0.01;
+    float tsp_q = 0.05;
     int random_seed = 5319;
-    shared_ptr<Emission> eh = make_shared<Binary_emission>();
+    float penalty = 0.01;
+    float polar = 0.5;
     int sample_index = 0;
     set<Node_ptr, compare_node> sample_nodes = {};
     vector<Node_ptr> ordered_sample_nodes = {};

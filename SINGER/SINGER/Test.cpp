@@ -252,7 +252,7 @@ void test_tsp() {
     a.remove_leaf(9);
     a.compute_rhos_thetas(4e-4, 0.0);
     shared_ptr<Binary_emission> e = make_shared<Binary_emission>();
-    Threader_smc threader = Threader_smc(0.01, 0.05, e);
+    Threader_smc threader = Threader_smc(0.01, 0.05);
     Node_ptr n = a.removed_branches.begin()->second.lower_node;
     threader.end_index = (int) a.coordinates.size();
     threader.new_joining_branches = a.joining_branches;

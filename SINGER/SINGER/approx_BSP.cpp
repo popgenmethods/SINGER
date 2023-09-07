@@ -78,7 +78,6 @@ void approx_BSP::start(Tree &tree, float t) {
         }
     }
     cutoff = min(0.01f, cutoff/curr_intervals.size()); // adjust cutoff based on number of states;
-    // cout << "cutoff at: " << cutoff << endl;
     forward_probs.push_back(temp);
     weight_sums.push_back(0.0);
     set_dimensions();
