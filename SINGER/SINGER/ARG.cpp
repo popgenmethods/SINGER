@@ -371,6 +371,7 @@ void ARG::adjust_recombinations() {
     }
 }
 
+/*
 int ARG::count_incompatibility() {
     Tree tree = Tree();
     auto recomb_it = recombinations.begin();
@@ -395,6 +396,28 @@ int ARG::count_incompatibility() {
     }
     return count;
 }
+ */
+
+int ARG::count_incompatibility() {
+    int count = 0;
+    for (auto &x : mutation_branches) {
+        set<Branch> &branches = x.second;
+        if (branches.size() > 1) {
+            if (branches.rbegin()->upper_node == root) {
+                if (branches.size() > 2) {
+                    count += 1;
+                }
+            } else {
+                if (branches.size() > 1) {
+                    count += 1;
+                }
+            }
+        }
+    }
+    return count;
+}
+
+
 
 int ARG::count_flipping() {
     int count = 0;

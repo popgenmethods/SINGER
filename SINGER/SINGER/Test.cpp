@@ -222,7 +222,7 @@ void test_resume() {
     sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0");
-    sampler.resume_internal_sample(1000, 1, 1999);
+    // sampler.resume_internal_sample(1000, 1, 1999);
 }
 
 void test_resume_fast_larger_internal_sampling() {
@@ -231,7 +231,7 @@ void test_resume_fast_larger_internal_sampling() {
     sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_500_0");
-    sampler.resume_fast_internal_sample(100, 1, 3914);
+    // sampler.resume_fast_internal_sample(100, 1, 3914);
 }
 
 void test_fast_resume() {
@@ -240,7 +240,7 @@ void test_fast_resume() {
     sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/approx_smc_50_0");
-    sampler.resume_fast_internal_sample(1000, 1, 1032);
+    // sampler.resume_fast_internal_sample(1000, 1, 1032);
 }
 
 void test_tsp() {

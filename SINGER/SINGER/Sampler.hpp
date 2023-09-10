@@ -94,13 +94,13 @@ public:
     
     void start_fast_internal_sample(int num_iters, int spacing);
     
-    void resume_internal_sample(int num_iters, int spacing, int resume_point);
+    void resume_internal_sample(int num_iters, int spacing);
     
-    void resume_fast_internal_sample(int num_iters, int spacing, int resume_point);
+    void resume_fast_internal_sample(int num_iters, int spacing);
     
-    void resume_internal_sample(int num_iters, int spacing, int resume_point, int seed, float cut_pos);
+    // void resume_internal_sample(int num_iters, int spacing, int resume_point, int seed, float cut_pos);
     
-    void resume_fast_internal_sample(int num_iters, int spacing, int resume_point, int seed, float cut_pos);
+    // void resume_fast_internal_sample(int num_iters, int spacing, int resume_point, int seed, float cut_pos);
     
     void normalize();
     
@@ -110,7 +110,11 @@ public:
     
     void write_sample();
     
-    void write_sample(tuple<float, Branch, float> cut_point);
+    void write_cut(tuple<float, Branch, float> cut_point);
+    
+    void load_resume_arg();
+    
+    void read_resume_point(string filename);
 };
 
 #endif /* Sampler_hpp */

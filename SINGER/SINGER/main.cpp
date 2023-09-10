@@ -196,8 +196,7 @@ Config parse_argument(int argc, const char* argv[]) {
 
 int main(int argc, const char * argv[]) {
     bool fast = false;
-    int resume_point = -1;
-    float cut_pos = 0;
+    bool resume = false;
     float r = -1, m = -1, Ne = -1;
     int num_iters = 0;
     int spacing = 1;
@@ -207,7 +206,7 @@ int main(int argc, const char * argv[]) {
     float polar = 0.5;
     float epsilon_hmm = 0.1;
     float epsilon_psmc = 0.05;
-    unsigned seed = -1;
+    int seed = -1;
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
         if (arg == "-fast") {
@@ -218,28 +217,11 @@ int main(int argc, const char * argv[]) {
             fast = true;
         }
         else if (arg == "-resume") {
-            if (i + 1 >= argc || argv[i+1][0] == '-') {
-                cerr << "Error: -resume flag cannot be empty. " << endl;
+            if (i + 1 < argc && argv[i+1][0] != '-') {
+                cerr << "Error: -resume flag doesn't take any value. " << endl;
                 exit(1);
             }
-            try {
-                resume_point = stoi(argv[++i]);
-            } catch (const invalid_argument&) {
-                cerr << "Error: -resume flag expects a number. " << endl;
-                exit(1);
-            }
-        }
-        else if (arg == "-cut") {
-            if (i + 1 >= argc || argv[i+1][0] == '-') {
-                cerr << "Error: -cut flag cannot be empty. " << endl;
-                exit(1);
-            }
-            try {
-                 cut_pos = stod(argv[++i]);
-            } catch (const invalid_argument&) {
-                cerr << "Error: -cut flag expects a number. " << endl;
-                exit(1);
-            }
+            resume = true;
         }
         else if (arg == "-Ne") {
             if (i + 1 >= argc || argv[i+1][0] == '-') {
@@ -389,7 +371,7 @@ int main(int argc, const char * argv[]) {
             }
         }
         else if (arg == "-seed") {
-            if (i + 1 > argc || argv[i+1][0] == '-') {
+            if (i + 1 >= argc) {
                 cerr << "Error: -seed flag cannot be empty. " << endl;
                 exit(1);
             }
@@ -438,13 +420,13 @@ int main(int argc, const char * argv[]) {
     sampler.set_precision(epsilon_hmm, epsilon_psmc);
     sampler.set_output_file_prefix(output_prefix);
     sampler.load_vcf(input_filename, start_pos, end_pos);
-    if (resume_point > 0) {
+    if (resume) {
         if (fast) {
-            sampler.resume_fast_internal_sample(num_iters, spacing, resume_point, seed, cut_pos);
+            sampler.resume_fast_internal_sample(num_iters, spacing);
         } else {
-            sampler.random_seed = seed;
-            sampler.resume_internal_sample(num_iters, spacing, resume_point, seed, cut_pos);
+            sampler.resume_internal_sample(num_iters, spacing);
         }
+        return 0;
     }
     if (fast) {
         sampler.fast_iterative_start();

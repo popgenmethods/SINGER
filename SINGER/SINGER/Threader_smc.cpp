@@ -68,9 +68,11 @@ void Threader_smc::fast_thread(ARG &a, Node_ptr n) {
 void Threader_smc::internal_rethread(ARG &a, tuple<float, Branch, float> cut_point) {
     cut_time = get<2>(cut_point);
     a.remove(cut_point);
+    a.write("/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_branches.txt");
     get_boundary(a);
     set_check_points(a);
     run_BSP(a);
+    boundary_check(a);
     sample_joining_branches(a);
     run_TSP(a);
     sample_joining_points(a);
@@ -92,6 +94,7 @@ void Threader_smc::terminal_rethread(ARG &a, tuple<float, Branch, float> cut_poi
     get_boundary(a);
     set_check_points(a);
     run_BSP(a);
+    boundary_check(a);
     cout << "BSP avg num states: " << bsp.avg_num_states() << endl;
     sample_joining_branches(a);
     run_TSP(a);
@@ -110,6 +113,7 @@ void Threader_smc::fast_internal_rethread(ARG &a, tuple<float, Branch, float> cu
     set_check_points(a);
     run_pruner(a);
     run_fast_BSP(a);
+    boundary_check(a);
     sample_fast_joining_branches(a);
     run_TSP(a);
     sample_joining_points(a);
@@ -132,6 +136,7 @@ void Threader_smc::fast_terminal_rethread(ARG &a, tuple<float, Branch, float> cu
     set_check_points(a);
     run_pruner(a);
     run_fast_BSP(a);
+    boundary_check(a);
     sample_fast_joining_branches(a);
     run_TSP(a);
     sample_joining_points(a);
@@ -153,6 +158,20 @@ void Threader_smc::set_check_points(ARG &a) {
     bsp.set_check_points(check_points);
     fbsp.set_check_points(check_points);
     tsp.set_check_points(check_points);
+}
+
+void Threader_smc::boundary_check(ARG &a) {
+    float end_pos = a.end;
+    if (bsp.check_points.count(end_pos) > 0) {
+        Recombination &r = a.recombinations[end_pos];
+        bsp.sanity_check(r);
+        return;
+    }
+    if (fbsp.check_points.count(end_pos) > 0) {
+        Recombination &r = a.recombinations[end_pos];
+        fbsp.sanity_check(r);
+        return;
+    }
 }
 
 void Threader_smc::run_pruner(ARG &a) {

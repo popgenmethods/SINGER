@@ -68,6 +68,8 @@ public:
     
     void set_check_points(ARG &a);
     
+    void boundary_check(ARG &a);
+    
     void run_pruner(ARG &a);
     
     void run_BSP(ARG &a);
