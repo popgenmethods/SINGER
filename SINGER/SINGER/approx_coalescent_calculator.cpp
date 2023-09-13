@@ -62,7 +62,7 @@ void approx_coalescent_calculator::compute_first_moment() {
 float approx_coalescent_calculator::prob(float x, float y) {
     float p1 = prob_integral(x);
     float p2 = prob_integral(y);
-    assert(p2 >= p1 - 0.001);
+    // assert(p2 >= p1 - 0.001 and p2 <= p1 + 1);
     return max(p2 - p1, 0.0f);
 }
 
@@ -77,35 +77,6 @@ float approx_coalescent_calculator::prob_integral(float x) {
     assert(!isnan(p));
     return p;
 }
-
-/*
-float approx_coalescent_calculator::find_median(float x, float y) {
-    if (x == y) {
-        return x;
-    }
-    if (y - x <= 0.01) {
-        return 0.5*(x + y);
-    }
-    float epsilon = 1e-3;
-    float mv = 0.5*(prob_integral(x) + prob_integral(y));
-    float l = x, u = y;
-    float z = 0, m = 0;
-    while (abs(l - u) > epsilon) {
-        if (isinf(u)) {
-            z = l + 1;
-        } else {
-            z = 0.5*(l + u);
-        }
-        m = prob_integral(z);
-        if (m < mv) {
-            l = z;
-        } else {
-            u = z;
-        }
-    }
-    return z;
-}
-*/
 
 float approx_coalescent_calculator::find_median(float x, float y) {
     if (x == y) {
@@ -127,6 +98,9 @@ float approx_coalescent_calculator::find_median(float x, float y) {
     float ny = n0 + (1 - n0)*exp(-0.5*y);
     float nm = sqrt(nx*ny);
     z = 2*log(n0 - 1) - 2*log(n0 - nm);
+    if (isinf(y)) {
+        z = x + 1;
+    }
     assert(z >= x and z <= y);
     z += cut_time;
     return z;

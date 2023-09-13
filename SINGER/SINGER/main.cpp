@@ -358,15 +358,15 @@ int main(int argc, const char * argv[]) {
                 exit(1);
             }
         }
-        else if (arg == "-thinning") {
+        else if (arg == "-thin") {
             if (i + 1 > argc || argv[i+1][0] == '-') {
-                cerr << "Error: -thinning flag cannot be empty. " << endl;
+                cerr << "Error: -thin flag cannot be empty. " << endl;
                 exit(1);
             }
             try {
                 spacing = stoi(argv[++i]);
             } catch (const invalid_argument&) {
-                cerr << "Error: -thinning flag expects a number. " << endl;
+                cerr << "Error: -thin flag expects a number. " << endl;
                 exit(1);
             }
         }
@@ -412,7 +412,7 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     if (spacing < 1) {
-        cerr << "-thinning flag is invalid. " << endl;
+        cerr << "-thin flag is invalid. " << endl;
         exit(1);
     }
     Sampler sampler = Sampler(Ne, r, m);

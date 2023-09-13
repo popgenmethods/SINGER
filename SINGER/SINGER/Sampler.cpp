@@ -130,6 +130,7 @@ void Sampler::load_vcf(string vcf_file, float start_pos, float end_pos) {
  */
 
 void Sampler::load_vcf(string prefix, float start, float end) {
+    random_engine.seed(random_seed);
     string vcf_file = prefix + ".vcf";
     string index_file = prefix + ".index";
     ifstream idx_stream(index_file);
@@ -625,6 +626,7 @@ void Sampler::resume_internal_sample(int num_iters, int spacing) {
         }
         normalize();
         random_seed = random_engine();
+        write_sample();
         arg.check_incompatibility();
         string node_file = output_prefix + "_nodes_" + to_string(sample_index) + ".txt";
         string branch_file= output_prefix + "_branches_" + to_string(sample_index) + ".txt";
@@ -798,7 +800,7 @@ void Sampler::write_iterative_start() {
         return;
     }
     file << get_time() << "\t"
-    << sample_index << "\t"
+    << arg.sample_nodes.size() << "\t"
     << "initial_thread" << "\t"
     << arg.recombinations.size() - 2 << "\t"
     << arg.num_unmapped() << "\t"
@@ -816,7 +818,7 @@ void Sampler::write_sample() {
         return;
     }
     file << get_time() << "\t"
-    << arg.sample_nodes.size() << "\t"
+    << sample_index << "\t"
     << "rethread" << "\t"
     << arg.recombinations.size() - 2 << "\t"
     << arg.num_unmapped() << "\t"
@@ -897,8 +899,8 @@ void Sampler::read_resume_point(string filename) {
     TSP_smc::counter = stoi(words[log_length - 1]);
     random_seed = stoi(words[log_length - 2]);
     file.seekg(0, ios::beg);
-    // sample_index = line_count - (int) arg.sample_nodes.size() - 1;
-    sample_index = 403;
+    sample_index = stoi(words[1]);
+    // sample_index = 403;
     load_resume_arg();
     arg.end = stof(words[log_length - 3]);
     arg.end_tree = arg.get_tree_at(arg.end);

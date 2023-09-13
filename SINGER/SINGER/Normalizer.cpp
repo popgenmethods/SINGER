@@ -128,6 +128,7 @@ void Normalizer::normalize(ARG &a, float theta) {
                 t = nextafter(all_nodes[i-1]->time, numeric_limits<float>::infinity());
                 assert(t > all_nodes[i-1]->time);
             }
+            // assert(t < 20);
             node->time = t;
             i++;
         }
