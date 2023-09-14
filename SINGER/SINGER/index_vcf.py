@@ -1,3 +1,4 @@
+import argparse
 import sys
 
 def index_vcf(input_prefix, segment_length):
@@ -37,12 +38,20 @@ def index_vcf(input_prefix, segment_length):
             
             byte_offset += len(line.encode('utf-8'))
 
+def main():
+    parser = argparse.ArgumentParser(description="Index a VCF file by block length.")
+    parser.add_argument("vcf_file_prefix", type=str, help="VCF file prefix without .vcf extension")
+    parser.add_argument("segment_length", type=int, help="Length of segments to index")
+    args = parser.parse_args()
+
+    print("Index vcf files")
+    print("------------------")
+    print(f"VCF file prefix: {args.vcf_file_prefix}")
+    print(f"Block length: {args.segment_length}")
+    print("------------------")
+
+    index_vcf(args.vcf_file_prefix, args.segment_length)
+
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print(f"Usage: python {sys.argv[0]} <vcf_file_prefix> <segment_length>")
-        sys.exit(1)
-    
-    input_prefix = sys.argv[1]
-    segment_length = int(sys.argv[2])
-    
-    index_vcf(input_prefix, segment_length)
+    main()
+

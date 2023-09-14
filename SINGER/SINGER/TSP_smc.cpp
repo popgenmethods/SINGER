@@ -928,7 +928,7 @@ Node_ptr TSP_smc::sample_joining_node(Interval *interval) {
     float t;
     if (interval->node != nullptr) {
         n = interval->node;
-        interval->node = nullptr;
+        // interval->node = nullptr;
     } else {
         t = sample_time(interval->lb, interval->ub);
         n = new_node(t);

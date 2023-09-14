@@ -199,6 +199,7 @@ pair<Branch, float> Tree::sample_cut_point() {
         }
     }
     int index = (int) floor(candidates.size()*uniform_random());
+    index = min((int) candidates.size() - 1, index);
     return {candidates[index], cut_time};
 }
 

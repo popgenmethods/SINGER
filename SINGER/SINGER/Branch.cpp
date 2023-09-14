@@ -13,7 +13,7 @@ Branch::Branch() {
 }
 
 Branch::Branch(Node_ptr l, Node_ptr u) {
-    assert((l == nullptr and u == nullptr) or l->time < u->time);
+    assert((l == nullptr and u == nullptr) or l->time <= u->time);
     lower_node = l;
     upper_node = u;
 }
