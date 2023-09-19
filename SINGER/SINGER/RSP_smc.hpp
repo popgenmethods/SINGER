@@ -28,6 +28,10 @@ public:
     
     void adjust(Recombination &r, float cut_time);
     
+    void approx_sample_recombination(Recombination &r, float cut_time, float n);
+    
+    void adjust(Recombination &r, float cut_time, float n);
+    
 private:
     
     map<float, int> coalescence_rates = {};
@@ -45,6 +49,8 @@ private:
     float random_time(float lb, float ub, float q);
     
     float choose_time(float lb, float ub);
+    
+    float choose_time(float lb, float ub, float n);
     
 };
 

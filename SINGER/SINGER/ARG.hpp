@@ -86,7 +86,7 @@ public:
     
     void smc_sample_recombinations();
     
-    void heuristic_sample_recombinations();
+    void approx_sample_recombinations();
     
     void adjust_recombinations();
     

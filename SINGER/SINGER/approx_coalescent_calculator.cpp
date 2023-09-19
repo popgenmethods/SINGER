@@ -96,7 +96,8 @@ float approx_coalescent_calculator::find_median(float x, float y) {
     float z = 0;
     float nx = n0 + (1 - n0)*exp(-0.5*x);
     float ny = n0 + (1 - n0)*exp(-0.5*y);
-    float nm = 2.0*nx*ny/(nx + ny);
+    // float nm = 2.0*nx*ny/(nx + ny);
+    float nm = sqrt(nx*ny);
     z = 2*log(n0 - 1) - 2*log(n0 - nm);
     if (isinf(y)) {
         z = x + 1;

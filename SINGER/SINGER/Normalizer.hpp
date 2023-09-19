@@ -30,8 +30,8 @@ public:
     vector<float> new_grid = {};
     vector<float> observed_mutation_counts = {};
     vector<float> expected_mutation_counts = {};
-    vector<float> observed_branch_length = {};
-    vector<float> expected_branch_length = {};
+    vector<float> observed_recombination_counts = {};
+    vector<float> recombination_density = {};
     
     Normalizer();
     
@@ -49,11 +49,19 @@ public:
     
     void partition_arg(ARG &a);
     
+    void normalize_recombinations(ARG &a);
+    
     void count_mutations(ARG &a);
     
-    void calculate_branch_length(ARG &a, float Ne);
+    void count_recombinations(ARG &a);
     
     void add_mutation(float lb, float ub);
+    
+    void add_recombination(float lb, float ub);
+    
+    float sample_recombination_time(float lb, float ub);
+    
+    void sample_recombinations(ARG &a);
 };
 
 #endif /* Normalizer_hpp */

@@ -106,6 +106,7 @@ void Normalizer::normalize(ARG &a, float theta) {
     get_node_span(a);
     partition_arg(a);
     count_mutations(a);
+    count_recombinations(a);
     float t = 1.0/a.Ne;
     int k = 0;
     new_grid.resize(old_grid.size());
@@ -132,6 +133,7 @@ void Normalizer::normalize(ARG &a, float theta) {
                 t = max(cap, all_nodes[i-1]->time);
                 t = nextafter(t, numeric_limits<float>::infinity());
             }
+            assert(t < max_time);
             node->time = t;
             i++;
         }
@@ -141,6 +143,7 @@ void Normalizer::normalize(ARG &a, float theta) {
         x.second.start_time = -1;
     }
     a.adjust_recombinations();
+    // normalize_recombinations(a);
 }
 
 void Normalizer::partition_arg(ARG &a) {
@@ -186,6 +189,11 @@ void Normalizer::partition_arg(ARG &a) {
     expected_mutation_counts.push_back(l - (1 - 1.0/num_windows)*ls);
 }
 
+void Normalizer::normalize_recombinations(ARG &a) {
+    count_recombinations(a);
+    sample_recombinations(a);
+}
+
 void Normalizer::count_mutations(ARG &a) {
     observed_mutation_counts.resize(expected_mutation_counts.size());
     float lb, ub;
@@ -206,6 +214,25 @@ void Normalizer::count_mutations(ARG &a) {
     }
 }
 
+void Normalizer::count_recombinations(ARG &a) {
+    observed_recombination_counts.resize(observed_mutation_counts.size());
+    float lb, ub;
+    for (auto &x : a.recombinations) {
+        if (x.first > 0 and x.first < a.sequence_length) {
+            Recombination &r = x.second;
+            lb = r.source_branch.lower_node->time;
+            ub = min(r.inserted_node->time, r.deleted_node->time);
+            add_recombination(lb, ub);
+        }
+    }
+    float num_recs = accumulate(observed_recombination_counts.begin(), observed_recombination_counts.end(), 0.0f);
+    num_recs /= observed_recombination_counts.size();
+    recombination_density.resize(observed_recombination_counts.size());
+    for (int i = 0; i < observed_recombination_counts.size(); i++) {
+        recombination_density[i] = num_recs/observed_recombination_counts[i];
+    }
+}
+
 void Normalizer::add_mutation(float lb, float ub) {
     float x, y, l;
     int index;
@@ -221,6 +248,23 @@ void Normalizer::add_mutation(float lb, float ub) {
     }
 }
 
+void Normalizer::add_recombination(float lb, float ub) {
+    float x, y, l;
+    int index;
+    auto it = upper_bound(old_grid.begin(), old_grid.end(), lb);
+    it--;
+    index = (int) distance(old_grid.begin(), it);
+    while (old_grid[index] < ub) {
+        x = old_grid[index];
+        y = old_grid[index + 1];
+        l = min(ub, y) - max(lb, x);
+        observed_recombination_counts[index] += l/(ub - lb);
+        // observed_recombination_counts[index] += 1;
+        index++;
+    }
+}
+
+/*
 void Normalizer::calculate_branch_length(ARG &a, float Ne) {
     observed_branch_length.resize(expected_mutation_counts.size());
     expected_branch_length.resize(expected_mutation_counts.size());
@@ -246,5 +290,53 @@ void Normalizer::calculate_branch_length(ARG &a, float Ne) {
         lb = a.sample_nodes.size()*(exp(0.5*old_grid[k]) - 1) + 1;
         ub = a.sample_nodes.size()*(exp(0.5*old_grid[k+1]) - 1) + 1;
         expected_branch_length[k] = 2*(log(ub) - log(lb))*a.sequence_length;
+    }
+}
+*/
+
+float Normalizer::sample_recombination_time(float lb, float ub) {
+    lb = max(lb, new_grid.front());
+    float tau;
+    float x, y, l;
+    float q = 0;
+    int base_index, index;
+    auto it = upper_bound(new_grid.begin(), new_grid.end(), lb);
+    it--;
+    base_index = (int) distance(new_grid.begin(), it);
+    index = base_index;
+    while (new_grid[index] < ub) {
+        x = new_grid[index];
+        y = new_grid[index + 1];
+        l = min(ub, y) - max(lb, x);
+        q += l/(y - x)*recombination_density[index];
+        index++;
+    }
+    float rq = q*uniform_random();
+    index = base_index;
+    while (new_grid[index] < ub) {
+        x = new_grid[index];
+        y = new_grid[index + 1];
+        l = min(ub, y) - max(lb, x);
+        rq -= l/(y - x)*recombination_density[index];
+        if (rq < 0) {
+            tau = min(ub, y) + rq*l/recombination_density[index];
+            return tau;
+        }
+        index++;
+    }
+    cerr << "resample recombination time failed" << endl;
+    exit(1);
+}
+
+void Normalizer::sample_recombinations(ARG &a) {
+    float lb, ub;
+    for (auto &x : a.recombinations) {
+        if (x.first > 0 and x.first < a.sequence_length) {
+            Recombination &r = x.second;
+            lb = r.source_branch.lower_node->time;
+            ub = min(r.inserted_node->time, r.deleted_node->time);
+            r.start_time = nextafter(ub, lb);
+            assert(r.start_time > lb and r.start_time < ub);
+        }
     }
 }

@@ -35,7 +35,7 @@ public:
     float tsp_q = 0.05;
     int random_seed = 5319;
     float penalty = 0.01;
-    float polar = 0.5;
+    float polar = 0.99;
     int sample_index = 0;
     set<Node_ptr, compare_node> sample_nodes = {};
     vector<Node_ptr> ordered_sample_nodes = {};

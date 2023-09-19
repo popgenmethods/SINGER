@@ -216,9 +216,87 @@ void RSP_smc::adjust(Recombination &r, float cut_time) {
     float lb, ub;
     lb = max(cut_time, r.source_branch.lower_node->time);
     ub = min(r.deleted_node->time, r.inserted_node->time);
-    // r.start_time = random_time(lb, ub, 0.5);
     r.start_time = choose_time(lb, ub);
+    if (r.start_time >= ub or r.start_time <= lb) {
+        r.start_time = 0.5*(lb + ub);
+    }
+    assert(r.start_time < ub);
+}
+
+void RSP_smc::approx_sample_recombination(Recombination &r, float cut_time, float n) {
+    if (r.pos == 0) {
+        return;
+    }
+    if (r.start_time > 0) {
+        return;
+    }
+    if (r.deleted_branches.size() == 0) {
+        return;
+    }
+    vector<Branch> source_candidates;
+    for (Branch b : r.deleted_branches) {
+        if (b.upper_node == r.deleted_node and b.lower_node->time < r.inserted_node->time) {
+            Branch candidate_recombined_branch = Branch(b.lower_node, r.inserted_node);
+            if (r.create(candidate_recombined_branch)) {
+                source_candidates.push_back(b);
+            }
+        }
+    }
+    float lb1, lb2, ub1, ub2;
+    if (source_candidates.size() == 1) {
+        r.source_branch = source_candidates[0];
+        lb1 = max(cut_time, r.source_branch.lower_node->time);
+        ub1 = min(r.source_branch.upper_node->time, r.inserted_node->time);
+        r.start_time = choose_time(lb1, ub1, n);
+    } else if (source_candidates.size() == 2) {
+        lb1 = max(cut_time, source_candidates[0].lower_node->time);
+        lb2 = max(cut_time, source_candidates[1].lower_node->time);
+        ub1 = min(source_candidates[0].upper_node->time, r.inserted_node->time);
+        ub2 = min(source_candidates[1].upper_node->time, r.inserted_node->time);
+        float q = (ub1 - lb1)/(ub1 + ub2 - lb1 - lb2);
+        float p = 0.5;
+        if (p <= q) {
+            r.source_branch = source_candidates[0];
+            r.start_time = choose_time(lb1, ub1, n);
+        } else {
+            r.source_branch = source_candidates[1];
+            r.start_time = choose_time(lb2, ub2, n);
+        }
+    } else {
+        cout << r.pos << " " << source_candidates.size() << endl;
+        cerr << "no candidates in smc sampling" << endl;
+        exit(1);
+    }
+    if (r.deleted_node->time == r.inserted_node->time) {
+        r.inserted_node->time = nextafter(r.inserted_node->time, numeric_limits<float>::infinity());
+    }
+    r.find_target_branch();
+    r.find_recomb_info();
+    assert(r.target_branch != Branch());
+    assert(r.merging_branch != Branch());
+    assert(r.start_time > cut_time);
+    float ub = min(r.deleted_node->time, r.inserted_node->time);
     if (r.start_time >= ub) {
+        r.start_time = nextafter(ub, -numeric_limits<float>::infinity());
+    }
+    assert(r.start_time < ub);
+}
+
+void RSP_smc::adjust(Recombination &r, float cut_time, float n) {
+    if (r.pos == 0) {
+        return;
+    }
+    if (r.start_time > 0) {
+        return;
+    }
+    if (r.deleted_branches.size() == 0) {
+        return;
+    }
+    float lb, ub;
+    lb = max(cut_time, r.source_branch.lower_node->time);
+    ub = min(r.deleted_node->time, r.inserted_node->time);
+    r.start_time = choose_time(lb, ub, n);
+    if (r.start_time >= ub or r.start_time <= lb) {
         r.start_time = 0.5*(lb + ub);
     }
     assert(r.start_time < ub);
@@ -275,6 +353,30 @@ float RSP_smc::choose_time(float lb, float ub) {
     float u = exp(ub);
     float m = 0.5*(l + u);
     float mt = log(m);
+    if (ub - lb < 0.01) {
+        mt = 0.5*(lb + ub);
+    }
+    assert(mt >= lb and mt <= ub);
+    return mt;
+}
+
+float RSP_smc::choose_time(float lb, float ub, float n) {
+    float lambda = 0;
+    float lambda_l = 0;
+    float lambda_u = 0;
+    float mt = 0;
+    if (n > 1) {
+        lambda_l = n/(n + (1 - n)*exp(-0.5*lb));
+        lambda_u = n/(n + (1 - n)*exp(-0.5*ub));
+        // lambda = 0.5*(lambda_l + lambda_u);
+        lambda = lambda_l;
+    } else {
+        lambda = 1;
+    }
+    float l = exp(lambda*lb - lambda*ub);
+    float u = 1;
+    float m = 0.5*(l + u);
+    mt = ub + log(m)/lambda;
     if (ub - lb < 0.01) {
         mt = 0.5*(lb + ub);
     }
