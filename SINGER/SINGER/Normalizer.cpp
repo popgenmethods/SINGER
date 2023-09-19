@@ -127,11 +127,11 @@ void Normalizer::normalize(ARG &a, float theta) {
             t = (1 - p)*new_grid[k] + p*new_grid[k+1];
             if (i > 0 and t <= all_nodes[i-1]->time) {
                 t = nextafter(all_nodes[i-1]->time, numeric_limits<float>::infinity());
-                assert(t > all_nodes[i-1]->time); // don't want duplicate coalescence time
+                assert(t > all_nodes[i-1]->time); // don't want duplicated coalescence time
             }
             if (t > cap) { // don't want super high coalescent time due to numeric issues
-                t = max(cap, all_nodes[i-1]->time);
-                t = nextafter(t, numeric_limits<float>::infinity());
+                t = nextafter(all_nodes[i-1]->time, numeric_limits<float>::infinity());
+                assert(t > all_nodes[i-1]->time);
             }
             assert(t < max_time);
             node->time = t;

@@ -417,6 +417,7 @@ int main(int argc, const char * argv[]) {
     }
     Sampler sampler = Sampler(Ne, r, m);
     sampler.penalty = penalty;
+    sampler.polar = polar;
     sampler.set_precision(epsilon_hmm, epsilon_psmc);
     sampler.set_output_file_prefix(output_prefix);
     sampler.load_vcf(input_filename, start_pos, end_pos);

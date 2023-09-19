@@ -39,7 +39,7 @@ float RSP_smc::sample_start_time(Branch b, int density, float join_time, float c
             break;
         }
     }
-    assert(start_time > cut_time);
+    assert(start_time >= cut_time);
     assert(start_time <= join_time);
     assert(start_time <= ub);
     return start_time;
@@ -95,7 +95,7 @@ pair<Branch, float> RSP_smc::sample_start_time(Branch b1, Branch b2, int density
         }
     }
     assert(weight_sum <= 0);
-    assert(start_time > cut_time);
+    assert(start_time >= cut_time);
     assert(start_time <= join_time);
     assert(start_time <= min(ub1, ub2));
     return {source_branch, start_time};
@@ -138,7 +138,7 @@ void RSP_smc::sample_recombination(Recombination &r, float cut_time, Tree &tree)
     assert(r.target_branch != Branch());
     assert(r.merging_branch != Branch());
     assert(r.start_time <= r.inserted_node->time);
-    assert(r.start_time > cut_time);
+    assert(r.start_time >= cut_time);
 }
 
 void RSP_smc::approx_sample_recombination(Recombination &r, float cut_time) {
@@ -195,12 +195,12 @@ void RSP_smc::approx_sample_recombination(Recombination &r, float cut_time) {
     r.find_recomb_info();
     assert(r.target_branch != Branch());
     assert(r.merging_branch != Branch());
-    assert(r.start_time > cut_time);
+    assert(r.start_time >= cut_time);
     float ub = min(r.deleted_node->time, r.inserted_node->time);
     if (r.start_time >= ub) {
         r.start_time = nextafter(ub, -numeric_limits<float>::infinity());
     }
-    assert(r.start_time < ub);
+    assert(r.start_time <= ub);
 }
 
 void RSP_smc::adjust(Recombination &r, float cut_time) {
@@ -220,7 +220,7 @@ void RSP_smc::adjust(Recombination &r, float cut_time) {
     if (r.start_time >= ub or r.start_time <= lb) {
         r.start_time = 0.5*(lb + ub);
     }
-    assert(r.start_time < ub);
+    assert(r.start_time <= ub);
 }
 
 void RSP_smc::approx_sample_recombination(Recombination &r, float cut_time, float n) {
@@ -274,12 +274,12 @@ void RSP_smc::approx_sample_recombination(Recombination &r, float cut_time, floa
     r.find_recomb_info();
     assert(r.target_branch != Branch());
     assert(r.merging_branch != Branch());
-    assert(r.start_time > cut_time);
+    assert(r.start_time >= cut_time);
     float ub = min(r.deleted_node->time, r.inserted_node->time);
     if (r.start_time >= ub) {
         r.start_time = nextafter(ub, -numeric_limits<float>::infinity());
     }
-    assert(r.start_time < ub);
+    assert(r.start_time <= ub);
 }
 
 void RSP_smc::adjust(Recombination &r, float cut_time, float n) {
@@ -299,7 +299,7 @@ void RSP_smc::adjust(Recombination &r, float cut_time, float n) {
     if (r.start_time >= ub or r.start_time <= lb) {
         r.start_time = 0.5*(lb + ub);
     }
-    assert(r.start_time < ub);
+    assert(r.start_time <= ub);
 }
 
 // private methods:

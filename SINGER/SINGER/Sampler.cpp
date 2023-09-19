@@ -514,7 +514,7 @@ void Sampler::internal_sample(int num_iters, int spacing) {
             threader.internal_rethread(arg, cut_point);
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
-            write_cut(cut_point);
+            // write_cut(cut_point);
         }
         normalize();
         random_seed = random_engine();
@@ -622,7 +622,7 @@ void Sampler::resume_internal_sample(int num_iters, int spacing) {
             threader.internal_rethread(arg, cut_point);
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
-            write_cut(cut_point);
+            // write_cut(cut_point);
         }
         normalize();
         random_seed = random_engine();

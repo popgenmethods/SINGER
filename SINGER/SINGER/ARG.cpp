@@ -374,32 +374,34 @@ void ARG::adjust_recombinations() {
  */
 
 void ARG::approx_sample_recombinations() {
-    float n = sample_nodes.size();
+    // float n = sample_nodes.size();
     RSP_smc rsp = RSP_smc();
     auto it = recombinations.upper_bound(0);
     while (it->first < sequence_length) {
         Recombination &r = it->second;
         if (r.pos > 0 and r.pos < sequence_length) {
-            rsp.approx_sample_recombination(r, cut_time, n);
+            // rsp.approx_sample_recombination(r, cut_time, n);
+            rsp.approx_sample_recombination(r, cut_time);
             assert(r.start_time > 0);
-            assert(r.start_time < r.inserted_node->time);
-            assert(r.start_time < r.deleted_node->time);
+            assert(r.start_time <= r.inserted_node->time);
+            assert(r.start_time <= r.deleted_node->time);
         }
         it++;
     }
 }
 
 void ARG::adjust_recombinations() {
-    float n = sample_nodes.size();
+    // float n = sample_nodes.size();
     RSP_smc rsp = RSP_smc();
     auto it = recombinations.upper_bound(0);
     while (it->first < sequence_length) {
         Recombination &r = it->second;
         if (r.pos != 0 and r.pos < sequence_length) {
-            rsp.adjust(r, 0, n);
+            // rsp.adjust(r, 0, n);
+            rsp.adjust(r, 0);
             assert(r.start_time > 0);
-            assert(r.start_time < r.inserted_node->time);
-            assert(r.start_time < r.deleted_node->time);
+            assert(r.start_time <= r.inserted_node->time);
+            assert(r.start_time <= r.deleted_node->time);
         }
         it++;
     }
