@@ -61,9 +61,10 @@ void TSP_smc::transfer(Recombination &r, Branch &prev_branch, Branch &next_branc
     prev_rho = -1;
     prev_theta = -1;
     prev_node = nullptr;
+    sanity_check(r);
     curr_index += 1;
     curr_branch = next_branch;
-    sanity_check(r);
+    // sanity_check(r);
     lower_bound = max(cut_time, next_branch.lower_node->time);
     if (prev_branch == r.source_branch and next_branch == r.merging_branch) {
         set_interval_constraint(r);
@@ -631,7 +632,7 @@ void TSP_smc::compute_trace_back_probs(float rho, Interval *interval, vector<Int
 void TSP_smc::sanity_check(Recombination &r) {
     for (int i = 0; i < curr_intervals.size(); i++) {
         if (curr_intervals[i]->lb == curr_intervals[i]->ub and curr_intervals[i]->lb == r.inserted_node->time and curr_intervals[i]->branch != r.target_branch) {
-            forward_probs[curr_index-1][i] = 0; // curr_index - 1 because the index has already moved forward
+            forward_probs[curr_index][i] = 0;
         }
     }
 }

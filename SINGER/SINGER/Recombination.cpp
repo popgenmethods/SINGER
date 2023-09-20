@@ -49,7 +49,7 @@ Branch Recombination::trace_forward(float t, Branch curr_branch) {
             return recombined_branch;
         }
     } else if (curr_branch == target_branch) {
-        if (t >= inserted_node->time) {
+        if (t > inserted_node->time) {
             return upper_transfer_branch;
         } else {
             return lower_transfer_branch;
@@ -75,7 +75,7 @@ Branch Recombination::trace_backward(float t, Branch curr_branch) {
     } else if (curr_branch != merging_branch) {
         return target_branch;
     } else {
-        if (t >= deleted_node->time) {
+        if (t > deleted_node->time) {
             return search_lower_node(deleted_node);
         } else {
             return search_upper_node(deleted_node);

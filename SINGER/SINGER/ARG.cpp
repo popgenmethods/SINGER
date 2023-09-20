@@ -1313,6 +1313,9 @@ tuple<float, Branch, float> ARG::sample_internal_cut() {
     Branch b;
     float t;
     tie(b, t) = cut_tree.sample_cut_point();
+    while (t == b.lower_node->time or t == b.upper_node->time) {
+        tie(b, t) = cut_tree.sample_cut_point();
+    }
     return {cut_pos, b, t};
 }
 
