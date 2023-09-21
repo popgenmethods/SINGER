@@ -484,7 +484,7 @@ void ARG::read_coordinates(string filename) {
 void ARG::write_coordinates(string filename) {
     ofstream file;
     file.open(filename);
-    file << std::setprecision(20) << std::fixed;
+    file << std::setprecision(std::numeric_limits<float>::max_digits10) << std::fixed;
     for (auto x : coordinates) {
         file << x << endl;
     }
@@ -963,7 +963,7 @@ void ARG::write_nodes(string filename) {
         if (n->time > 0) {
             n->set_index(index);
         }
-        file << setprecision(15) << n->time*Ne << "\n";
+        file << std::setprecision(std::numeric_limits<float>::max_digits10) << n->time*Ne << "\n";
         index += 1;
     }
     file.close();
@@ -996,16 +996,16 @@ void ARG::write_branches(string filename) {
         // assert((node_set.count(b.lower_node) > 0 and node_set.count(b.upper_node) > 0) or b.upper_node == root);
         int k1 = b.upper_node->index;
         int k2 = b.lower_node->index;
-        assert(k1 < 1e5 and k2 < 1e5);
+        // assert(k1 < 1e5 and k2 < 1e5);
         branch_info.push_back({k1, k2, x.second, sequence_length});
     }
     sort(branch_info.begin(), branch_info.end(), compare_edge);
     ofstream file;
     file.open(filename);
-    file << std::setprecision(20) << std::fixed;
+    file << std::setprecision(std::numeric_limits<float>::max_digits10) << std::fixed;
     for (int i = 0; i < branch_info.size(); i++) {
         auto [k1, k2, x, l] = branch_info[i];
-        assert(k1 < 1e5 and k2 < 1e5);
+        // assert(k1 < 1e5 and k2 < 1e5);
         file << x << " " << l << " " << k1 << " " << k2 << "\n";
     }
     file.close();
@@ -1014,7 +1014,7 @@ void ARG::write_branches(string filename) {
 void ARG::write_recombs(string filename) {
     ofstream file;
     file.open(filename);
-    file << std::setprecision(20) << std::fixed;
+    file << std::setprecision(std::numeric_limits<float>::max_digits10) << std::fixed;
     for (auto x : recombinations) {
         Recombination &r = x.second;
         if (x.first > 0 and x.first < sequence_length) {
