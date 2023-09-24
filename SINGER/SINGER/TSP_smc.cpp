@@ -406,7 +406,7 @@ float TSP_smc::psmc_prob(float rho, float s, float t1, float t2) {
     gap = max(gap, 0.0f);
     prob = base + gap;
     assert(!isnan(prob) and prob >= 0 and prob <= 1);
-    return base + gap;
+    return prob;
 }
 
 void TSP_smc::generate_intervals(Branch &next_branch, float lb, float ub) {
@@ -568,6 +568,7 @@ void TSP_smc::compute_upper_diagonals(float rho) {
         t = curr_intervals[i-1]->time;
         base = psmc_prob(rho, t, lb, ub);
         upper_diagonals[i] = psmc_prob(rho, t, curr_intervals[i]->lb, curr_intervals[i]->ub)/base;
+        assert(!isnan(upper_diagonals[i]));
     }
 }
 
