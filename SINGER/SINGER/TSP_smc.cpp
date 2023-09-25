@@ -464,6 +464,7 @@ void TSP_smc::transfer_intervals(Recombination &r, Branch &prev_branch, Branch &
         if (ub >= lb) {
             float w = get_prop(lb, ub, interval->lb, interval->ub);
             p = w*forward_probs[curr_index-1][i];
+            assert(!isnan(p));
             new_interval = new Interval(next_branch, lb, ub, curr_index);
             new_interval->fill_time();
             new_interval->node = interval->node;

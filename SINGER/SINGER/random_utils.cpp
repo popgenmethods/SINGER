@@ -11,7 +11,11 @@ std::mt19937 random_engine;
 std::uniform_real_distribution<> uniform_distribution(0.0, 1.0);
 
 float uniform_random() {
-    return uniform_distribution(random_engine);
+    float q = uniform_distribution(random_engine);
+    if (q < 1e-5 or q > 1 - 1e-5) {
+        q = uniform_distribution(random_engine);
+    }
+    return q;
 }
 
 void set_seed(unsigned seed) {  // Implement the set_seed function
