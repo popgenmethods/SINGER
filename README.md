@@ -10,6 +10,18 @@ If you want to compile the source files, then C++17 and cmake are required. Othe
 
 ## Installations
 
+The easiser way is to directory go to the folder `previous_releases/` and download one of the versions which work for your working platform (Windows/Linux/MacOS_Intel/MacOS_M1). After downloading, you can decompress it using:
+
+```
+tar -xvzf file_name
+```
+
+If you prefer compiling from the source files, you could do:
+
+```
+g++ -o
+```
+
 ## Input and output
 
 SINGER takes **.vcf(gz)** file and outputs a **.trees** file in tskit format. The mutations are already mapped to the branches, but non-polymorphic, multi-allelic sites and structral variants are excluded from inference. The branch length should be interpreted with units of generations, for example, for homo sapiens, you would need multiply that by 28 to convert to units of years. There will also be a **.log** file for you to check the argument you ran, and the summary statistic in MCMC iterations. 
@@ -18,7 +30,7 @@ SINGER takes **.vcf(gz)** file and outputs a **.trees** file in tskit format. Th
 
 To sample ARGs with SINGER, you can run command line like shown below. 
 
-**IMPORTANT**:if you wish to get ARG for: **(1) a long chromosome or (2) a series of regions**, we have provided more support to help you (see the [next section: Tools](#Tools)). If you think there are other specific job pipeline which many people might want to use, please contact us and we might add it! 
+**IMPORTANT!**:if you wish to get ARG for: **(1) a long chromosome or (2) a series of regions**, we have provided more support to help you (see the [next section: Tools](#Tools)). If you think there are other specific job pipeline which many people might want to use, please contact us and we might add it! 
 
 ```
 path_to_singer/bin/singer -fast -Ne 1e4 -m 1.25e-8 -r 1.25e-8
