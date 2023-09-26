@@ -84,6 +84,8 @@ This script will:
 
 Sometimes it is of interest to only look at certain regions on the genome (e.g. selection signals), and we have provided support for this with the python script `multiple_windows_singer.py`. It will automatically parallelize running SINGER on the regions you specify with a given `.bed` file. 
 
+**Tips:** we recommend having windows not too small nor too big. A window containing 500-5000 SNPs would be ideal.
+
 ```
 python multiple_windows_singer.py
 ```
