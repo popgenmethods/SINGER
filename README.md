@@ -18,7 +18,7 @@ SINGER takes **.vcf(gz)** file and outputs a **.trees** file in tskit format. Th
 
 To sample ARGs with SINGER, you can run command line like shown below. 
 
-**IMPORTANT**:if you wish to get ARG for: **(1) a long chromosome or (2) a series of regions**, we have provided more support to help you (see the [next section](#Tools)). If you think there are other specific job pipeline which many people might want to use, please contact us and we might add it! 
+**IMPORTANT**:if you wish to get ARG for: **(1) a long chromosome or (2) a series of regions**, we have provided more support to help you (see the [next section: Tools](#Tools)). If you think there are other specific job pipeline which many people might want to use, please contact us and we might add it! 
 
 ```
 path_to_singer/bin/singer -fast -Ne 1e4 -m 1.25e-8 -r 1.25e-8
