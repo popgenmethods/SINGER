@@ -16,11 +16,9 @@ SINGER takes **.vcf(gz)** file and outputs a **.trees** file in tskit format. Th
 
 ## Documentation
 
-### The most basic way to use SINGER
-
 To sample ARGs with SINGER, you can run command line like shown below. 
 
-However, if you wish to get ARG for: **(1) a long chromosome or (2) a series of regions**, we have provided more support to help you (see the [next section](#Tools)). 
+**IMPORTANT**:if you wish to get ARG for: **(1) a long chromosome or (2) a series of regions**, we have provided more support to help you (see the [next section](#Tools)). If you think there are other specific job pipeline which many people might want to use, please contact us and we might add it! 
 
 ```
 path_to_singer/bin/singer -fast -Ne 1e4 -m 1.25e-8 -r 1.25e-8
@@ -55,9 +53,7 @@ Here are some other parameters of the software which we **DON'T** recommend chan
 
 ## Tools
 
-There are 2 python scripts we prepared for you so that can be done really easily:
-
-### Script support [running SINGER for a long chromosome]
+### Running SINGER for a long chromosome
 
 Often people would like to run the ARG inference method for the entire chromosome (or even the entire genome), and we have provided a python script `parallelize_singer.py` to facilitate you to this end. It automatically handles parallelization for you and runs SINGER multi-threaded. 
 
@@ -69,9 +65,10 @@ This script will:
 1. Cut the genome into windows (default at 1Mb)
 2. Remove the windows of unsequenced regions (<5 variants in the window)
 3. Automatically parallelize running SINGER on these windows
+4. Convert the output to `.trees` files with `tskit` format
 
 
-### Script support [running SINGER for a series of regions]
+### Running SINGER for a series of regions
 
 Sometimes it is of interest to only look at certain regions on the genome (e.g. selection signals), and we have provided support for this with the python script `multiple_windows_singer.py`. It will automatically parallelize running SINGER on the regions you specify with a given `.bed` file. 
 
