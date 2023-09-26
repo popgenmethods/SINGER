@@ -581,10 +581,6 @@ Interval_ptr approx_BSP::sample_curr_interval(int x) {
             return intervals[i];
         }
     }
-    if (w <= 1e-6*ws) {
-        sample_index = (int) intervals.size() - 1;
-        return intervals.back();
-    }
     cerr << "approx_BSP sample_curr_interval failed" << endl;
     exit(1);
 }
@@ -605,10 +601,6 @@ Interval_ptr approx_BSP::sample_prev_interval(int x) {
             return intervals[i];
         }
     }
-    if (w <= 1e-6*ws) {
-        sample_index = (int) intervals.size() - 1;
-        return intervals.back();
-    }
     cerr << "approx_BSP sample_prev_interval failed" << endl;
     exit(1);
 }
@@ -627,10 +619,6 @@ Interval_ptr approx_BSP::sample_source_interval(Interval_ptr interval, int x) {
                 sample_index = get_interval_index(intervals[i], prev_intervals);
                 return intervals[i];
             }
-        }
-        if (w < 1e-6*ws) {
-            sample_index = get_interval_index(intervals.back(), prev_intervals);
-            return intervals.back();
         }
         cerr << "approx bsp sample_source_interval failed" << endl;
         exit(1);

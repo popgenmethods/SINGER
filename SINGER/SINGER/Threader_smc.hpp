@@ -22,6 +22,7 @@
 #include "fast_BSP.hpp"
 #include "approx_BSP.hpp"
 #include "TSP_smc.hpp"
+#include "TSP.hpp"
 #include "Trace_pruner.hpp"
 
 class Threader_smc {
@@ -56,7 +57,8 @@ public:
     Trace_pruner pruner = Trace_pruner();
     approx_BSP bsp = approx_BSP();
     fast_BSP fbsp = fast_BSP();
-    TSP_smc tsp = TSP_smc();
+    // TSP_smc tsp = TSP_smc();
+    TSP tsp = TSP();
     float gap;
     float cutoff;
     shared_ptr<Binary_emission> be = make_shared<Binary_emission>();
