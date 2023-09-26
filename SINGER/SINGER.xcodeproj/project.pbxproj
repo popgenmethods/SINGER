@@ -7,11 +7,41 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6A3FB94429BF7D900017EF15 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6A3FB94329BF7D900017EF15 /* main.cpp */; };
-		6A3FB94C29BF7FF50017EF15 /* Node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6A3FB94A29BF7FF50017EF15 /* Node.cpp */; };
-		6A3FB94F29BF81720017EF15 /* Branch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6A3FB94D29BF81720017EF15 /* Branch.cpp */; };
-		6A3FB95229BF861D0017EF15 /* Tree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6A3FB95029BF861D0017EF15 /* Tree.cpp */; };
-		6A3FB95529BF86480017EF15 /* Recombination.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6A3FB95429BF86480017EF15 /* Recombination.cpp */; };
+		6A792BA72AC2338400176E77 /* TSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6A792BA52AC2338400176E77 /* TSP.cpp */; };
+		6AC081F32A8C26930021DD8E /* approx_BSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AC081F12A8C26930021DD8E /* approx_BSP.cpp */; };
+		6AD5CDF82A3A7F410004CCE7 /* RSP_smc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDBF2A3A7F410004CCE7 /* RSP_smc.cpp */; };
+		6AD5CDFA2A3A7F410004CCE7 /* Polar_emission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDC12A3A7F410004CCE7 /* Polar_emission.cpp */; };
+		6AD5CDFB2A3A7F410004CCE7 /* Coalescent_calculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDC22A3A7F410004CCE7 /* Coalescent_calculator.cpp */; };
+		6AD5CDFC2A3A7F410004CCE7 /* random_utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDC42A3A7F410004CCE7 /* random_utils.cpp */; };
+		6AD5CDFD2A3A7F410004CCE7 /* Emission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDC52A3A7F410004CCE7 /* Emission.cpp */; };
+		6AD5CDFE2A3A7F410004CCE7 /* TSP_smc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDC62A3A7F410004CCE7 /* TSP_smc.cpp */; };
+		6AD5CDFF2A3A7F410004CCE7 /* ARG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDC92A3A7F410004CCE7 /* ARG.cpp */; };
+		6AD5CE002A3A7F410004CCE7 /* Recombination.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDCA2A3A7F410004CCE7 /* Recombination.cpp */; };
+		6AD5CE012A3A7F410004CCE7 /* Trace_pruner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDCB2A3A7F410004CCE7 /* Trace_pruner.cpp */; };
+		6AD5CE022A3A7F410004CCE7 /* Threader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDCC2A3A7F410004CCE7 /* Threader.cpp */; };
+		6AD5CE032A3A7F410004CCE7 /* Branch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDCD2A3A7F410004CCE7 /* Branch.cpp */; };
+		6AD5CE042A3A7F410004CCE7 /* Test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDCE2A3A7F410004CCE7 /* Test.cpp */; };
+		6AD5CE052A3A7F410004CCE7 /* Node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDCF2A3A7F410004CCE7 /* Node.cpp */; };
+		6AD5CE062A3A7F410004CCE7 /* succint_BSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDD12A3A7F410004CCE7 /* succint_BSP.cpp */; };
+		6AD5CE072A3A7F410004CCE7 /* Sampler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDD42A3A7F410004CCE7 /* Sampler.cpp */; };
+		6AD5CE082A3A7F410004CCE7 /* fast_BSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDD62A3A7F410004CCE7 /* fast_BSP.cpp */; };
+		6AD5CE092A3A7F410004CCE7 /* reduced_BSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDD72A3A7F410004CCE7 /* reduced_BSP.cpp */; };
+		6AD5CE0A2A3A7F410004CCE7 /* fast_BSP_smc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDD82A3A7F410004CCE7 /* fast_BSP_smc.cpp */; };
+		6AD5CE0C2A3A7F410004CCE7 /* Tree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDDA2A3A7F410004CCE7 /* Tree.cpp */; };
+		6AD5CE0D2A3A7F410004CCE7 /* Fitch_reconstruction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDDF2A3A7F410004CCE7 /* Fitch_reconstruction.cpp */; };
+		6AD5CE0E2A3A7F410004CCE7 /* Threader_smc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDE12A3A7F410004CCE7 /* Threader_smc.cpp */; };
+		6AD5CE0F2A3A7F410004CCE7 /* Pruner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDE22A3A7F410004CCE7 /* Pruner.cpp */; };
+		6AD5CE102A3A7F410004CCE7 /* Binary_emission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDE32A3A7F410004CCE7 /* Binary_emission.cpp */; };
+		6AD5CE112A3A7F410004CCE7 /* Reconstruction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDEE2A3A7F410004CCE7 /* Reconstruction.cpp */; };
+		6AD5CE122A3A7F410004CCE7 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDF12A3A7F410004CCE7 /* main.cpp */; };
+		6AD5CE132A3A7F410004CCE7 /* BSP_smc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDF32A3A7F410004CCE7 /* BSP_smc.cpp */; };
+		6AD5CE142A3A7F410004CCE7 /* Interval.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CDF42A3A7F410004CCE7 /* Interval.cpp */; };
+		6AD5CE172A3BE5D80004CCE7 /* fast_coalescent_calculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CE152A3BE5D80004CCE7 /* fast_coalescent_calculator.cpp */; };
+		6AD5CE1A2A3E1FD50004CCE7 /* sub_BSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CE182A3E1FD50004CCE7 /* sub_BSP.cpp */; };
+		6AD5CE1D2A48FA240004CCE7 /* approx_coalescent_calculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CE1B2A48FA240004CCE7 /* approx_coalescent_calculator.cpp */; };
+		6ADD71362A52473600AF1A62 /* Distribution.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6ADD71342A52473600AF1A62 /* Distribution.cpp */; };
+		6ADD720C2A5C826500AF1A62 /* BSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6ADD720A2A5C826500AF1A62 /* BSP.cpp */; };
+		6ADD720F2A6061CB00AF1A62 /* Normalizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6ADD720D2A6061CB00AF1A62 /* Normalizer.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,15 +58,75 @@
 
 /* Begin PBXFileReference section */
 		6A3FB94029BF7D900017EF15 /* SINGER */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SINGER; sourceTree = BUILT_PRODUCTS_DIR; };
-		6A3FB94329BF7D900017EF15 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		6A3FB94A29BF7FF50017EF15 /* Node.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Node.cpp; sourceTree = "<group>"; };
-		6A3FB94B29BF7FF50017EF15 /* Node.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Node.hpp; sourceTree = "<group>"; };
-		6A3FB94D29BF81720017EF15 /* Branch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Branch.cpp; sourceTree = "<group>"; };
-		6A3FB94E29BF81720017EF15 /* Branch.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Branch.hpp; sourceTree = "<group>"; };
-		6A3FB95029BF861D0017EF15 /* Tree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tree.cpp; sourceTree = "<group>"; };
-		6A3FB95129BF861D0017EF15 /* Tree.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Tree.hpp; sourceTree = "<group>"; };
-		6A3FB95329BF86480017EF15 /* Recombination.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Recombination.hpp; sourceTree = "<group>"; };
-		6A3FB95429BF86480017EF15 /* Recombination.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Recombination.cpp; sourceTree = "<group>"; };
+		6A792BA52AC2338400176E77 /* TSP.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TSP.cpp; sourceTree = "<group>"; };
+		6A792BA62AC2338400176E77 /* TSP.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TSP.hpp; sourceTree = "<group>"; };
+		6AC081F12A8C26930021DD8E /* approx_BSP.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = approx_BSP.cpp; sourceTree = "<group>"; };
+		6AC081F22A8C26930021DD8E /* approx_BSP.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = approx_BSP.hpp; sourceTree = "<group>"; };
+		6AD5CDBF2A3A7F410004CCE7 /* RSP_smc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RSP_smc.cpp; sourceTree = "<group>"; };
+		6AD5CDC12A3A7F410004CCE7 /* Polar_emission.cpp */ = {isa = PBXFileReference; fileEncoding = 4; indentWidth = 3; lastKnownFileType = sourcecode.cpp.cpp; path = Polar_emission.cpp; sourceTree = "<group>"; };
+		6AD5CDC22A3A7F410004CCE7 /* Coalescent_calculator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Coalescent_calculator.cpp; sourceTree = "<group>"; };
+		6AD5CDC32A3A7F410004CCE7 /* Reconstruction.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Reconstruction.hpp; sourceTree = "<group>"; };
+		6AD5CDC42A3A7F410004CCE7 /* random_utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = random_utils.cpp; sourceTree = "<group>"; };
+		6AD5CDC52A3A7F410004CCE7 /* Emission.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Emission.cpp; sourceTree = "<group>"; };
+		6AD5CDC62A3A7F410004CCE7 /* TSP_smc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TSP_smc.cpp; sourceTree = "<group>"; };
+		6AD5CDC72A3A7F410004CCE7 /* BSP_smc.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BSP_smc.hpp; sourceTree = "<group>"; };
+		6AD5CDC82A3A7F410004CCE7 /* Interval.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Interval.hpp; sourceTree = "<group>"; };
+		6AD5CDC92A3A7F410004CCE7 /* ARG.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ARG.cpp; sourceTree = "<group>"; };
+		6AD5CDCA2A3A7F410004CCE7 /* Recombination.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Recombination.cpp; sourceTree = "<group>"; };
+		6AD5CDCB2A3A7F410004CCE7 /* Trace_pruner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Trace_pruner.cpp; sourceTree = "<group>"; };
+		6AD5CDCC2A3A7F410004CCE7 /* Threader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Threader.cpp; sourceTree = "<group>"; };
+		6AD5CDCD2A3A7F410004CCE7 /* Branch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Branch.cpp; sourceTree = "<group>"; };
+		6AD5CDCE2A3A7F410004CCE7 /* Test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Test.cpp; sourceTree = "<group>"; };
+		6AD5CDCF2A3A7F410004CCE7 /* Node.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Node.cpp; sourceTree = "<group>"; };
+		6AD5CDD02A3A7F410004CCE7 /* Fitch_reconstruction.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Fitch_reconstruction.hpp; sourceTree = "<group>"; };
+		6AD5CDD12A3A7F410004CCE7 /* succint_BSP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = succint_BSP.cpp; sourceTree = "<group>"; };
+		6AD5CDD22A3A7F410004CCE7 /* Threader_smc.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Threader_smc.hpp; sourceTree = "<group>"; };
+		6AD5CDD32A3A7F410004CCE7 /* Pruner.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Pruner.hpp; sourceTree = "<group>"; };
+		6AD5CDD42A3A7F410004CCE7 /* Sampler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Sampler.cpp; sourceTree = "<group>"; };
+		6AD5CDD52A3A7F410004CCE7 /* Binary_emission.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Binary_emission.hpp; sourceTree = "<group>"; };
+		6AD5CDD62A3A7F410004CCE7 /* fast_BSP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fast_BSP.cpp; sourceTree = "<group>"; };
+		6AD5CDD72A3A7F410004CCE7 /* reduced_BSP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = reduced_BSP.cpp; sourceTree = "<group>"; };
+		6AD5CDD82A3A7F410004CCE7 /* fast_BSP_smc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fast_BSP_smc.cpp; sourceTree = "<group>"; };
+		6AD5CDDA2A3A7F410004CCE7 /* Tree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Tree.cpp; sourceTree = "<group>"; };
+		6AD5CDDB2A3A7F410004CCE7 /* Threader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Threader.hpp; sourceTree = "<group>"; };
+		6AD5CDDC2A3A7F410004CCE7 /* Branch.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Branch.hpp; sourceTree = "<group>"; };
+		6AD5CDDD2A3A7F410004CCE7 /* Node.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Node.hpp; sourceTree = "<group>"; };
+		6AD5CDDE2A3A7F410004CCE7 /* Test.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Test.hpp; sourceTree = "<group>"; };
+		6AD5CDDF2A3A7F410004CCE7 /* Fitch_reconstruction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Fitch_reconstruction.cpp; sourceTree = "<group>"; };
+		6AD5CDE02A3A7F410004CCE7 /* succint_BSP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = succint_BSP.hpp; sourceTree = "<group>"; };
+		6AD5CDE12A3A7F410004CCE7 /* Threader_smc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Threader_smc.cpp; sourceTree = "<group>"; };
+		6AD5CDE22A3A7F410004CCE7 /* Pruner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Pruner.cpp; sourceTree = "<group>"; };
+		6AD5CDE32A3A7F410004CCE7 /* Binary_emission.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Binary_emission.cpp; sourceTree = "<group>"; };
+		6AD5CDE42A3A7F410004CCE7 /* Sampler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Sampler.hpp; sourceTree = "<group>"; };
+		6AD5CDE52A3A7F410004CCE7 /* fast_BSP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = fast_BSP.hpp; sourceTree = "<group>"; };
+		6AD5CDE62A3A7F410004CCE7 /* reduced_BSP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = reduced_BSP.hpp; sourceTree = "<group>"; };
+		6AD5CDE72A3A7F410004CCE7 /* fast_BSP_smc.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = fast_BSP_smc.hpp; sourceTree = "<group>"; };
+		6AD5CDE82A3A7F410004CCE7 /* Tree.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Tree.hpp; sourceTree = "<group>"; };
+		6AD5CDEA2A3A7F410004CCE7 /* RSP_smc.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = RSP_smc.hpp; sourceTree = "<group>"; };
+		6AD5CDEC2A3A7F410004CCE7 /* Polar_emission.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Polar_emission.hpp; sourceTree = "<group>"; };
+		6AD5CDED2A3A7F410004CCE7 /* Coalescent_calculator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Coalescent_calculator.hpp; sourceTree = "<group>"; };
+		6AD5CDEE2A3A7F410004CCE7 /* Reconstruction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Reconstruction.cpp; sourceTree = "<group>"; };
+		6AD5CDEF2A3A7F410004CCE7 /* Emission.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Emission.hpp; sourceTree = "<group>"; };
+		6AD5CDF02A3A7F410004CCE7 /* random_utils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = random_utils.hpp; sourceTree = "<group>"; };
+		6AD5CDF12A3A7F410004CCE7 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		6AD5CDF22A3A7F410004CCE7 /* TSP_smc.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TSP_smc.hpp; sourceTree = "<group>"; };
+		6AD5CDF32A3A7F410004CCE7 /* BSP_smc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BSP_smc.cpp; sourceTree = "<group>"; };
+		6AD5CDF42A3A7F410004CCE7 /* Interval.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Interval.cpp; sourceTree = "<group>"; };
+		6AD5CDF52A3A7F410004CCE7 /* Trace_pruner.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Trace_pruner.hpp; sourceTree = "<group>"; };
+		6AD5CDF62A3A7F410004CCE7 /* Recombination.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Recombination.hpp; sourceTree = "<group>"; };
+		6AD5CDF72A3A7F410004CCE7 /* ARG.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ARG.hpp; sourceTree = "<group>"; };
+		6AD5CE152A3BE5D80004CCE7 /* fast_coalescent_calculator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = fast_coalescent_calculator.cpp; sourceTree = "<group>"; };
+		6AD5CE162A3BE5D80004CCE7 /* fast_coalescent_calculator.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = fast_coalescent_calculator.hpp; sourceTree = "<group>"; };
+		6AD5CE182A3E1FD50004CCE7 /* sub_BSP.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = sub_BSP.cpp; sourceTree = "<group>"; };
+		6AD5CE192A3E1FD50004CCE7 /* sub_BSP.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sub_BSP.hpp; sourceTree = "<group>"; };
+		6AD5CE1B2A48FA240004CCE7 /* approx_coalescent_calculator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = approx_coalescent_calculator.cpp; sourceTree = "<group>"; };
+		6AD5CE1C2A48FA240004CCE7 /* approx_coalescent_calculator.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = approx_coalescent_calculator.hpp; sourceTree = "<group>"; };
+		6ADD71342A52473600AF1A62 /* Distribution.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Distribution.cpp; sourceTree = "<group>"; };
+		6ADD71352A52473600AF1A62 /* Distribution.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Distribution.hpp; sourceTree = "<group>"; };
+		6ADD720A2A5C826500AF1A62 /* BSP.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BSP.cpp; sourceTree = "<group>"; };
+		6ADD720B2A5C826500AF1A62 /* BSP.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = BSP.hpp; sourceTree = "<group>"; };
+		6ADD720D2A6061CB00AF1A62 /* Normalizer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Normalizer.cpp; sourceTree = "<group>"; };
+		6ADD720E2A6061CB00AF1A62 /* Normalizer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Normalizer.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,8 +143,8 @@
 		6A3FB93729BF7D900017EF15 = {
 			isa = PBXGroup;
 			children = (
-				6A3FB94229BF7D900017EF15 /* SINGER */,
 				6A3FB94129BF7D900017EF15 /* Products */,
+				6AD5CDBE2A3A7F410004CCE7 /* SINGER */,
 			);
 			sourceTree = "<group>";
 		};
@@ -66,18 +156,78 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		6A3FB94229BF7D900017EF15 /* SINGER */ = {
+		6AD5CDBE2A3A7F410004CCE7 /* SINGER */ = {
 			isa = PBXGroup;
 			children = (
-				6A3FB95429BF86480017EF15 /* Recombination.cpp */,
-				6A3FB95329BF86480017EF15 /* Recombination.hpp */,
-				6A3FB95029BF861D0017EF15 /* Tree.cpp */,
-				6A3FB95129BF861D0017EF15 /* Tree.hpp */,
-				6A3FB94D29BF81720017EF15 /* Branch.cpp */,
-				6A3FB94E29BF81720017EF15 /* Branch.hpp */,
-				6A3FB94A29BF7FF50017EF15 /* Node.cpp */,
-				6A3FB94B29BF7FF50017EF15 /* Node.hpp */,
-				6A3FB94329BF7D900017EF15 /* main.cpp */,
+				6AC081F12A8C26930021DD8E /* approx_BSP.cpp */,
+				6AC081F22A8C26930021DD8E /* approx_BSP.hpp */,
+				6AD5CE1B2A48FA240004CCE7 /* approx_coalescent_calculator.cpp */,
+				6AD5CE1C2A48FA240004CCE7 /* approx_coalescent_calculator.hpp */,
+				6AD5CDC92A3A7F410004CCE7 /* ARG.cpp */,
+				6AD5CDF72A3A7F410004CCE7 /* ARG.hpp */,
+				6AD5CDE32A3A7F410004CCE7 /* Binary_emission.cpp */,
+				6AD5CDD52A3A7F410004CCE7 /* Binary_emission.hpp */,
+				6AD5CDCD2A3A7F410004CCE7 /* Branch.cpp */,
+				6AD5CDDC2A3A7F410004CCE7 /* Branch.hpp */,
+				6AD5CDF32A3A7F410004CCE7 /* BSP_smc.cpp */,
+				6AD5CDC72A3A7F410004CCE7 /* BSP_smc.hpp */,
+				6ADD720A2A5C826500AF1A62 /* BSP.cpp */,
+				6ADD720B2A5C826500AF1A62 /* BSP.hpp */,
+				6AD5CDC22A3A7F410004CCE7 /* Coalescent_calculator.cpp */,
+				6AD5CDED2A3A7F410004CCE7 /* Coalescent_calculator.hpp */,
+				6ADD71342A52473600AF1A62 /* Distribution.cpp */,
+				6ADD71352A52473600AF1A62 /* Distribution.hpp */,
+				6AD5CDC52A3A7F410004CCE7 /* Emission.cpp */,
+				6AD5CDEF2A3A7F410004CCE7 /* Emission.hpp */,
+				6AD5CDD82A3A7F410004CCE7 /* fast_BSP_smc.cpp */,
+				6AD5CDE72A3A7F410004CCE7 /* fast_BSP_smc.hpp */,
+				6AD5CDD62A3A7F410004CCE7 /* fast_BSP.cpp */,
+				6AD5CDE52A3A7F410004CCE7 /* fast_BSP.hpp */,
+				6AD5CE152A3BE5D80004CCE7 /* fast_coalescent_calculator.cpp */,
+				6AD5CE162A3BE5D80004CCE7 /* fast_coalescent_calculator.hpp */,
+				6AD5CDDF2A3A7F410004CCE7 /* Fitch_reconstruction.cpp */,
+				6AD5CDD02A3A7F410004CCE7 /* Fitch_reconstruction.hpp */,
+				6AD5CDF42A3A7F410004CCE7 /* Interval.cpp */,
+				6AD5CDC82A3A7F410004CCE7 /* Interval.hpp */,
+				6AD5CDF12A3A7F410004CCE7 /* main.cpp */,
+				6AD5CDCF2A3A7F410004CCE7 /* Node.cpp */,
+				6AD5CDDD2A3A7F410004CCE7 /* Node.hpp */,
+				6ADD720D2A6061CB00AF1A62 /* Normalizer.cpp */,
+				6ADD720E2A6061CB00AF1A62 /* Normalizer.hpp */,
+				6AD5CDC12A3A7F410004CCE7 /* Polar_emission.cpp */,
+				6AD5CDEC2A3A7F410004CCE7 /* Polar_emission.hpp */,
+				6AD5CDE22A3A7F410004CCE7 /* Pruner.cpp */,
+				6AD5CDD32A3A7F410004CCE7 /* Pruner.hpp */,
+				6AD5CDC42A3A7F410004CCE7 /* random_utils.cpp */,
+				6AD5CDF02A3A7F410004CCE7 /* random_utils.hpp */,
+				6AD5CDCA2A3A7F410004CCE7 /* Recombination.cpp */,
+				6AD5CDF62A3A7F410004CCE7 /* Recombination.hpp */,
+				6AD5CDEE2A3A7F410004CCE7 /* Reconstruction.cpp */,
+				6AD5CDC32A3A7F410004CCE7 /* Reconstruction.hpp */,
+				6AD5CDD72A3A7F410004CCE7 /* reduced_BSP.cpp */,
+				6AD5CDE62A3A7F410004CCE7 /* reduced_BSP.hpp */,
+				6AD5CDBF2A3A7F410004CCE7 /* RSP_smc.cpp */,
+				6AD5CDEA2A3A7F410004CCE7 /* RSP_smc.hpp */,
+				6AD5CDD42A3A7F410004CCE7 /* Sampler.cpp */,
+				6AD5CDE42A3A7F410004CCE7 /* Sampler.hpp */,
+				6AD5CE182A3E1FD50004CCE7 /* sub_BSP.cpp */,
+				6AD5CE192A3E1FD50004CCE7 /* sub_BSP.hpp */,
+				6AD5CDD12A3A7F410004CCE7 /* succint_BSP.cpp */,
+				6AD5CDE02A3A7F410004CCE7 /* succint_BSP.hpp */,
+				6AD5CDCE2A3A7F410004CCE7 /* Test.cpp */,
+				6AD5CDDE2A3A7F410004CCE7 /* Test.hpp */,
+				6AD5CDE12A3A7F410004CCE7 /* Threader_smc.cpp */,
+				6AD5CDD22A3A7F410004CCE7 /* Threader_smc.hpp */,
+				6AD5CDCC2A3A7F410004CCE7 /* Threader.cpp */,
+				6AD5CDDB2A3A7F410004CCE7 /* Threader.hpp */,
+				6AD5CDCB2A3A7F410004CCE7 /* Trace_pruner.cpp */,
+				6AD5CDF52A3A7F410004CCE7 /* Trace_pruner.hpp */,
+				6AD5CDDA2A3A7F410004CCE7 /* Tree.cpp */,
+				6AD5CDE82A3A7F410004CCE7 /* Tree.hpp */,
+				6AD5CDF22A3A7F410004CCE7 /* TSP_smc.hpp */,
+				6AD5CDC62A3A7F410004CCE7 /* TSP_smc.cpp */,
+				6A792BA62AC2338400176E77 /* TSP.hpp */,
+				6A792BA52AC2338400176E77 /* TSP.cpp */,
 			);
 			path = SINGER;
 			sourceTree = "<group>";
@@ -139,11 +289,41 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6A3FB94429BF7D900017EF15 /* main.cpp in Sources */,
-				6A3FB95229BF861D0017EF15 /* Tree.cpp in Sources */,
-				6A3FB95529BF86480017EF15 /* Recombination.cpp in Sources */,
-				6A3FB94F29BF81720017EF15 /* Branch.cpp in Sources */,
-				6A3FB94C29BF7FF50017EF15 /* Node.cpp in Sources */,
+				6AD5CE042A3A7F410004CCE7 /* Test.cpp in Sources */,
+				6AD5CDFA2A3A7F410004CCE7 /* Polar_emission.cpp in Sources */,
+				6AD5CDFE2A3A7F410004CCE7 /* TSP_smc.cpp in Sources */,
+				6ADD720C2A5C826500AF1A62 /* BSP.cpp in Sources */,
+				6AD5CDFD2A3A7F410004CCE7 /* Emission.cpp in Sources */,
+				6AC081F32A8C26930021DD8E /* approx_BSP.cpp in Sources */,
+				6ADD71362A52473600AF1A62 /* Distribution.cpp in Sources */,
+				6AD5CE0D2A3A7F410004CCE7 /* Fitch_reconstruction.cpp in Sources */,
+				6AD5CE0F2A3A7F410004CCE7 /* Pruner.cpp in Sources */,
+				6AD5CE0A2A3A7F410004CCE7 /* fast_BSP_smc.cpp in Sources */,
+				6AD5CDFF2A3A7F410004CCE7 /* ARG.cpp in Sources */,
+				6AD5CE1D2A48FA240004CCE7 /* approx_coalescent_calculator.cpp in Sources */,
+				6AD5CE132A3A7F410004CCE7 /* BSP_smc.cpp in Sources */,
+				6AD5CE062A3A7F410004CCE7 /* succint_BSP.cpp in Sources */,
+				6AD5CE082A3A7F410004CCE7 /* fast_BSP.cpp in Sources */,
+				6AD5CE012A3A7F410004CCE7 /* Trace_pruner.cpp in Sources */,
+				6AD5CE072A3A7F410004CCE7 /* Sampler.cpp in Sources */,
+				6AD5CE052A3A7F410004CCE7 /* Node.cpp in Sources */,
+				6AD5CE142A3A7F410004CCE7 /* Interval.cpp in Sources */,
+				6AD5CE102A3A7F410004CCE7 /* Binary_emission.cpp in Sources */,
+				6ADD720F2A6061CB00AF1A62 /* Normalizer.cpp in Sources */,
+				6AD5CE092A3A7F410004CCE7 /* reduced_BSP.cpp in Sources */,
+				6AD5CE0E2A3A7F410004CCE7 /* Threader_smc.cpp in Sources */,
+				6A792BA72AC2338400176E77 /* TSP.cpp in Sources */,
+				6AD5CDFC2A3A7F410004CCE7 /* random_utils.cpp in Sources */,
+				6AD5CE1A2A3E1FD50004CCE7 /* sub_BSP.cpp in Sources */,
+				6AD5CDF82A3A7F410004CCE7 /* RSP_smc.cpp in Sources */,
+				6AD5CE032A3A7F410004CCE7 /* Branch.cpp in Sources */,
+				6AD5CDFB2A3A7F410004CCE7 /* Coalescent_calculator.cpp in Sources */,
+				6AD5CE172A3BE5D80004CCE7 /* fast_coalescent_calculator.cpp in Sources */,
+				6AD5CE022A3A7F410004CCE7 /* Threader.cpp in Sources */,
+				6AD5CE0C2A3A7F410004CCE7 /* Tree.cpp in Sources */,
+				6AD5CE112A3A7F410004CCE7 /* Reconstruction.cpp in Sources */,
+				6AD5CE122A3A7F410004CCE7 /* main.cpp in Sources */,
+				6AD5CE002A3A7F410004CCE7 /* Recombination.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -187,14 +367,11 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -205,6 +382,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -246,8 +424,10 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -257,6 +437,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 11.6;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				"OTHER_CFLAGS[arch=*]" = "-DNDEBUG";
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				SDKROOT = macosx;
 			};
 			name = Release;
