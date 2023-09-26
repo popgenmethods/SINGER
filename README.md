@@ -16,11 +16,16 @@ SINGER takes **.vcf(gz)** file and outputs a **.trees** file in tskit format. Th
 
 ## Documentation
 
-To sample ARGs with SINGER, you can run command line like this:
+### The most basic way to use SINGER
+
+To sample ARGs with SINGER, you can run command line like shown below. 
+
+However, if you wish to get ARG for: **(1) a long chromosome or (2) a series of regions**, we have provided more support to help you (see the [next section](#Tools)). 
 
 ```
 path_to_singer/bin/singer -fast -Ne 1e4 -m 1.25e-8 -r 1.25e-8
 -input prefix_of_vcf_file -output prefix_of_output_file
+-start 0 -end 1e6
 -n 1000 -thin 5
 ```
 
@@ -48,9 +53,37 @@ Here are some other parameters of the software which we **DON'T** recommend chan
 |-hmm_epsilon|optional|the precison parameter in branch-HMM, default at 0.01|
 |-psmc_bins|optional|the number of PSMC time bins, default at 20|
 
+## Tools
+
+There are 2 python scripts we prepared for you so that can be done really easily:
+
+### Script support [running SINGER for a long chromosome]
+
+Often people would like to run the ARG inference method for the entire chromosome (or even the entire genome), and we have provided a python script `parallelize_singer.py` to facilitate you to this end. It automatically handles parallelization for you and runs SINGER multi-threaded. 
+
+```
+python parallelize_singer.py -Ne 2e4 -m 1.2e-8 
+```
+This script will:
+
+1. Cut the genome into windows (default at 1Mb)
+2. Remove the windows of unsequenced regions (<5 variants in the window)
+3. Automatically parallelize running SINGER on these windows
+
+
+### Script support [running SINGER for a series of regions]
+
+Sometimes it is of interest to only look at certain regions on the genome (e.g. selection signals), and we have provided support for this with the python script `multiple_windows_singer.py`. It will automatically parallelize running SINGER on the regions you specify with a given `.bed` file. 
+
+This script will:
+
+1. Index the vcf file for these specified windows
+2. Automatically parallelize running SINGER on these windows
+3. Convert the output to `.trees` files with `tskit` format
+
 ## Suggestions from developer
 
 1. As a Bayesian sampling method, SINGER works best when you sample some ARGs from posterior, **only using one single sample is NOT ideal**. To this point, we highly encourage specifying **-n, -thin** flags. You can find how we run SINGER on real datasets on:
 2. To decide whether to run SINGER or fast-SINGER, the best way is to run both on test data (for example, subsampled individuals on a small genomic region), and compare the inference results from them. If fast-SINGER agrees with SINGER well then it is good to go with fast-SINGER to save computational time. 
 3. It is of importance to carefully choose the parameters, such as -Ne, -m, and -r. We recommend first choosing the mutation rate m, and then based on average pairwise diversity \($\pi=4\cdot N_e \cdot m\$), you can decide the Ne parameter. If you are not super sure about the recombination rate, you can simply use the same rate as mutation rate. 
-4. Unfortunately for now we only support phased, high-quality genomes, and polymorphic sites with missingness will be excluded. We are working on incorporating missingness and unphased data in the future. ARGweaver has better support in these regards.
+4. Unfortunately for now we only support phased, high-quality genomes, and polymorphic sites with missingness will be excluded. We are working on incorporating missingness and unphased data in the near future. ARGweaver has better support in these regards.
