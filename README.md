@@ -72,6 +72,10 @@ This script will:
 
 Sometimes it is of interest to only look at certain regions on the genome (e.g. selection signals), and we have provided support for this with the python script `multiple_windows_singer.py`. It will automatically parallelize running SINGER on the regions you specify with a given `.bed` file. 
 
+```
+python multiple_windows_singer.py
+```
+
 This script will:
 
 1. Index the vcf file for these specified windows
