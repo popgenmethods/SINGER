@@ -78,6 +78,14 @@ This script will:
 2. Automatically parallelize running SINGER on these windows
 3. Convert the output to `.trees` files with `tskit` format
 
+### Convert to `tskit` format
+
+We have our internal data structure, but these files are only useful for resume MCMC runs from there. When you finishing running, please use this script to convert it to `tskit` format for your own analysis:
+
+```
+python convert_to_tskit.py
+```
+
 ## Suggestions from developer
 
 1. As a Bayesian sampling method, SINGER works best when you sample some ARGs from posterior, **only using one single sample is NOT ideal**. To this point, we highly encourage specifying **-n, -thin** flags. You can find how we run SINGER on real datasets on:
