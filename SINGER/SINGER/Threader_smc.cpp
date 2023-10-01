@@ -67,9 +67,9 @@ void Threader_smc::fast_thread(ARG &a, Node_ptr n) {
 
 void Threader_smc::internal_rethread(ARG &a, tuple<float, Branch, float> cut_point) {
     cut_time = get<2>(cut_point);
-    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_branches.txt");
+    a.write("/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_branches.txt");
     a.remove(cut_point);
-    // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_branches.txt");
+    a.write("/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/partial_ts_branches.txt");
     get_boundary(a);
     set_check_points(a);
     run_BSP(a);

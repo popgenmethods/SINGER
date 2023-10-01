@@ -287,8 +287,11 @@ float TSP::non_recomb_prob(float rho, float s) {
 float TSP::recomb_prob(float s, float t1, float t2) {
     assert(t1 <= t2);
     assert(t1 >= cut_time and s >= cut_time);
+    if (t1 == t2) {
+        return 0;
+    }
     if (s - max(lower_bound, cut_time) < 0.005) {
-        return exp(-t1) - exp(-t2);
+        return max(epsilon, exp(-t1) - exp(-t2));
     }
     float pl = recomb_cdf(s, t1);
     float pu = recomb_cdf(s, t2);
