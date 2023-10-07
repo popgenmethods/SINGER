@@ -874,6 +874,7 @@ set<float> ARG::get_check_points() {
 
 bool ARG::check_disjoint_nodes(float x, float y) {
     auto recomb_it = recombinations.lower_bound(x);
+    Node_ptr node = recomb_it->second.deleted_node;
     float t = recomb_it->second.deleted_node->time;
     Branch b = recomb_it->second.merging_branch;
     while (recomb_it->first < y) {
@@ -1143,8 +1144,8 @@ void ARG::read_recombs(string filename) {
             }
         }
         if (pos > 0 and pos < sequence_length) {
-            assert(x.second.start_time < x.second.deleted_node->time);
-            assert(x.second.start_time < x.second.inserted_node->time);
+            assert(x.second.start_time <= x.second.deleted_node->time);
+            assert(x.second.start_time <= x.second.inserted_node->time);
         }
     }
     node_set.clear();

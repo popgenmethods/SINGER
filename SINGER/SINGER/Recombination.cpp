@@ -198,7 +198,7 @@ void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Bran
     find_target_branch();
     find_recomb_info();
     for (Branch b : inserted_branches) {
-        assert(b.upper_node->time > b.lower_node->time);
+        assert(b.upper_node->time >= b.lower_node->time);
     }
     assert(start_time <= inserted_node->time);
     assert(merging_branch != Branch());
@@ -360,7 +360,7 @@ void Recombination::find_target_branch() {
     Branch lower_branch;
     Branch upper_branch;
     for (Branch b : deleted_branches) {
-        if (b.lower_node->time > inserted_node->time or b.upper_node->time <= inserted_node->time or b == source_branch) {
+        if (b.lower_node->time > inserted_node->time or b.upper_node->time < inserted_node->time or b == source_branch) {
             continue;
         }
         lower_branch = Branch(b.lower_node, inserted_node);
@@ -371,7 +371,7 @@ void Recombination::find_target_branch() {
         }
     }
     for (Branch b : deleted_branches) {
-        if (b.lower_node->time > inserted_node->time or b.upper_node->time <= inserted_node->time or b == source_branch) {
+        if (b.lower_node->time > inserted_node->time or b.upper_node->time < inserted_node->time or b == source_branch) {
             continue;
         }
         lower_branch = Branch(b.lower_node, inserted_node);

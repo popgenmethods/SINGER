@@ -42,8 +42,8 @@ void Sampler::set_num_samples(int n) {
     num_samples = n;
 }
 
-/*
-void Sampler::load_vcf(string vcf_file, float start_pos, float end_pos) {
+void Sampler::naive_read_vcf(string prefix, float start_pos, float end_pos) {
+    string vcf_file = prefix + ".vcf";
     ifstream file(vcf_file);
     string line;
     int num_individuals = 0;
@@ -76,6 +76,7 @@ void Sampler::load_vcf(string vcf_file, float start_pos, float end_pos) {
         int pos;
         iss >> chrom >> pos >> id >> ref >> alt >> qual >> filter >> info >> format;
         
+        if (pos < start_pos) {continue;}
         if (pos == prev_pos) {continue;} // skip multi-allelic sites
         if (ref.size() > 1 or alt.size() > 1) {
             removed_mutation += 1;
@@ -127,9 +128,8 @@ void Sampler::load_vcf(string vcf_file, float start_pos, float end_pos) {
     cout << "valid mutations: " << valid_mutation << endl;
     cout << "removed mutations: " << removed_mutation << endl;
 }
- */
 
-void Sampler::load_vcf(string prefix, float start, float end) {
+void Sampler::guide_read_vcf(string prefix, float start, float end) {
     random_engine.seed(random_seed);
     string vcf_file = prefix + ".vcf";
     string index_file = prefix + ".index";
@@ -235,6 +235,16 @@ void Sampler::load_vcf(string prefix, float start, float end) {
     sequence_length = end - start;
     cout << "valid mutations: " << valid_mutation << endl;
     cout << "removed mutations: " << removed_mutation << endl;
+}
+
+void Sampler::load_vcf(string prefix, float start, float end) {
+    string index_file = prefix + ".index";
+    ifstream idx_stream(index_file);
+    if (idx_stream.is_open()) {
+        guide_read_vcf(prefix, start, end);
+    } else {
+        naive_read_vcf(prefix, start, end);
+    }
 }
 
 void Sampler::optimal_ordering() {

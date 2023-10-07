@@ -58,7 +58,9 @@ public:
     
     void set_num_samples(int n);
     
-    // void load_vcf(string vcf_file, float start_pos, float end_pos);
+    void naive_read_vcf(string prefix, float start_pos, float end_pos);
+    
+    void guide_read_vcf(string prefix, float start, float end);
     
     void load_vcf(string prefix, float start, float end);
     

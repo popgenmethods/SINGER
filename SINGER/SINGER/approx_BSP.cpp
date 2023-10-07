@@ -328,6 +328,9 @@ void approx_BSP::sanity_check(Recombination &r) {
         if (interval->lb == interval->ub and interval->lb == r.inserted_node->time and interval->branch != r.target_branch) {
             forward_probs[curr_index][i] = 0;
         }
+        if (interval->lb == interval->ub and interval->lb == r.inserted_node->time and interval->branch == r.target_branch and interval->node != r.inserted_node) {
+            forward_probs[curr_index][i] = 0;
+        }
     }
 }
 
@@ -365,6 +368,19 @@ void approx_BSP::generate_intervals(Recombination &r) {
             if (weights.size() > 0) {
                 new_interval->source_weights = move(weights);
                 new_interval->intervals = move(intervals);
+            }
+            if (lb == ub) { // Need to find out where the point mass is from
+                if (b == r.merging_branch and lb == r.deleted_node->time) {
+                    new_interval->node = r.deleted_node; // creation of a new point mass
+                } else {
+                    assert(new_interval->intervals.size() == 1);
+                    new_interval->node = new_interval->intervals.front()->node;
+                }
+            }
+            if (new_interval->lb < new_interval->ub) {
+                assert(new_interval->node == nullptr);
+            } else {
+                assert(new_interval->node != nullptr);
             }
         }
     }
