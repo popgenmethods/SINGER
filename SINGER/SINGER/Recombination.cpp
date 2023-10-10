@@ -185,12 +185,23 @@ void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Bran
     }
     find_nodes();
     // when joining the source branch, depending on whether it joins above the start time or below, determine the new source branch
+    /*
     if (prev_joining_branch == source_branch) {
         float t = prev_added_branch.upper_node->time;
         if (t >= start_time) {
             source_branch = Branch(source_branch.lower_node, prev_added_branch.upper_node);
         } else {
             source_branch = Branch(prev_added_branch.upper_node, source_branch.upper_node);
+        }
+    } else {
+        source_branch = search_lower_node(source_branch.lower_node);
+    }
+     */
+    if (prev_joining_branch == source_branch) {
+        if (prev_added_branch.upper_node == next_added_branch.upper_node) {
+            source_branch = Branch(prev_added_branch.upper_node, source_branch.upper_node);
+        } else {
+            source_branch = Branch(source_branch.lower_node, prev_added_branch.upper_node);
         }
     } else {
         source_branch = search_lower_node(source_branch.lower_node);
