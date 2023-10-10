@@ -26,6 +26,7 @@ public:
     // basic setup
     float cut_time = 0.0;
     float cutoff = 0;
+    float epsilon = 1e-7;
     shared_ptr<Emission> eh;
     set<float> check_points = {};
     
