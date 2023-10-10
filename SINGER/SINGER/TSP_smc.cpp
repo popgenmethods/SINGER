@@ -829,65 +829,9 @@ Interval *TSP_smc::search_point_interval(Recombination &r) {
     return candidate_point_intervals[0];
 }
 
-/*
 float TSP_smc::sample_time(float lb, float ub) {
-    assert(lb <= ub);
-    if (lb == ub) {
-        return lb;
-    }
-    float t;
-    if (isinf(ub)) {
-        t = lb + random();
-        return t;
-    } else {
-        t = lb + random()*(ub - lb);
-        return t;
-    }
-}
- */
-
-float TSP_smc::sample_time(float lb, float ub) {
-    /*
-    assert(lb <= ub);
-    if (lb == ub) {
-        return lb;
-    }
-    float t;
-    if (isinf(ub)) {
-        t = lb + log(2)*random();
-        return t;
-    } else {
-        t = (0.45 + 0.1*random())*(ub - lb) + lb;
-        return t;
-    }
-     */
     return exp_median(lb, ub);
 }
-
-/*
-float TSP_smc::sample_time(float lb, float ub) {
-    assert(lb <= ub);
-    if (lb == ub) {
-        return lb;
-    }
-    float delta = exp(-lb) - exp(-ub);
-    float q;
-    float p;
-    float t = 0;
-    if (lb > 5 and ub == numeric_limits<float>::infinity()) {
-        t = lb + random()*log(2);
-    }
-    while (t <= lb or t >= ub) {
-        q = random();
-        p = 1 - exp(-lb) + q*delta;
-        t = -log(1 - p);
-    }
-    assert(t != numeric_limits<float>::infinity());
-    assert(lb == ub or (t > lb and t < ub));
-    assert(t != 0);
-    return t;
-}
- */
 
 float TSP_smc::sample_time(float lb, float ub, float t) {
     float new_t = 0;

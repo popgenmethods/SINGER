@@ -64,7 +64,6 @@ void TSP::transfer(Recombination &r, Branch &prev_branch, Branch &next_branch) {
     sanity_check(r);
     curr_index += 1;
     curr_branch = next_branch;
-    // sanity_check(r);
     lower_bound = max(cut_time, next_branch.lower_node->time);
     if (prev_branch == r.source_branch and next_branch == r.merging_branch) {
         set_interval_constraint(r);
@@ -83,7 +82,7 @@ void TSP::transfer(Recombination &r, Branch &prev_branch, Branch &next_branch) {
         generate_intervals(next_branch, next_branch.lower_node->time, r.start_time);
         generate_intervals(next_branch, r.start_time, next_branch.upper_node->time);
         for (int i = 0; i < curr_intervals.size(); i++) {
-            if (curr_intervals[i]->time >= r.start_time) {
+            if (curr_intervals[i]->lb >= r.start_time) {
                 temp[i] = 1.0;
             }
         }
@@ -200,7 +199,7 @@ void TSP::forward(float rho) {
     for (int i = 0; i < dim; i++) {
         assert(forward_probs[curr_index][i] >= 0);
         forward_probs[curr_index][i] += diagonals[i]*forward_probs[curr_index-1][i] + lower_diagonals[i]*upper_sums[i];
-        if (curr_intervals[i]->lb != curr_intervals[i]->ub) {
+        if (curr_intervals[i]->lb != curr_intervals[i]->ub or forward_probs[curr_index][i] > 0) {
             forward_probs[curr_index][i] = max(epsilon, forward_probs[curr_index][i]);
         }
     }
@@ -413,7 +412,11 @@ void TSP::transfer_intervals(Recombination &r, Branch &prev_branch, Branch &next
         }
         if (ub >= lb) {
             float w = get_prop(lb, ub, interval->lb, interval->ub);
-            p = w*forward_probs[curr_index-1][i];
+            if (w > 0 and forward_probs[curr_index - 1][i] > 0) {
+                p = max(epsilon, w*forward_probs[curr_index-1][i]);
+            } else {
+                p = 0;
+            }
             assert(!isnan(p));
             new_interval = new Interval(next_branch, lb, ub, curr_index);
             new_interval->fill_time();
@@ -586,11 +589,6 @@ void TSP::compute_trace_back_probs(float rho, Interval *interval, vector<Interva
             trace_back_probs[i] += non_recomb_prob(rho, intervals[i]->time);
         }
         trace_back_probs[i] = max(epsilon, trace_back_probs[i]);
-        /*
-        if (intervals[i]->lb < intervals[i]->ub) {
-            trace_back_probs[i] = max(epsilon, trace_back_probs[i]);
-        }
-         */
     }
 }
 
@@ -599,6 +597,11 @@ void TSP::sanity_check(Recombination &r) {
         if (curr_intervals[i]->lb == curr_intervals[i]->ub and curr_intervals[i]->lb == r.inserted_node->time and curr_intervals[i]->branch != r.target_branch) {
             forward_probs[curr_index][i] = 0;
         }
+        /*
+        if (curr_intervals[i]->lb == curr_intervals[i]->ub and curr_intervals[i]->lb == r.inserted_node->time and curr_intervals[i]->node != r.deleted_node) {
+            forward_probs[curr_index][i] = 0;
+        }
+         */
     }
 }
 
@@ -761,13 +764,13 @@ void TSP::set_point_constraint(Recombination &r) {
 Interval *TSP::search_point_interval(Recombination &r) {
     float t = r.inserted_node->time;
     Interval *point_interval = nullptr;
-    for (Interval *i : curr_intervals) {
+    for (Interval *i : curr_intervals) { // cross interval is always valid
         if (i->ub > t and i->lb < t) {
             point_interval = i;
         }
     }
     for (Interval *i : curr_intervals) {
-        if (i->ub == i->lb and i->lb == t) {
+        if (i->ub == i->lb and i->lb == t and i->node == r.inserted_node) { // point interval valid only the node is correct
             point_interval = i;
         }
     }
@@ -776,7 +779,7 @@ Interval *TSP::search_point_interval(Recombination &r) {
     }
     vector<Interval *> candidate_point_intervals = {};
     for (Interval *i : curr_intervals) {
-        if (i->lb <= t and i->ub >= t) {
+        if (i->lb <= t and i->ub >= t and i->lb != i->ub) {
             candidate_point_intervals.emplace_back(i);
         }
     }

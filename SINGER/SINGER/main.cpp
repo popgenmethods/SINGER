@@ -234,7 +234,6 @@ int main(int argc, const char * argv[]) {
     sampler.polar = polar;
     sampler.set_precision(epsilon_hmm, epsilon_psmc);
     sampler.set_output_file_prefix(output_prefix);
-    // sampler.load_vcf(input_filename, start_pos, end_pos);
     if (resume) {
         sampler.sequence_length = end_pos - start_pos;
         if (fast) {
@@ -257,10 +256,3 @@ int main(int argc, const char * argv[]) {
     }
     return 0;
 }
-
-/*
-int main(int argc, const char * argv[]) {
-    // test_internal_sampling();
-    // test_african_dataset();
-}
-*/

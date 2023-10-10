@@ -68,6 +68,7 @@ void Sampler::naive_read_vcf(string prefix, float start_pos, float end_pos) {
                 sample_nodes.insert(nodes[i]);
             }
             genotypes.resize(2*num_individuals);
+            continue;
         } else if (line[0] == '#') {
             continue; // skip these header lines
         }
@@ -632,7 +633,6 @@ void Sampler::resume_internal_sample(int num_iters, int spacing) {
             threader.internal_rethread(arg, cut_point);
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
-            // write_cut(cut_point);
         }
         normalize();
         random_seed = random_engine();
@@ -835,7 +835,7 @@ void Sampler::write_sample() {
     << setprecision(numeric_limits<float>::max_digits10)
     << arg.end << "\t"
     << random_seed << "\t"
-    << TSP_smc::counter << endl;
+    << TSP::counter << endl;
 }
 
 void Sampler::write_cut(tuple<float, Branch, float> cut_point) {
@@ -906,11 +906,10 @@ void Sampler::read_resume_point(string filename) {
     }
     int log_length = (int) words.size();
     // Fill the resume point information
-    TSP_smc::counter = stoi(words[log_length - 1]);
+    TSP::counter = stoi(words[log_length - 1]);
     random_seed = stoi(words[log_length - 2]);
     file.seekg(0, ios::beg);
     sample_index = stoi(words[1]);
-    // sample_index = 403;
     load_resume_arg();
     arg.sequence_length = sequence_length;
     arg.end = stof(words[log_length - 3]);
