@@ -239,7 +239,11 @@ int main(int argc, const char * argv[]) {
         if (fast) {
             sampler.resume_fast_internal_sample(num_iters, spacing);
         } else {
-            sampler.resume_internal_sample(num_iters, spacing);
+            try {
+                sampler.resume_internal_sample(num_iters, spacing);
+            } catch (const exception& e) {
+                sampler.debug_resume_internal_sample(num_iters, spacing);
+            }
         }
         return 0;
     }
@@ -250,9 +254,13 @@ int main(int argc, const char * argv[]) {
         sampler.iterative_start();
     }
     if (fast) {
-        sampler.internal_sample(num_iters, spacing);
+        sampler.fast_internal_sample(num_iters, spacing);
     } else {
-        sampler.internal_sample(num_iters, spacing);
+        try {
+            sampler.internal_sample(num_iters, spacing);
+        } catch (const exception& e) {
+            sampler.debug_resume_internal_sample(num_iters, spacing);
+        }
     }
     return 0;
 }

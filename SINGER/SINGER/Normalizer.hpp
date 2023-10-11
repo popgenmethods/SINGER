@@ -37,6 +37,8 @@ public:
     
     ~Normalizer();
     
+    void compute_max_time(ARG &a);
+    
     void get_root_span(ARG &a);
     
     void get_node_span(ARG &a);

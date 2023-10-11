@@ -11,6 +11,14 @@ Normalizer::Normalizer() {}
 
 Normalizer::~Normalizer() {}
 
+void Normalizer::compute_max_time(ARG &a) {
+    float num_muts = a.mutation_sites.size();
+    float theta = accumulate(a.thetas.begin(), a.thetas.end(), 0.0f);
+    float num_samples = a.sample_nodes.size();
+    float scaling = num_muts/4/a.Ne/theta/log(num_samples);
+    max_time = 10*scaling;
+}
+
 void Normalizer::get_root_span(ARG &a) {
     map<Node_ptr, float, compare_node> root_start = {};
     map<Node_ptr, float, compare_node> root_span = {};

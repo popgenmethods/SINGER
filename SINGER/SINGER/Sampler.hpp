@@ -98,11 +98,11 @@ public:
     
     void resume_internal_sample(int num_iters, int spacing);
     
+    void debug_resume_internal_sample(int num_iters, int spacing);
+    
     void resume_fast_internal_sample(int num_iters, int spacing);
     
-    // void resume_internal_sample(int num_iters, int spacing, int resume_point, int seed, float cut_pos);
-    
-    // void resume_fast_internal_sample(int num_iters, int spacing, int resume_point, int seed, float cut_pos);
+    void debug_resume_fast_internal_sample(int num_iters, int spacing);
     
     void normalize();
     
@@ -116,7 +116,11 @@ public:
     
     void load_resume_arg();
     
+    vector<string> read_last_line(string filename);
+    
     void read_resume_point(string filename);
+    
+    void retract_log(int k);
 };
 
 #endif /* Sampler_hpp */
