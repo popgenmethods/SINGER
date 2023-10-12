@@ -289,7 +289,6 @@ void Sampler::build_all_nodes() {
 }
 
 void Sampler::build_singleton_arg() {
-    // float bin_size = max(rho_unit/recomb_rate, 10.0f);
     float bin_size = rho_unit/recomb_rate;
     Node_ptr n = *ordered_sample_nodes.begin();
     arg = ARG(Ne, sequence_length);
@@ -336,6 +335,7 @@ void Sampler::iterative_start() {
 }
 
 void Sampler::fast_iterative_start() {
+    start_log();
     build_singleton_arg();
     auto it = ordered_sample_nodes.begin();
     it++;
@@ -349,14 +349,20 @@ void Sampler::fast_iterative_start() {
         } else {
             threader.thread(arg, n);
         }
+        /*
         if (arg.sample_nodes.size() % 5 == 4) {
             normalize();
         }
+         */
         arg.check_incompatibility();
         cout << "Number of flippings: " << arg.count_flipping() << endl;
         it++;
+        random_seed = random_engine();
+        write_iterative_start();
     }
+    cout << "orignal ARG length: " << arg.get_arg_length() << endl;
     normalize();
+    cout << "rescaled ARG length: " << arg.get_arg_length() << endl;
     string node_file = output_prefix + "_fast_start_nodes_" + to_string(sample_index) + ".txt";
     string branch_file= output_prefix + "_fast_start_branches_" + to_string(sample_index) + ".txt";
     string recomb_file = output_prefix + "_fast_start_recombs_" + to_string(sample_index) + ".txt";
@@ -366,6 +372,7 @@ void Sampler::fast_iterative_start() {
     arg.write_coordinates(coord_file);
 }
 
+/*
 void Sampler::recombination_climb(int num_iters, int spacing) {
     for (int i = 0; i < num_iters; i++) {
         cout << get_time() << " Iteration: " << to_string(i) << endl;
@@ -467,7 +474,9 @@ void Sampler::fast_mutation_climb(int num_iters, int spacing) {
         cout << "Number of trees: " << arg.recombinations.size() << endl;
     }
 }
+ */
 
+/*
 void Sampler::terminal_sample(int num_iters) {
     for (int i = 0; i < num_iters; i++) {
         cout << get_time() << " Iteration: " << to_string(i) << endl;
@@ -510,6 +519,8 @@ void Sampler::fast_terminal_sample(int num_iters) {
         cout << "Number of trees: " << arg.recombinations.size() << endl;
     }
 }
+*/
+
 
 void Sampler::internal_sample(int num_iters, int spacing) {
     while (sample_index < num_iters) {
@@ -543,12 +554,11 @@ void Sampler::internal_sample(int num_iters, int spacing) {
 }
 
 void Sampler::fast_internal_sample(int num_iters, int spacing) {
-    for (int i = 0; i < num_iters; i++) {
+    while (sample_index < num_iters) {
         cout << get_time() << " Iteration: " << to_string(sample_index) << endl;
         float updated_length = 0;
-        random_seed = rand();
-        set_seed(random_seed);
         cout << "Random seed: " << random_seed << endl;
+        random_engine.seed(random_seed);
         while (updated_length < spacing*arg.sequence_length) {
             Threader_smc threader = Threader_smc(bsp_c, tsp_q);
             threader.pe->penalty = penalty;
@@ -559,17 +569,18 @@ void Sampler::fast_internal_sample(int num_iters, int spacing) {
             arg.clear_remove_info();
         }
         normalize();
+        random_seed = random_engine();
+        write_sample();
         arg.check_incompatibility();
         cout << "Start: " << arg.start << " , End: " << arg.end << endl;
         string node_file = output_prefix + "_fast_nodes_" + to_string(sample_index) + ".txt";
         string branch_file= output_prefix + "_fast_branches_" + to_string(sample_index) + ".txt";
         string recomb_file = output_prefix + "_fast_recombs_" + to_string(sample_index) + ".txt";
         string mut_file = output_prefix + "_fast_muts_" + to_string(sample_index) + ".txt";
-        arg.write(node_file, branch_file, recomb_file, mut_file);
         sample_index += 1;
+        arg.write(node_file, branch_file, recomb_file, mut_file);
         cout << "Number of trees: " << arg.recombinations.size() << endl;
         cout << "Number of flippings: " << arg.count_flipping() << endl;
-        // cout << "Data likelihood: " << arg.data_likelihood(2e-8) << endl;
     }
 }
 
@@ -866,33 +877,38 @@ void Sampler::read_resume_point(string filename) {
 }
 
 void Sampler::retract_log(int k) {
-    const string file_path = output_prefix + ".log";
-    std::ifstream in_file(file_path, std::ios::in | std::ios::ate);
-    
-    if (!in_file.is_open()) {
-        std::cerr << "Unable to open log file: " << file_path << std::endl;
-        return;
-    }
-    
-    char c;
-    int line_count = 0;
-    long pos = in_file.tellg();
-
-    while (pos > 0 && line_count < k) {
-        in_file.seekg(--pos, std::ios::beg);
-        in_file.get(c);
-        if (c == '\n') {
-            ++line_count;
+    const std::string file_path = output_prefix + ".log";
+        std::ifstream in_file(file_path, std::ios::in | std::ios::ate);
+        
+        if (!in_file.is_open()) {
+            std::cerr << "Unable to open log file: " << file_path << std::endl;
+            return;
         }
-    }
+        
+        char c;
+        int line_count = 0;
+        long pos = in_file.tellg();
 
-    in_file.close();
+        while (pos > 0 && line_count < k) {
+            in_file.seekg(--pos, std::ios::beg);
+            in_file.get(c);
+            if (c == '\n') {
+                ++line_count;
+            }
+        }
 
-    if (line_count < k) {
-        pos = 0;
-    }
+        if (line_count < k) {
+            pos = 0;
+        } else {
+            pos++;  // To keep the content before the '\n' of the (k+1)-th last line
+        }
 
-    std::ofstream out_file;
-    out_file.open(file_path, std::ios::in | std::ios::out | std::ios::trunc);
-    out_file.close();
+        in_file.seekg(0, std::ios::beg);
+        std::string content(pos, '\0');  // Create string to hold the content
+        in_file.read(&content[0], pos);  // Read the content of the file up to the position
+        in_file.close();
+
+        std::ofstream out_file(file_path, std::ios::out | std::ios::trunc);
+        out_file << content;  // Write back the retained content to the file
+        out_file.close();
 }

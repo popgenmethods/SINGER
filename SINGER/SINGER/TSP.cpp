@@ -728,7 +728,10 @@ int TSP::trace_back_helper(Interval *interval, int x) {
         }
         x -= 1;
     }
-    assert(forward_probs[y][sample_index] > 0);
+    // assert(forward_probs[y][sample_index] > 0);
+    if (forward_probs[y][sample_index] > 0) {
+        throw runtime_error("trace back to an illegal state");
+    }
     return y;
 }
 

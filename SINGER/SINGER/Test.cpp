@@ -88,7 +88,7 @@ void test_terminal_sampling() {
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50");
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_50_0.vcf", 0, 1e6);
     sampler.iterative_start();
-    sampler.terminal_sample(200);
+    // sampler.terminal_sample(200);
 }
 
 void test_fast_terminal_sampling() {
@@ -99,7 +99,7 @@ void test_fast_terminal_sampling() {
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/smc_100_0");
     sampler.load_vcf("/Users/yun_deng/Desktop/SINGER/arg_files/smc_100_0.vcf", 0, 1e6);
     sampler.fast_iterative_start();
-    sampler.fast_terminal_sample(1000);
+    // sampler.fast_terminal_sample(1000);
 }
 
 void test_internal_sampling() {
