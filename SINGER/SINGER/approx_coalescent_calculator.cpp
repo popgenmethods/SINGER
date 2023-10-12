@@ -102,7 +102,9 @@ float approx_coalescent_calculator::find_median(float x, float y) {
     if (isinf(y)) {
         z = x + 1;
     }
-    assert(z >= x and z <= y);
+    if (z < x or z > y) {
+        z = 0.5*(x + y);
+    }
     z += cut_time;
     return z;
 }

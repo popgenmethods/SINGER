@@ -268,7 +268,6 @@ void Normalizer::add_recombination(float lb, float ub) {
         y = old_grid[index + 1];
         l = min(ub, y) - max(lb, x);
         observed_recombination_counts[index] += l/(ub - lb);
-        // observed_recombination_counts[index] += 1;
         index++;
     }
 }
