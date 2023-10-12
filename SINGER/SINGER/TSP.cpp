@@ -216,7 +216,6 @@ void TSP::null_emit(float theta, Node_ptr query_node) {
         forward_probs[curr_index][i] *= null_emit_probs[i];
         ws += forward_probs[curr_index][i];
     }
-    // assert(ws > 0);
     if (ws > 0) {
         for (int i = 0; i < dim; i++) {
             forward_probs[curr_index][i] /= ws;
@@ -729,7 +728,7 @@ int TSP::trace_back_helper(Interval *interval, int x) {
         x -= 1;
     }
     // assert(forward_probs[y][sample_index] > 0);
-    if (forward_probs[y][sample_index] > 0) {
+    if (forward_probs[y][sample_index] == 0) {
         throw runtime_error("trace back to an illegal state");
     }
     return y;

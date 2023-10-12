@@ -242,6 +242,7 @@ int main(int argc, const char * argv[]) {
             try {
                 sampler.resume_internal_sample(num_iters, spacing);
             } catch (const exception& e) {
+                cerr << "Error: " << e.what() << endl;
                 sampler.debug_resume_internal_sample(num_iters, spacing);
             }
         }
@@ -259,6 +260,7 @@ int main(int argc, const char * argv[]) {
         try {
             sampler.internal_sample(num_iters, spacing);
         } catch (const exception& e) {
+            cerr << "Error: " << e.what() << endl;
             sampler.debug_resume_internal_sample(num_iters, spacing);
         }
     }

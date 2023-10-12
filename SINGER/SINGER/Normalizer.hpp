@@ -19,7 +19,6 @@ public:
     int num_windows = 100;
     float ls = 0;
     float max_time = 20;
-    float cap = 10;
     
     vector<Node_ptr> all_root_nodes = {};
     vector<float> all_root_spans = {};

@@ -692,6 +692,7 @@ void Sampler::debug_resume_internal_sample(int num_iters, int spacing) {
             }
             break;
         } catch (const exception& e) {
+            cerr << "Error: " << e.what() << endl;
             attempts++;
         }
     }

@@ -14,8 +14,12 @@ Normalizer::~Normalizer() {}
 void Normalizer::compute_max_time(ARG &a) {
     float num_muts = a.mutation_sites.size();
     float theta = accumulate(a.thetas.begin(), a.thetas.end(), 0.0f);
+    float last_mut_pos = *prev(a.mutation_sites.end(), 2);
+    float first_mut_pos = *a.mutation_sites.begin();
+    float q = (last_mut_pos - first_mut_pos)/a.sequence_length;
+    theta *= q;
     float num_samples = a.sample_nodes.size();
-    float scaling = num_muts/4/a.Ne/theta/log(num_samples);
+    float scaling = num_muts/2/theta/log(num_samples);
     max_time = 10*scaling;
 }
 
@@ -110,6 +114,7 @@ void Normalizer::randomize_mutation_ages(ARG &a) {
 void Normalizer::randomized_normalize(ARG &a) {}
 
 void Normalizer::normalize(ARG &a, float theta) {
+    compute_max_time(a);
     get_root_span(a);
     get_node_span(a);
     partition_arg(a);
@@ -124,6 +129,8 @@ void Normalizer::normalize(ARG &a, float theta) {
         float o = observed_mutation_counts[i]/theta;
         float scale = o/e;
         new_grid[i+1] = new_grid[i] + scale*(old_grid[i+1] - old_grid[i]);
+        new_grid[i+1] = min(max_time, new_grid[i+1]); // process grid values
+        new_grid[i+1] = max(new_grid[i+1], nextafter(new_grid[i], numeric_limits<float>::infinity())); // process grid values
     }
     int i = 0;
     float p;
@@ -137,11 +144,6 @@ void Normalizer::normalize(ARG &a, float theta) {
                 t = nextafter(all_nodes[i-1]->time, numeric_limits<float>::infinity());
                 assert(t > all_nodes[i-1]->time); // don't want duplicated coalescence time
             }
-            if (t > cap) { // don't want super high coalescent time due to numeric issues
-                t = nextafter(all_nodes[i-1]->time, numeric_limits<float>::infinity());
-                assert(t > all_nodes[i-1]->time);
-            }
-            assert(t < max_time);
             node->time = t;
             i++;
         }
@@ -151,7 +153,6 @@ void Normalizer::normalize(ARG &a, float theta) {
         x.second.start_time = -1;
     }
     a.adjust_recombinations();
-    // normalize_recombinations(a);
 }
 
 void Normalizer::partition_arg(ARG &a) {
