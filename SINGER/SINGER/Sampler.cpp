@@ -672,29 +672,19 @@ void Sampler::resume_internal_sample(int num_iters, int spacing) {
 }
 
 void Sampler::debug_resume_internal_sample(int num_iters, int spacing) {
-    int attempts = 0;
-    int max_attempts = 10;
-    while (attempts < max_attempts) {
-        try {
-            retract_log(5);
-            string log_file = output_prefix + ".log";
-            vector<string> words = read_last_line(log_file);
-            if (words.size() == 0 or words[2] == "thread") { // need to start from beginning
-                random_seed = random_engine();
-                iterative_start();
-                internal_sample(num_iters, spacing);
-            } else { // start from a previous sample
-                read_resume_point(log_file);
-                sample_index += 1;
-                hash<int> hasher;
-                random_seed = (int) hasher(random_seed);
-                internal_sample(num_iters, spacing);
-            }
-            break;
-        } catch (const exception& e) {
-            cerr << "Error: " << e.what() << endl;
-            attempts++;
-        }
+    retract_log(5);
+    string log_file = output_prefix + ".log";
+    vector<string> words = read_last_line(log_file);
+    if (words.size() == 0 or words[2] == "thread") { // need to start from beginning
+        random_seed = random_engine();
+        iterative_start();
+        internal_sample(num_iters, spacing);
+    } else { // start from a previous sample
+        read_resume_point(log_file);
+        sample_index += 1;
+        hash<int> hasher;
+        random_seed = (int) hasher(random_seed);
+        internal_sample(num_iters, spacing);
     }
 }
 

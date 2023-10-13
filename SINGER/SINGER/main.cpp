@@ -11,6 +11,7 @@
 int main(int argc, const char * argv[]) {
     bool fast = false;
     bool resume = false;
+    bool debug = false;
     float r = -1, m = -1, Ne = -1;
     int num_iters = 0;
     int spacing = 1;
@@ -36,6 +37,13 @@ int main(int argc, const char * argv[]) {
                 exit(1);
             }
             resume = true;
+        }
+        else if (arg == "-debug") {
+            if (i + 1 < argc && argv[i+1][0] != '-') {
+                cerr << "Error: -debug flag doesn't take any value. " << endl;
+                exit(1);
+            }
+            debug = true;
         }
         else if (arg == "-Ne") {
             if (i + 1 >= argc || argv[i+1][0] == '-') {
@@ -239,12 +247,14 @@ int main(int argc, const char * argv[]) {
         if (fast) {
             sampler.resume_fast_internal_sample(num_iters, spacing);
         } else {
-            try {
-                sampler.resume_internal_sample(num_iters, spacing);
-            } catch (const exception& e) {
-                cerr << "Error: " << e.what() << endl;
-                sampler.debug_resume_internal_sample(num_iters, spacing);
-            }
+            sampler.resume_internal_sample(num_iters, spacing);
+        }
+        return 0;
+    } else if (debug) {
+        if (fast) {
+            sampler.debug_resume_fast_internal_sample(num_iters, spacing);
+        } else {
+            sampler.debug_resume_internal_sample(num_iters, spacing);
         }
         return 0;
     }
@@ -257,12 +267,7 @@ int main(int argc, const char * argv[]) {
     if (fast) {
         sampler.fast_internal_sample(num_iters, spacing);
     } else {
-        try {
-            sampler.internal_sample(num_iters, spacing);
-        } catch (const exception& e) {
-            cerr << "Error: " << e.what() << endl;
-            sampler.debug_resume_internal_sample(num_iters, spacing);
-        }
+        sampler.internal_sample(num_iters, spacing);
     }
     return 0;
 }
