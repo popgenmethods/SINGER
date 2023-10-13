@@ -726,6 +726,8 @@ void Sampler::resume_fast_internal_sample(int num_iters, int spacing) {
         cout << "Number of flippings: " << arg.count_flipping() << endl;
     }
 }
+
+void Sampler::debug_resume_fast_internal_sample(int num_iters, int spacing) {}
  
 void Sampler::normalize() {
     Normalizer nm = Normalizer();
