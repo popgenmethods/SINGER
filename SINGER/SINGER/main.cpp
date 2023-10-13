@@ -251,6 +251,7 @@ int main(int argc, const char * argv[]) {
         }
         return 0;
     } else if (debug) {
+        sampler.sequence_length = end_pos - start_pos;
         if (fast) {
             sampler.debug_resume_fast_internal_sample(num_iters, spacing);
         } else {
