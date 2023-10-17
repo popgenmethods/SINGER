@@ -28,7 +28,7 @@ To sample ARGs with SINGER, you can run command line like shown below.
 
 ```
 path_to_singer/singer_master -Ne 1e4 -m 1.25e-8
--input prefix_of_vcf_file -output prefix_of_output_file
+-vcf prefix_of_vcf_file -output prefix_of_output_file
 -start 0 -end 1e6
 -n 1000
 ```
@@ -40,7 +40,7 @@ We specify the details of the arguments here (or you can simply type ```path_to_
 |**-fast**|optional|you will run fast-SINGER with this flag, otherwise regular full SINGER|
 |**-Ne**|required|the diploid effective population size, which means the haploid effective population size will be **2*Ne**|
 |**-m**|required|per base pair per generation mutation rate|
-|**-input**|required|the prefix of the input .vcf(.gz) file name|
+|**-vcf**|required|the prefix of the input .vcf(.gz) file name|
 |**-output**|required|the prefix of the output .trees file name| 
 |**-n**|optional|MCMC iterations to run, default at 0, only getting initialization|
 |**-thin**|optional|we sample the ARG from MCMC every this number of iterations, default at 1|
