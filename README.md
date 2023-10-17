@@ -16,52 +16,36 @@ The easiser way is to directory go to the folder `previous_releases/` and downlo
 tar -xvzf file_name
 ```
 
-If you prefer compiling from the source files, you could do:
-
-```
-g++ -o
-```
-
 ## Input and output
 
 SINGER takes **.vcf(gz)** file and outputs a **.trees** file in tskit format. The mutations are already mapped to the branches, but non-polymorphic, multi-allelic sites and structral variants are excluded from inference. The branch length should be interpreted with units of generations, for example, for homo sapiens, you would need multiply that by 28 to convert to units of years. There will also be a **.log** file for you to check the argument you ran, and the summary statistic in MCMC iterations. 
 
-## Documentation
+## Basic usage
 
 To sample ARGs with SINGER, you can run command line like shown below. 
 
 **IMPORTANT!**:if you wish to get ARG for: **(1) a long chromosome or (2) a series of regions**, we have provided more support to help you (see the [next section: Tools](#Tools)). If you think there are other specific job pipeline which many people might want to use, please contact us and we might add it! 
 
 ```
-path_to_singer/bin/singer -fast -Ne 1e4 -m 1.25e-8 -r 1.25e-8
+path_to_singer/singer_master -Ne 1e4 -m 1.25e-8
 -input prefix_of_vcf_file -output prefix_of_output_file
 -start 0 -end 1e6
--n 1000 -thin 5
+-n 1000
 ```
 
-We specify the details of the arguments here:
+We specify the details of the arguments here (or you can simply type ```path_to_singer/singer_master``` to display the same information):
 
 |flag|required?|details|  
 |-------------------|-----|---|  
 |**-fast**|optional|you will run fast-SINGER with this flag, otherwise regular full SINGER|
 |**-Ne**|required|the diploid effective population size, which means the haploid effective population size will be **2*Ne**|
 |**-m**|required|per base pair per generation mutation rate|
-|**-r**|required|per base pair per generation recombination rate|
 |**-input**|required|the prefix of the input .vcf(.gz) file name|
 |**-output**|required|the prefix of the output .trees file name| 
 |**-n**|optional|MCMC iterations to run, default at 0, only getting initialization|
 |**-thin**|optional|we sample the ARG from MCMC every this number of iterations, default at 1|
-|**-seed**|optional|the seed for random number generator, default at 5498u in C++ standard|
 |**-bandwith**|optional|the bandwidth of the search in fast-SINGER, default at INT_MAX|
 |**-polar**|optional|the probability of incorrectly phased probability, default at 0.01|
-
-Here are some other parameters of the software which we **DON'T** recommend changing, unless you really understand what they do in the algorithms and then feel necesary to do so:
-
-|flag|required?|details|  
-|-----|-----|--------------|  
-|-penalty|optional|extra penalty for violation of infinite sites model, default at 0.01|
-|-hmm_epsilon|optional|the precison parameter in branch-HMM, default at 0.01|
-|-psmc_bins|optional|the number of PSMC time bins, default at 20|
 
 ## Tools
 
