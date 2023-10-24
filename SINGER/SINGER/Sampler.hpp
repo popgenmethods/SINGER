@@ -94,8 +94,6 @@ public:
     
     void fast_internal_sample(int num_iters, int spacing);
     
-    void start_fast_internal_sample(int num_iters, int spacing);
-    
     void resume_internal_sample(int num_iters, int spacing);
     
     void debug_resume_internal_sample(int num_iters, int spacing);
