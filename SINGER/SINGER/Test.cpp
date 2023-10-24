@@ -292,7 +292,7 @@ void test_start_african_sampling() {
     sampler.set_precision(0.01, 0.05);
     sampler.set_sequence_length(1e6);
     sampler.set_output_file_prefix("/Users/yun_deng/Desktop/SINGER/arg_files/african_16_full");
-    sampler.start_fast_internal_sample(500, 1);
+    // sampler.start_fast_internal_sample(500, 1);
 }
 
 void test_resume_african_dataset() {
