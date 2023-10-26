@@ -33,7 +33,7 @@ public:
     ARG arg;
     float bsp_c = 0.01;
     float tsp_q = 0.05;
-    int random_seed = 5319;
+    int random_seed = 0;
     float penalty = 0.01;
     float polar = 0.99;
     int sample_index = 0;

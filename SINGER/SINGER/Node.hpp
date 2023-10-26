@@ -25,11 +25,9 @@ using namespace std;
 
 class Node {
     
-public:
+/*
     
-    // unordered_set<float> mutation_sites = {};
-    // unordered_set<float> ambiguous_sites = {};
-    // set<float>::iterator it = mutation_sites.begin();
+public:
     map<float, float> mutation_sites = {{-1, 0}, {INT_MAX, 0}};
     map<float, float>::iterator it = next(mutation_sites.begin());
     
@@ -52,6 +50,30 @@ public:
     void read_mutation(string filename);
     
     void move_iterator(float m);
+*/
+    
+public:
+    
+    unordered_set<float> mutation_sites = {};
+    unordered_set<float> ambiguous_sites = {};
+    
+    int index = 0;
+    
+    float time = 0;
+    
+    Node(float t);
+    
+    void set_index(int index);
+    
+    void print();
+    
+    void add_mutation(float pos);
+    
+    float get_state(float pos);
+    
+    void write_state(float pos, float s);
+    
+    void read_mutation(string filename);
 };
 
 shared_ptr<Node> new_node(float t);

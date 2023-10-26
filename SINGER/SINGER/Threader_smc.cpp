@@ -279,7 +279,6 @@ void Threader_smc::run_fast_BSP(ARG &a) {
 void Threader_smc::run_TSP(ARG &a) {
     tsp.reserve_memory(end_index - start_index);
     tsp.set_gap(gap);
-    // tsp.set_emission(eh);
     tsp.set_emission(be);
     Branch start_branch = new_joining_branches.begin()->second;
     tsp.start(start_branch, cut_time);
@@ -348,49 +347,10 @@ void Threader_smc::sample_joining_points(ARG &a) {
         x = add_it->first;
         added_node = add_it->second;
         query_node = a.get_query_node_at(x);
-        /*
-        if (query_node == nullptr) {
-            added_branches[x] = Branch();
-        } else {
-            added_branches[x] = Branch(query_node, added_node);
-        }
-         */
         added_branches[x] = Branch(query_node, added_node);
         add_it++;
     }
 }
-
-/*
-float Threader_smc::acceptance_ratio(ARG &a) {
-    float prev_length = a.get_arg_length(a.joining_branches, a.removed_branches);
-    float next_length = a.get_arg_length(new_joining_branches, added_branches);
-    return prev_length/next_length;
-}
- */
-
-/*
-float Threader_smc::acceptance_ratio(ARG &a) {
-    auto old_join_it = a.joining_branches.upper_bound(a.cut_pos);
-    old_join_it--;
-    auto new_join_it = new_joining_branches.upper_bound(a.cut_pos);
-    new_join_it--;
-    auto old_add_it = a.removed_branches.upper_bound(a.cut_pos);
-    old_add_it--;
-    auto new_add_it = added_branches.upper_bound(a.cut_pos);
-    new_add_it--;
-    float old_length = a.cut_tree.length();
-    float new_length = old_length;
-    old_length += old_add_it->second.upper_node->time - a.cut_time;
-    if (old_join_it->second.upper_node->index == -1) {
-        old_length += old_add_it->second.upper_node->time - old_join_it->second.lower_node->time;
-    }
-    old_length += new_add_it->second.upper_node->time - a.cut_time;
-    if (new_join_it->second.upper_node->index == -1) {
-        new_length += new_add_it->second.upper_node->time - new_join_it->second.lower_node->time;
-    }
-    return old_length/new_length;
-}
- */
 
 float Threader_smc::acceptance_ratio(ARG &a) {
     float cut_height = a.cut_tree.parents.rbegin()->first->time;

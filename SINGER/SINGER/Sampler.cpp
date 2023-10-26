@@ -232,7 +232,7 @@ void Sampler::guide_read_vcf(string prefix, float start, float end) {
     }
     num_samples = (int) sample_nodes.size();
     ordered_sample_nodes = vector<Node_ptr>(sample_nodes.begin(), sample_nodes.end());
-    shuffle(ordered_sample_nodes.begin(), ordered_sample_nodes.end(), random_engine);
+    // shuffle(ordered_sample_nodes.begin(), ordered_sample_nodes.end(), random_engine);
     sequence_length = end - start;
     cout << "valid mutations: " << valid_mutation << endl;
     cout << "removed mutations: " << removed_mutation << endl;
@@ -340,9 +340,10 @@ void Sampler::fast_iterative_start() {
     auto it = ordered_sample_nodes.begin();
     it++;
     while (it != ordered_sample_nodes.end()) {
-        Threader_smc threader = Threader_smc(bsp_c, tsp_q);
-        threader.pe->penalty = penalty;
-        threader.pe->ancestral_prob = polar;
+        float pc = min(0.01, 0.05/arg.sample_nodes.size());
+        Threader_smc threader = Threader_smc(pc, tsp_q);
+        threader.pe->penalty = 0.001;
+        threader.pe->ancestral_prob = 0.99;
         Node_ptr n = *it;
         if (arg.sample_nodes.size() > 1) {
             threader.fast_thread(arg, n);

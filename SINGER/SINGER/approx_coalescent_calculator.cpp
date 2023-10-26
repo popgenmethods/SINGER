@@ -62,7 +62,6 @@ void approx_coalescent_calculator::compute_first_moment() {
 float approx_coalescent_calculator::prob(float x, float y) {
     float p1 = prob_integral(x);
     float p2 = prob_integral(y);
-    // assert(p2 >= p1 - 0.001 and p2 <= p1 + 1);
     return max(p2 - p1, 0.0f);
 }
 
@@ -96,7 +95,6 @@ float approx_coalescent_calculator::find_median(float x, float y) {
     float z = 0;
     float nx = n0 + (1 - n0)*exp(-0.5*x);
     float ny = n0 + (1 - n0)*exp(-0.5*y);
-    // float nm = 2.0*nx*ny/(nx + ny);
     float nm = sqrt(nx*ny);
     z = 2*log(n0 - 1) - 2*log(n0 - nm);
     if (isinf(y)) {

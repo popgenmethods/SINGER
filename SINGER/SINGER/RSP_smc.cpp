@@ -368,7 +368,6 @@ float RSP_smc::choose_time(float lb, float ub, float n) {
     if (n > 1) {
         lambda_l = n/(n + (1 - n)*exp(-0.5*lb));
         lambda_u = n/(n + (1 - n)*exp(-0.5*ub));
-        // lambda = 0.5*(lambda_l + lambda_u);
         lambda = lambda_l;
     } else {
         lambda = 1;

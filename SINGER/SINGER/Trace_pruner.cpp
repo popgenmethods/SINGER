@@ -7,6 +7,8 @@
 
 #include "Trace_pruner.hpp"
 
+#include "Trace_pruner.hpp"
+
 Trace_pruner::Trace_pruner() {}
 
 void Trace_pruner::prune_arg(ARG &a) {
@@ -27,42 +29,11 @@ void Trace_pruner::prune_arg(ARG &a) {
         extend(a, x);
     }
     assert(segments.size() == 0);
-    // write_reductions(a);
 }
 
 void Trace_pruner::set_check_points(set<float> &p) {
     check_points = p;
 }
-
-/*
-void Trace_pruner::start_search(ARG &a, float m) {
-    seed_scores.clear();
-    Node_ptr n = get_node_at(m);
-    float mismatch = 0;
-    float lb, ub;
-    Interval_info interval;
-    float x0 = find_closest_reference(m);
-    // seed_trees[m] = a.modify_tree_to(m, seed_trees[x0], x0);
-    seed_trees[m] = a.internal_modify_tree_to(m, seed_trees[x0], x0);
-    length += abs(m - x0);
-    // cout << "from " << x0 << " to " << m << endl;
-    // seed_trees[m].internal_cut(cut_time);
-    for (Branch b : seed_trees[m].branches) {
-        if (b.upper_node->time > cut_time) {
-            mismatch = count_mismatch(b, n, m);
-            if (mismatch == 0) {
-                lb = max(cut_time, b.lower_node->time);
-                ub = b.upper_node->time;
-                interval = Interval_info(b, lb, ub);
-                interval.seed_pos = m;
-                seed_scores[interval] = 1;
-            }
-        }
-    }
-    potential_seeds.erase(m);
-    assert(seed_scores.size() > 0);
-}
- */
 
 void Trace_pruner::start_search(ARG &a, float m) {
     seed_scores.clear();
@@ -76,8 +47,7 @@ void Trace_pruner::start_search(ARG &a, float m) {
     float min_mismatch = INT_MAX;
     for (auto &x : seed_trees[m].parents) {
         if (x.second->time > cut_time) {
-            Branch b = Branch(x.first, x.second);
-            mismatch = count_mismatch(b, n, m);
+            mismatch = count_mismatch(Branch(x.first, x.second), n, m);
             min_mismatch = min(mismatch, min_mismatch);
         }
     }
@@ -126,7 +96,6 @@ void Trace_pruner::write_reduction_distance(ARG &a, string filename) {
         int min_distance = INT_MAX;
         int distance = INT_MAX;
         for (Branch b : reduced_set) {
-            assert(tree.parents[b.lower_node] == b.upper_node);
             distance = tree.distance(joining_branch.lower_node, b.lower_node);
             min_distance = min(min_distance, distance);
         }
@@ -796,4 +765,3 @@ void Trace_pruner::restrict_search() {
     }
     assert(seed_scores.size() <= band_width);
 }
-

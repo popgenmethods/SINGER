@@ -21,7 +21,7 @@ using Interval_ptr = shared_ptr<Interval>;
 class fast_BSP {
     
 public:
-    
+
     // basic setup
     float cut_time = 0.0;
     float cutoff = 0;
@@ -83,9 +83,7 @@ public:
     
     void start(set<Branch> &start_branches, set<Interval_info> &start_intervals, float t);
     
-    void start(Tree &tree, set<Interval_info> &start_intervals, float t);
-    
-    // void start(set<Branch> &branches, float t);
+    void start(Tree &start_tree, set<Interval_info> &start_intervals, float t);
     
     void set_cutoff(float x);
     

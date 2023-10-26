@@ -261,11 +261,6 @@ void fast_BSP_smc::update_states(set<Branch> &deletions, set<Branch> &insertions
 }
 
 void fast_BSP_smc::set_states(set<Branch> &branches) {
-    /*
-    if (valid_branches == branches) {
-        cout << "waste update" << endl;
-    }
-     */
     valid_branches = branches;
     states_change = true;
 }

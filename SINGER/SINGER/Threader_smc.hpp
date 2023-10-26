@@ -57,7 +57,6 @@ public:
     Trace_pruner pruner = Trace_pruner();
     approx_BSP bsp = approx_BSP();
     fast_BSP fbsp = fast_BSP();
-    // TSP_smc tsp = TSP_smc();
     TSP tsp = TSP();
     float gap;
     float cutoff;
