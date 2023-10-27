@@ -161,26 +161,6 @@ void Threader_smc::set_check_points(ARG &a) {
     tsp.set_check_points(check_points);
 }
 
-/*
-void Threader_smc::boundary_check(ARG &a) {
-    float end_pos = a.end;
-    if (bsp.check_points.count(end_pos) > 0) {
-        Recombination &r = a.recombinations[end_pos];
-        bsp.sanity_check(r);
-        return;
-    }
-    if (fbsp.check_points.count(end_pos) > 0) {
-        Recombination &r = a.recombinations[end_pos];
-        fbsp.sanity_check(r);
-        return;
-    }
-    if (tsp.check_points.count(end_pos) > 0) {
-        Recombination &r = a.recombinations[end_pos];
-        tsp.sanity_check(r);
-    }
-}
- */
-
 void Threader_smc::run_pruner(ARG &a) {
     pruner.prune_arg(a);
 }

@@ -27,7 +27,7 @@ void Tree::delete_branch(const Branch &b) {
     if (children_nodes.size() == 1) {
         children.erase(b.upper_node);
     } else {
-        children_nodes.erase(b.lower_node);
+        children_nodes.erase(b.lower_node);  
     }
 }
 
@@ -187,11 +187,11 @@ void Tree::internal_forward_update(Recombination &r, float cut_time) {
 }
 
 void Tree::internal_backward_update(Recombination &r, float cut_time) {
-    for (const Branch &b : r.deleted_branches) {
-        internal_insert_branch(b, cut_time);
-    }
     for (const Branch &b : r.inserted_branches) {
         internal_delete_branch(b, cut_time);
+    }
+    for (const Branch &b : r.deleted_branches) {
+        internal_insert_branch(b, cut_time);
     }
 }
 
