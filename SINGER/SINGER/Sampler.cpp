@@ -289,7 +289,7 @@ void Sampler::build_all_nodes() {
 }
 
 void Sampler::build_singleton_arg() {
-    float bin_size = rho_unit/recomb_rate;
+    float bin_size = max(1.0f, rho_unit/recomb_rate);
     Node_ptr n = *ordered_sample_nodes.begin();
     arg = ARG(Ne, sequence_length);
     arg.discretize(bin_size);

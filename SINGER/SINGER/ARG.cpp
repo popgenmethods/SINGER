@@ -1110,8 +1110,8 @@ void ARG::read_recombs(string filename) {
     }
     create_node_set();
     vector<Node_ptr> nodes = vector<Node_ptr>(node_set.begin(), node_set.end());
-    map<int, Branch> source_branches = {};
-    map<int, float> start_times = {};
+    map<float, Branch> source_branches = {};
+    map<float, float> start_times = {};
     float pos;
     int n1;
     int n2;
