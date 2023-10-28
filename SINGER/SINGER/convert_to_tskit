@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import argparse
+import numpy as np
+import tskit
+
+def read_ts(node_file, edge_file):
+    node_time = np.loadtxt(node_file)
+    edge_span = np.loadtxt(edge_file)
+    edge_span = edge_span[edge_span[:, 2] >= 0, :]
+    length = max(edge_span[:, 1])
+    tables = tskit.TableCollection(sequence_length=length)
+    node_table = tables.nodes
+    edge_table = tables.edges
+    prev_time = -1
+    for t in node_time:
+        if (t == 0):
+            node_table.add_row(flags=tskit.NODE_IS_SAMPLE)
+        else:
+            t = max(prev_time + 1e-4, t)
+            node_table.add_row(time = t)
+            prev_time = t
+    parent_indices = np.array(edge_span[:, 2], dtype = np.int32)
+    child_indices = np.array(edge_span[:, 3], dtype = np.int32)
+    edge_table.set_columns(left = edge_span[:, 0], right = edge_span[:, 1], parent = parent_indices, child = child_indices)
+    for i in range(len(parent_indices)):
+        j = int(parent_indices[i])
+        k = int(child_indices[i])
+        if (node_time[j] < node_time[k]):
+            print(j, k, node_time[j], node_time[k])
+    for i in range(edge_span.shape[0]):
+        if (edge_span[i, 0] >= edge_span[i, 1]):
+            print(edge_span[i, :])
+    tables.sort()
+    return tables
+
+def read_mutation(tables, mutation_file):
+    mutations = np.loadtxt(mutation_file)
+    n = mutations.shape[0]
+    mut_pos = 0
+    for i in range(n):
+        if mutations[i, 0] != mut_pos and mutations[i, 0] < 1e6:
+            tables.sites.add_row(position=mutations[i, 0], ancestral_state='0')
+            mut_pos = mutations[i, 0]
+        site_id = tables.sites.num_rows - 1
+        tables.mutations.add_row(site=site_id, node=int(mutations[i, 1]), derived_state=str(int(mutations[i, 3])))
+    return
+
+def read_ARG(node_file, branch_file, mutation_file):
+    tables = read_ts(node_file, branch_file)
+    read_mutation(tables, mutation_file)
+    ts = tables.tree_sequence()
+    return ts
+
+def write_trees(log_prefix, output_prefix, freq):
+    log_file = f"{log_prefix}.log"
+
+    if not os.path.exists(log_file):
+        print(f"No log file found: {log_file}")
+        return
+
+    with open(log_file, 'r') as file:
+        lines = file.readlines()
+        if not lines:
+            print("The log file is empty.")
+            return
+        
+        last_line = lines[-1].strip()
+        entries = last_line.split()
+        
+        if entries[2] == "rethread":
+            sample_number = int(entries[1])
+            for i in range(0, sample_number, freq):
+                trees_file = f"{output_prefix}_{i}.trees"
+                if os.path.exists(trees_file):
+                    print(f"File {trees_file} already exists. Skipping...")
+                    continue
+
+                node_file = f"{log_prefix}_nodes_{i}.txt"
+                branch_file = f"{log_prefix}_branches_{i}.txt"
+                mutation_file = f"{log_prefix}_muts_{i}.txt"
+                ts = read_ARG(node_file, branch_file, mutation_file)
+                ts.dump(trees_file) 
+        else:
+            print("No samples found.") 
+
+def main():
+    parser = argparse.ArgumentParser(description='Convert to tskit format')
+
+    parser.add_argument('-log', type=str, required=True, help='Prefix of the log file.')
+    parser.add_argument('-output', type=str, required=True, help='Prefix of output files.')
+    parser.add_argument('-freq', type=int, default=1, help='Frequency of subsampling. Default: 1.') 
+
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
+    args = parser.parse_args()
+ 
+    write_trees(args.log, args.output, args.freq)
+
+if __name__ == '__main__':
+    main()
