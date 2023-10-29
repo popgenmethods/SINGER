@@ -86,20 +86,56 @@ def write_trees(log_prefix, output_prefix, freq):
         else:
             print("No samples found.") 
 
+def write_fast_trees(log_prefix, output_prefix, freq):
+    log_file = f"{log_prefix}.log"
+
+    if not os.path.exists(log_file):
+        print(f"No log file found: {log_file}")
+        return
+
+    with open(log_file, 'r') as file:
+        lines = file.readlines()
+        if not lines:
+            print("The log file is empty.")
+            return
+
+        last_line = lines[-1].strip()
+        entries = last_line.split()
+
+        if entries[2] == "rethread":
+            sample_number = int(entries[1])
+            for i in range(0, sample_number, freq):
+                trees_file = f"{output_prefix}_{i}.trees"
+                if os.path.exists(trees_file):
+                    print(f"File {trees_file} already exists. Skipping...")
+                    continue
+
+                node_file = f"{log_prefix}_fast_nodes_{i}.txt"
+                branch_file = f"{log_prefix}_fast_branches_{i}.txt"
+                mutation_file = f"{log_prefix}_fast_muts_{i}.txt"
+                ts = read_ARG(node_file, branch_file, mutation_file)
+                ts.dump(trees_file)
+        else:
+            print("No samples found.")
+
 def main():
     parser = argparse.ArgumentParser(description='Convert to tskit format')
 
     parser.add_argument('-log', type=str, required=True, help='Prefix of the log file.')
     parser.add_argument('-output', type=str, required=True, help='Prefix of output files.')
     parser.add_argument('-freq', type=int, default=1, help='Frequency of subsampling. Default: 1.') 
+    parser.add_argument('-fast', action='store_true', help='Use this flag for fast-SINGER samples.')
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
 
     args = parser.parse_args()
- 
-    write_trees(args.log, args.output, args.freq)
+    
+    if (args.fast):
+        write_fast_trees(args.log, args.output, args.freq)
+    else:
+        write_trees(args.log, args.output, args.freq)
 
 if __name__ == '__main__':
     main()
