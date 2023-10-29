@@ -31,6 +31,7 @@ public:
     float sequence_length = 0;
     int num_samples = 0;
     ARG arg;
+    bool fast_mode = false;
     float bsp_c = 0.01;
     float tsp_q = 0.05;
     int random_seed = 0;

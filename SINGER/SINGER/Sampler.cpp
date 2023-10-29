@@ -754,11 +754,20 @@ void Sampler::write_cut(tuple<float, Branch, float> cut_point) {
 
 void Sampler::load_resume_arg() {
     arg = ARG(Ne, sequence_length);
-    string node_file = output_prefix + "_nodes_" + to_string(sample_index) + ".txt";
-    string branch_file= output_prefix + "_branches_" + to_string(sample_index) + ".txt";
-    string recomb_file = output_prefix + "_recombs_" + to_string(sample_index) + ".txt";
-    string mut_file = output_prefix + "_muts_" + to_string(sample_index) + ".txt";
-    string coord_file = output_prefix + "_coordinates.txt";
+    string node_file, branch_file, recomb_file, mut_file, coord_file;
+    if (!fast_mode) {
+        node_file = output_prefix + "_nodes_" + to_string(sample_index) + ".txt";
+        branch_file= output_prefix + "_branches_" + to_string(sample_index) + ".txt";
+        recomb_file = output_prefix + "_recombs_" + to_string(sample_index) + ".txt";
+        mut_file = output_prefix + "_muts_" + to_string(sample_index) + ".txt";
+        coord_file = output_prefix + "_coordinates.txt";
+    } else {
+        node_file = output_prefix + "_fast_nodes_" + to_string(sample_index) + ".txt";
+        branch_file= output_prefix + "_fast_branches_" + to_string(sample_index) + ".txt";
+        recomb_file = output_prefix + "_fast_recombs_" + to_string(sample_index) + ".txt";
+        mut_file = output_prefix + "_fast_muts_" + to_string(sample_index) + ".txt";
+        coord_file = output_prefix + "_fast_coordinates.txt";
+    }
     arg.read(node_file, branch_file, recomb_file, mut_file);
     arg.read_coordinates(coord_file);
     arg.compute_rhos_thetas(recomb_rate, mut_rate);

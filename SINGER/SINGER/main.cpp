@@ -242,6 +242,7 @@ int main(int argc, const char * argv[]) {
     sampler.polar = polar;
     sampler.set_precision(epsilon_hmm, epsilon_psmc);
     sampler.set_output_file_prefix(output_prefix);
+    sampler.fast_mode = fast;
     if (resume) {
         sampler.sequence_length = end_pos - start_pos;
         if (fast) {
