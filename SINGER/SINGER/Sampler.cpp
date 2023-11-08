@@ -593,8 +593,12 @@ void Sampler::debug_resume_internal_sample(int num_iters, int spacing) {
     retract_log(5);
     string log_file = output_prefix + ".log";
     vector<string> words = read_last_line(log_file);
-    if (words.size() == 0 or words[2] == "thread") { // need to start from beginning
-        random_seed = random_engine();
+    assert(words.size() > 0);
+    if (words[2] == "initial_thread") { // need to start from beginning
+        random_seed = stoi(words[1]);
+        cout << "original seed: " << random_seed << endl;
+        sample_index = 0;
+        random_seed = (random_seed * 2654435761u) % 4294967296;
         iterative_start();
         internal_sample(num_iters, spacing);
     } else { // start from a previous sample
@@ -662,10 +666,14 @@ void Sampler::debug_resume_fast_internal_sample(int num_iters, int spacing) {
     retract_log(5);
     string log_file = output_prefix + ".log";
     vector<string> words = read_last_line(log_file);
-    if (words.size() == 0 or words[2] == "thread") { // need to start from beginning
-        random_seed = random_engine();
+    assert(words.size() > 0);
+    if (words[2] == "initial_thread") { // need to start from beginning
+        random_seed = stoi(words[1]);
+        cout << "original seed: " << random_seed << endl;
+        sample_index = 0;
+        random_seed = (random_seed * 2654435761u) % 4294967296;
         iterative_start();
-        fast_internal_sample(num_iters, spacing);
+        internal_sample(num_iters, spacing);
     } else { // start from a previous sample
         read_resume_point(log_file);
         cout << "original seed: " << random_seed << endl;
@@ -825,6 +833,7 @@ void Sampler::read_resume_point(string filename) {
     arg.end_tree = arg.get_tree_at(arg.end);
 }
 
+/*
 void Sampler::retract_log(int k) {
     const std::string file_path = output_prefix + ".log";
         std::ifstream in_file(file_path, std::ios::in | std::ios::ate);
@@ -860,4 +869,61 @@ void Sampler::retract_log(int k) {
         std::ofstream out_file(file_path, std::ios::out | std::ios::trunc);
         out_file << content;  // Write back the retained content to the file
         out_file.close();
+}
+*/
+
+void Sampler::retract_log(int k) {
+    const std::string file_path = output_prefix + ".log";
+    std::ifstream in_file(file_path, std::ios::in | std::ios::ate);
+
+    if (!in_file.is_open()) {
+        std::cerr << "Unable to open log file: " << file_path << std::endl;
+        return;
+    }
+
+    // Store the first two lines
+    std::string first_line, second_line;
+    in_file.seekg(0); // Go to the beginning of the file
+    std::getline(in_file, first_line);
+    std::getline(in_file, second_line);
+    
+    // Now go back to the end of the file to perform the removal
+    in_file.seekg(0, std::ios::end);
+    char c;
+    int line_count = 0;
+    long pos = in_file.tellg();
+
+    // Count back 'k' lines from the end of the file
+    while (pos > 0 && line_count < k) {
+        in_file.seekg(--pos, std::ios::beg);
+        in_file.get(c);
+        if (c == '\n') {
+            ++line_count;
+        }
+    }
+
+    // Adjust the position if we have enough lines to remove
+    pos = (line_count < k) ? 0 : pos + 1;
+
+    // Read up to the determined position
+    in_file.seekg(0, std::ios::beg);
+    std::string content(pos, '\0');
+    in_file.read(&content[0], pos);
+    in_file.close();
+
+    // Check if the remaining content has fewer than two lines
+    int remaining_lines = (int) std::count(content.begin(), content.end(), '\n') + (content.empty() ? 0 : 1);
+
+    std::ofstream out_file(file_path, std::ios::out | std::ios::trunc);
+    if (remaining_lines >= 2) {
+        // If we have two or more lines remaining, write the content back
+        out_file << content;
+    } else {
+        // If we have fewer than two lines, write back the first two lines
+        out_file << first_line << '\n';
+        if (!second_line.empty()) {
+            out_file << second_line << '\n';
+        }
+    }
+    out_file.close();
 }
