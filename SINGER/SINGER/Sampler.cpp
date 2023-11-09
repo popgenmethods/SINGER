@@ -596,6 +596,7 @@ void Sampler::debug_resume_internal_sample(int num_iters, int spacing) {
     if (words.size() == 0 or words[2] == "initial_thread" or words[0] == "Time") { // need to start from beginning
         cout << "new seed: " << random_seed << endl;
         sample_index = 0;
+        load_vcf(input_prefix, start, end);
         iterative_start();
         internal_sample(num_iters, spacing);
     } else { // start from a previous sample
@@ -664,6 +665,7 @@ void Sampler::debug_resume_fast_internal_sample(int num_iters, int spacing) {
     if (words.size() == 0 or words[2] == "initial_thread" or words[0] == "Time") { // need to start from beginning
         cout << "new seed: " << random_seed << endl;
         sample_index = 0;
+        load_vcf(input_prefix, start, end);
         fast_iterative_start();
         fast_internal_sample(num_iters, spacing);
     } else { // start from a previous sample

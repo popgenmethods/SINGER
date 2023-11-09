@@ -241,9 +241,12 @@ int main(int argc, const char * argv[]) {
     sampler.penalty = penalty;
     sampler.polar = polar;
     sampler.set_precision(epsilon_hmm, epsilon_psmc);
+    sampler.set_input_file_prefix(input_filename);
     sampler.set_output_file_prefix(output_prefix);
     sampler.fast_mode = fast;
     sampler.random_seed = seed;
+    sampler.start = start_pos;
+    sampler.end = end_pos;
     if (resume) {
         sampler.sequence_length = end_pos - start_pos;
         if (fast) {

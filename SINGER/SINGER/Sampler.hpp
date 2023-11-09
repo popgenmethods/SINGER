@@ -28,6 +28,8 @@ public:
     string input_prefix = "";
     string output_prefix = "";
     string log_prefix = "";
+    float start = 0;
+    float end = 0;
     float sequence_length = 0;
     int num_samples = 0;
     ARG arg;
