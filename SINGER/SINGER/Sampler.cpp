@@ -340,10 +340,10 @@ void Sampler::fast_iterative_start() {
     auto it = ordered_sample_nodes.begin();
     it++;
     while (it != ordered_sample_nodes.end()) {
-        float pc = min(0.01, 0.05/arg.sample_nodes.size());
-        Threader_smc threader = Threader_smc(pc, tsp_q);
-        threader.pe->penalty = 0.001;
-        threader.pe->ancestral_prob = 0.99;
+        random_engine.seed(random_seed);
+        Threader_smc threader = Threader_smc(bsp_c, tsp_q);
+        threader.pe->penalty = penalty;
+        threader.pe->ancestral_prob = polar;
         Node_ptr n = *it;
         if (arg.sample_nodes.size() > 1) {
             threader.fast_thread(arg, n);
