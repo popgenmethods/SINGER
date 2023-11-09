@@ -21,7 +21,7 @@ int main(int argc, const char * argv[]) {
     float polar = 0.5;
     float epsilon_hmm = 0.1;
     float epsilon_psmc = 0.05;
-    int seed = -1;
+    int seed = 42;
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
         if (arg == "-fast") {
@@ -243,6 +243,7 @@ int main(int argc, const char * argv[]) {
     sampler.set_precision(epsilon_hmm, epsilon_psmc);
     sampler.set_output_file_prefix(output_prefix);
     sampler.fast_mode = fast;
+    sampler.random_seed = seed;
     if (resume) {
         sampler.sequence_length = end_pos - start_pos;
         if (fast) {

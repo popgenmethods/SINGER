@@ -594,18 +594,14 @@ void Sampler::debug_resume_internal_sample(int num_iters, int spacing) {
     string log_file = output_prefix + ".log";
     vector<string> words = read_last_line(log_file);
     if (words.size() == 0 or words[2] == "initial_thread" or words[0] == "Time") { // need to start from beginning
-        random_seed = stoi(words[1]);
-        cout << "original seed: " << random_seed << endl;
+        cout << "new seed: " << random_seed << endl;
         sample_index = 0;
-        random_seed = (random_seed * 2654435761u) % 4294967296;
         iterative_start();
         internal_sample(num_iters, spacing);
     } else { // start from a previous sample
         read_resume_point(log_file);
-        cout << "original seed: " << random_seed << endl;
         sample_index += 1;
-        random_seed = (random_seed * 2654435761u) % 4294967296;
-        cout << "debug new seed: " << random_seed << endl;
+        cout << "new seed: " << random_seed << endl;
         internal_sample(num_iters, spacing);
     }
 }
@@ -666,19 +662,14 @@ void Sampler::debug_resume_fast_internal_sample(int num_iters, int spacing) {
     string log_file = output_prefix + ".log";
     vector<string> words = read_last_line(log_file);
     if (words.size() == 0 or words[2] == "initial_thread" or words[0] == "Time") { // need to start from beginning
-        random_seed = stoi(words[1]);
-        cout << "original seed: " << random_seed << endl;
+        cout << "new seed: " << random_seed << endl;
         sample_index = 0;
-        random_seed = (random_seed * 2654435761u) % 4294967296;
-        cout << "debug new seed: " << random_seed << endl;
         fast_iterative_start();
         fast_internal_sample(num_iters, spacing);
     } else { // start from a previous sample
         read_resume_point(log_file);
-        cout << "original seed: " << random_seed << endl;
         sample_index += 1;
-        random_seed = (random_seed * 2654435761u) % 4294967296;
-        cout << "debug new seed: " << random_seed << endl;
+        cout << "new seed: " << random_seed << endl;
         fast_internal_sample(num_iters, spacing);
     }
 }
@@ -823,7 +814,7 @@ void Sampler::read_resume_point(string filename) {
     vector<string> words = read_last_line(filename);
     int log_length = (int) words.size();
     TSP::counter = stoi(words[log_length - 1]);
-    random_seed = stoi(words[log_length - 2]);
+    // random_seed = stoi(words[log_length - 2]);
     sample_index = stoi(words[1]);
     load_resume_arg();
     arg.sequence_length = sequence_length;
