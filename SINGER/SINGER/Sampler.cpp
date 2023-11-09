@@ -593,8 +593,7 @@ void Sampler::debug_resume_internal_sample(int num_iters, int spacing) {
     retract_log(5);
     string log_file = output_prefix + ".log";
     vector<string> words = read_last_line(log_file);
-    assert(words.size() > 0);
-    if (words[2] == "initial_thread") { // need to start from beginning
+    if (words.size() == 0 or words[2] == "initial_thread" or words[0] == "Time") { // need to start from beginning
         random_seed = stoi(words[1]);
         cout << "original seed: " << random_seed << endl;
         sample_index = 0;
@@ -666,14 +665,14 @@ void Sampler::debug_resume_fast_internal_sample(int num_iters, int spacing) {
     retract_log(5);
     string log_file = output_prefix + ".log";
     vector<string> words = read_last_line(log_file);
-    assert(words.size() > 0);
-    if (words[2] == "initial_thread") { // need to start from beginning
+    if (words.size() == 0 or words[2] == "initial_thread" or words[0] == "Time") { // need to start from beginning
         random_seed = stoi(words[1]);
         cout << "original seed: " << random_seed << endl;
         sample_index = 0;
         random_seed = (random_seed * 2654435761u) % 4294967296;
-        iterative_start();
-        internal_sample(num_iters, spacing);
+        cout << "debug new seed: " << random_seed << endl;
+        fast_iterative_start();
+        fast_internal_sample(num_iters, spacing);
     } else { // start from a previous sample
         read_resume_point(log_file);
         cout << "original seed: " << random_seed << endl;
@@ -806,8 +805,7 @@ vector<string> Sampler::read_last_line(string filename) {
     }
 
     if (!found) {
-        cerr << "Didn't find the desired line in the file!" << endl;
-        exit(1);
+        return words;
     }
 
     string last_line_with_content;
