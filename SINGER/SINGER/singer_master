@@ -17,10 +17,12 @@ def run_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, end, v
     debug_cmd = f"singer -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -debug"    
 
     seeded_start_cmd = start_cmd + f" -seed {seed}"
+    print(seeded_start_cmd)
     process = subprocess.run(seeded_start_cmd.split(), check=False)
     while process.returncode != 0 and attempts < max_attempts:
         print(f"Auto-debug iteration: {attempts}")
         seeded_debug_cmd = debug_cmd + f" -seed {random_seeds[attempts]}"
+        print(seeded_debug_cmd)
         process = subprocess.run(seeded_debug_cmd.split(), check=False)
         attempts += 1
 
@@ -38,10 +40,12 @@ def run_fast_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, e
     debug_cmd = f"singer -fast -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -debug"
 
     seeded_start_cmd = start_cmd + f" -seed {seed}"
+    print(seeded_start_cmd)
     process = subprocess.run(start_cmd.split(), check=False)
     while process.returncode != 0 and attempts < max_attempts:
         print(f"Auto-debug iteration: {attempts}")
         seeded_debug_cmd = debug_cmd + f" -seed {random_seeds[attempts]}"
+        print(seeded_debug_cmd)
         process = subprocess.run(seeded_debug_cmd.split(), check=False)
         attempts += 1  
  
@@ -50,7 +54,7 @@ def run_fast_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, e
         sys.exit(1)
 
 
-def resume_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, end, vcf_prefix, output_prefix, num_iters, thin, polar):
+def resume_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, end, vcf_prefix, output_prefix, num_iters, thin, polar, seed):
     attempts = 0
     max_attempts = 100
     random.seed(seed)
@@ -59,11 +63,13 @@ def resume_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, end
     resume_cmd = f"singer -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -resume" 
     debug_cmd = f"singer -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -debug"
       
-    seeded_resume_cmd = start_cmd + f" -seed {seed}"
+    seeded_resume_cmd = resume_cmd + f" -seed {seed}"
+    print(seeded_resume_cmd)
     process = subprocess.run(seeded_resume_cmd.split(), check=False)
     while process.returncode != 0 and attempts < max_attempts:
         print(f"Auto-debug iteration: {attempts}")
         seeded_debug_cmd = debug_cmd + f" -seed {random_seeds[attempts]}"
+        print(seeded_debug_cmd)
         process = subprocess.run(seeded_debug_cmd.split(), check=False)
         attempts += 1
 
@@ -81,11 +87,13 @@ def resume_fast_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start
     resume_cmd = f"singer -fast -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -resume"
     debug_cmd = f"singer -fast -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -debug"
 
-    seeded_resume_cmd = start_cmd + f" -seed {seed}"
+    seeded_resume_cmd = resume_cmd + f" -seed {seed}"
+    print(seeded_resume_cmd)
     process = subprocess.run(seeded_resume_cmd.split(), check=False)
     while process.returncode != 0 and attempts < max_attempts:
         print(f"Auto-debug iteration: {attempts}")
         seeded_debug_cmd = debug_cmd + f" -seed {random_seeds[attempts]}"
+        print(seeded_debug_cmd)
         process = subprocess.run(seeded_debug_cmd.split(), check=False)
         attempts += 1
 
