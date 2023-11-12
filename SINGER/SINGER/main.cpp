@@ -193,12 +193,12 @@ int main(int argc, const char * argv[]) {
             }
         }
         else if (arg == "-seed") {
-            if (i + 1 >= argc) {
+            if (i + 1 >= argc || argv[i+1][0] == '-') {
                 cerr << "Error: -seed flag cannot be empty. " << endl;
                 exit(1);
             }
             try {
-                seed  = stoi(argv[++i]);
+                seed = stoi(argv[++i]);
             } catch (const invalid_argument&) {
                 cerr << "Error: -seed flag expects a number. " << endl;
                 exit(1);
