@@ -11,6 +11,7 @@ Polar_emission::Polar_emission() {}
 
 Polar_emission::~Polar_emission() {}
 
+/*
 float Polar_emission::null_emit(Branch &branch, float time, float theta, Node_ptr node) {
     float emit_prob = 1;
     float old_prob = 1;
@@ -26,7 +27,22 @@ float Polar_emission::null_emit(Branch &branch, float time, float theta, Node_pt
     emit_prob /= old_prob;
     return emit_prob;
 }
+ */
 
+float Polar_emission::null_emit(Branch &branch, float time, float theta, Node_ptr node) {
+    float emit_prob = 1;
+    float ll = time - branch.lower_node->time;
+    float lu = branch.upper_node->time - time;
+    float l0 = time - node->time;
+    if (!isinf(lu)) {
+        emit_prob = null_prob(theta*l0);
+    } else {
+       emit_prob = null_prob(theta*(ll + l0));
+    }
+    return emit_prob;
+}
+
+/*
 float Polar_emission::mut_emit(Branch &branch, float time, float theta, float bin_size, set<float> &mut_set, Node_ptr node) {
     float emit_prob = 1;
     float old_prob = 1;
@@ -40,6 +56,30 @@ float Polar_emission::mut_emit(Branch &branch, float time, float theta, float bi
     }
     emit_prob *= null_prob(theta, ll, lu, l0);
     old_prob *= null_prob(theta*(ll + lu));
+    emit_prob /= old_prob;
+    emit_prob *= root_reward;
+    emit_prob = max(emit_prob, 1e-20f);
+    assert(emit_prob > 0);
+    return emit_prob;
+}
+ */
+
+float Polar_emission::mut_emit(Branch &branch, float time, float theta, float bin_size, set<float> &mut_set, Node_ptr node) {
+    float emit_prob = 1;
+    float old_prob = 1;
+    float ll = time - branch.lower_node->time;
+    float lu = branch.upper_node->time - time;
+    float l0 = time - node->time;
+    for (float m : mut_set) {
+        get_diff(m, branch, node);
+        emit_prob *= mut_prob(theta, bin_size, ll, lu, l0, diff[0], diff[1], diff[2]);
+        old_prob *= mut_prob(theta*(ll + lu), bin_size, diff[3]);
+    }
+    if (!isinf(lu)) {
+       emit_prob *= null_prob(theta*l0);
+    } else {
+       emit_prob *= null_prob(theta*(l0 + ll));
+    }
     emit_prob /= old_prob;
     emit_prob *= root_reward;
     emit_prob = max(emit_prob, 1e-20f);

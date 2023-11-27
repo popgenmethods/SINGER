@@ -7,7 +7,6 @@
 
 #include "Node.hpp"
 
-
 Node::Node(float t) {
     time = t;
 }
@@ -106,8 +105,6 @@ void Node::add_mutation(float pos) {
 float Node::get_state(float pos) {
     if (mutation_sites.count(pos) > 0) {
         return 1;
-    } else if (ambiguous_sites.count(pos) > 0) {
-        return 0.5;
     } else {
         return 0;
     }
@@ -116,13 +113,10 @@ float Node::get_state(float pos) {
 void Node::write_state(float pos, float s) {
     if (s == 0) {
         mutation_sites.erase(pos);
-        ambiguous_sites.erase(pos);
+        // ambiguous_sites.erase(pos);
         return;
-    } else if (s == 0.5) {
-        mutation_sites.erase(pos);
-        ambiguous_sites.insert(pos);
     } else if (s == 1) {
-        ambiguous_sites.erase(pos);
+        // ambiguous_sites.erase(pos);
         mutation_sites.insert(pos);
     }
     return;
@@ -143,5 +137,4 @@ void Node::read_mutation(string filename) {
 shared_ptr<Node> new_node(float t) {
     return make_shared<Node>(t);
 }
-
 */

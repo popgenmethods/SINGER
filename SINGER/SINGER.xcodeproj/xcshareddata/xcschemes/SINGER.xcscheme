@@ -52,7 +52,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-Ne 2e4 -m 2e-8 -r 2e-8 -input  /Users/yun_deng/Desktop/SINGER/arg_files/200_0 -output  /Users/yun_deng/Desktop/SINGER/arg_files/200_0 -start 0 -end 1000000 -n 0 -thin 1"
+            argument = "-Ne 1e4 -m 2e-8 -r 2e-8 -input  /Users/yun_deng/Desktop/SINGER/arg_files/200_0 -output  /Users/yun_deng/Desktop/SINGER/arg_files/200_0 -start 0 -end 1000000 -n 0 -thin 1"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

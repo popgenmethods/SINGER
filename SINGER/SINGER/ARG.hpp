@@ -30,6 +30,7 @@ public:
     map<float, Recombination> recombinations = {};
     int bin_num = 0;
     float sequence_length = 0;
+    float bin_size = 0;
     vector<float> coordinates = {};
     vector<float> rhos = {};
     vector<float> thetas = {};

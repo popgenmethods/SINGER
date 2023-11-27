@@ -28,6 +28,7 @@ ARG::~ARG() {
 }
 
 void ARG::discretize(float s) {
+    bin_size = s;
     auto recomb_it = recombinations.upper_bound(0);
     float curr_pos = 0;
     while (curr_pos < sequence_length) {
@@ -53,8 +54,10 @@ int ARG::get_index(float x) {
 void ARG::compute_rhos_thetas(float r, float m) {
     int n = (int) coordinates.size() - 1;
     for (int i = 0; i < n; i++) {
-        rhos.push_back(r*(coordinates[i+1] - coordinates[i]));
-        thetas.push_back(m*(coordinates[i+1] - coordinates[i]));
+        // rhos.push_back(r*(coordinates[i+1] - coordinates[i]));
+        // thetas.push_back(m*(coordinates[i+1] - coordinates[i]));
+        rhos.push_back(r*bin_size);
+        thetas.push_back(m*bin_size);
     }
 }
 

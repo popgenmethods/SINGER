@@ -53,7 +53,7 @@ public:
 public:
     
     unordered_set<float> mutation_sites = {};
-    unordered_set<float> ambiguous_sites = {};
+    // unordered_set<float> ambiguous_sites = {};
     
     int index = 0;
     
