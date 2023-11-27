@@ -39,7 +39,6 @@
 		6AD5CE172A3BE5D80004CCE7 /* fast_coalescent_calculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CE152A3BE5D80004CCE7 /* fast_coalescent_calculator.cpp */; };
 		6AD5CE1A2A3E1FD50004CCE7 /* sub_BSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CE182A3E1FD50004CCE7 /* sub_BSP.cpp */; };
 		6AD5CE1D2A48FA240004CCE7 /* approx_coalescent_calculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CE1B2A48FA240004CCE7 /* approx_coalescent_calculator.cpp */; };
-		6ADD71362A52473600AF1A62 /* Distribution.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6ADD71342A52473600AF1A62 /* Distribution.cpp */; };
 		6ADD720C2A5C826500AF1A62 /* BSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6ADD720A2A5C826500AF1A62 /* BSP.cpp */; };
 		6ADD720F2A6061CB00AF1A62 /* Normalizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6ADD720D2A6061CB00AF1A62 /* Normalizer.cpp */; };
 /* End PBXBuildFile section */
@@ -121,8 +120,6 @@
 		6AD5CE192A3E1FD50004CCE7 /* sub_BSP.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = sub_BSP.hpp; sourceTree = "<group>"; };
 		6AD5CE1B2A48FA240004CCE7 /* approx_coalescent_calculator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = approx_coalescent_calculator.cpp; sourceTree = "<group>"; };
 		6AD5CE1C2A48FA240004CCE7 /* approx_coalescent_calculator.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = approx_coalescent_calculator.hpp; sourceTree = "<group>"; };
-		6ADD71342A52473600AF1A62 /* Distribution.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Distribution.cpp; sourceTree = "<group>"; };
-		6ADD71352A52473600AF1A62 /* Distribution.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Distribution.hpp; sourceTree = "<group>"; };
 		6ADD720A2A5C826500AF1A62 /* BSP.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BSP.cpp; sourceTree = "<group>"; };
 		6ADD720B2A5C826500AF1A62 /* BSP.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = BSP.hpp; sourceTree = "<group>"; };
 		6ADD720D2A6061CB00AF1A62 /* Normalizer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Normalizer.cpp; sourceTree = "<group>"; };
@@ -175,8 +172,6 @@
 				6ADD720B2A5C826500AF1A62 /* BSP.hpp */,
 				6AD5CDC22A3A7F410004CCE7 /* Coalescent_calculator.cpp */,
 				6AD5CDED2A3A7F410004CCE7 /* Coalescent_calculator.hpp */,
-				6ADD71342A52473600AF1A62 /* Distribution.cpp */,
-				6ADD71352A52473600AF1A62 /* Distribution.hpp */,
 				6AD5CDC52A3A7F410004CCE7 /* Emission.cpp */,
 				6AD5CDEF2A3A7F410004CCE7 /* Emission.hpp */,
 				6AD5CDD82A3A7F410004CCE7 /* fast_BSP_smc.cpp */,
@@ -295,7 +290,6 @@
 				6ADD720C2A5C826500AF1A62 /* BSP.cpp in Sources */,
 				6AD5CDFD2A3A7F410004CCE7 /* Emission.cpp in Sources */,
 				6AC081F32A8C26930021DD8E /* approx_BSP.cpp in Sources */,
-				6ADD71362A52473600AF1A62 /* Distribution.cpp in Sources */,
 				6AD5CE0D2A3A7F410004CCE7 /* Fitch_reconstruction.cpp in Sources */,
 				6AD5CE0F2A3A7F410004CCE7 /* Pruner.cpp in Sources */,
 				6AD5CE0A2A3A7F410004CCE7 /* fast_BSP_smc.cpp in Sources */,

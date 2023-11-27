@@ -150,8 +150,9 @@ void approx_BSP::null_emit(float theta, Node_ptr query_node) {
     for (int i = 0; i < dim; i++) {
         if (curr_probs[i] > 0) {
             curr_probs[i] = max(epsilon, curr_probs[i]*null_emit_probs[i]);
+            ws += curr_probs[i];
         }
-        ws += curr_probs[i];
+        // ws += curr_probs[i];
     }
     assert(ws > 0);
     for (int i = 0; i < dim; i++) {
@@ -166,8 +167,9 @@ void approx_BSP::mut_emit(float theta, float bin_size, set<float> &mut_set, Node
     for (int i = 0; i < dim; i++) {
         if (curr_probs[i] > 0) {
             curr_probs[i] = max(epsilon, curr_probs[i]*mut_emit_probs[i]);
+            ws += curr_probs[i];
         }
-        ws += curr_probs[i];
+        // ws += curr_probs[i];
     }
     assert(ws > 0);
     for (int i = 0; i < dim; i++) {

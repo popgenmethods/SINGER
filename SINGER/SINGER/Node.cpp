@@ -7,7 +7,6 @@
 
 #include "Node.hpp"
 
-/*
 
 Node::Node(float t) {
     time = t;
@@ -90,8 +89,8 @@ void Node::move_iterator(float m) {
     }
     assert(it->first <= m and next(it)->first > m);
 }
-*/
 
+/*
 Node::Node(float t) {
     time = t;
 }
@@ -145,3 +144,4 @@ shared_ptr<Node> new_node(float t) {
     return make_shared<Node>(t);
 }
 
+*/
