@@ -54,13 +54,6 @@ def read_ARG(node_file, branch_file, mutation_file):
     ts = tables.tree_sequence()
     return ts
 
-def read_mts(node_file, branch_file, mutation_file):
-    ts = read_ARG(node_file, branch_file)
-    tables = ts.tables
-    read_mutation(tables, mutation_file)
-    new_ts = tables.tree_sequence()
-    return new_ts
-
 
 def write_trees(log_prefix, output_prefix, freq):
     log_file = f"{log_prefix}.log"
@@ -80,7 +73,7 @@ def write_trees(log_prefix, output_prefix, freq):
         
         if entries[2] == "rethread":
             sample_number = int(entries[1])
-            for i in range(0, sample_number, freq):
+            for i in range(0, sample_number + 1, freq):
                 trees_file = f"{output_prefix}_{i}.trees"
                 if os.path.exists(trees_file):
                     print(f"File {trees_file} already exists. Skipping...")
@@ -89,7 +82,7 @@ def write_trees(log_prefix, output_prefix, freq):
                 node_file = f"{log_prefix}_nodes_{i}.txt"
                 branch_file = f"{log_prefix}_branches_{i}.txt"
                 mutation_file = f"{log_prefix}_muts_{i}.txt"
-                ts = read_mts(node_file, branch_file, mutation_file)
+                ts = read_ARG(node_file, branch_file, mutation_file)
                 ts.dump(trees_file) 
         else:
             print("No samples found.") 
@@ -121,7 +114,7 @@ def write_fast_trees(log_prefix, output_prefix, freq):
                 node_file = f"{log_prefix}_fast_nodes_{i}.txt"
                 branch_file = f"{log_prefix}_fast_branches_{i}.txt"
                 mutation_file = f"{log_prefix}_fast_muts_{i}.txt"
-                ts = read_mts(node_file, branch_file, mutation_file)
+                ts = read_ARG(node_file, branch_file, mutation_file)
                 ts.dump(trees_file)
         else:
             print("No samples found.")
