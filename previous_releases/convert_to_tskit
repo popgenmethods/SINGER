@@ -80,7 +80,7 @@ def write_trees(log_prefix, output_prefix, freq):
         
         if entries[2] == "rethread":
             sample_number = int(entries[1])
-            for i in range(0, sample_number, freq):
+            for i in range(0, sample_number + 1, freq):
                 trees_file = f"{output_prefix}_{i}.trees"
                 if os.path.exists(trees_file):
                     print(f"File {trees_file} already exists. Skipping...")
