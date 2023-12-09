@@ -311,8 +311,8 @@
             filePath = "SINGER/approx_BSP.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "338"
-            endingLineNumber = "338"
+            startingLineNumber = "340"
+            endingLineNumber = "340"
             landmarkName = "approx_BSP::sanity_check(r)"
             landmarkType = "7">
          </BreakpointContent>
@@ -457,8 +457,8 @@
             filePath = "SINGER/approx_BSP.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "251"
-            endingLineNumber = "251"
+            startingLineNumber = "253"
+            endingLineNumber = "253"
             landmarkName = "approx_BSP::compute_null_emit_prob(theta, query_node)"
             landmarkType = "7">
          </BreakpointContent>

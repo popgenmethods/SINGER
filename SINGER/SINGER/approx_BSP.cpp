@@ -12,6 +12,8 @@ approx_BSP::approx_BSP() {}
 approx_BSP::~approx_BSP() {
     vector<vector<float>>().swap(forward_probs);
     map<int, vector<Interval_ptr>>().swap(state_spaces);
+    map<int, vector<float>>().swap(times);
+    map<int, vector<float>>().swap(weights);
 }
 
 void approx_BSP::reserve_memory(int length) {
