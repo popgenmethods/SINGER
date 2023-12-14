@@ -78,6 +78,7 @@ void Sampler::naive_read_vcf(string prefix, float start_pos, float end_pos) {
         iss >> chrom >> pos >> id >> ref >> alt >> qual >> filter >> info >> format;
         
         if (pos < start_pos) {continue;}
+        if (pos > end_pos) {break;}
         if (pos == prev_pos) {continue;} // skip multi-allelic sites
         if (ref.size() > 1 or alt.size() > 1) {
             removed_mutation += 1;
