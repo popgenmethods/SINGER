@@ -71,6 +71,8 @@ This script will:
 
 ### Running SINGER for a series of regions
 
+[this tool is still under development, and will be available soon]
+
 Sometimes it is of interest to only look at certain regions on the genome (e.g. selection signals), and we have provided support for this with the python script `multiple_windows_singer.py`. It will automatically parallelize running SINGER on the regions you specify with a given `.bed` file. 
 
 **Tips:** we recommend having windows not too small nor too big. A window containing 500-5000 SNPs would be ideal.
@@ -90,8 +92,11 @@ This script will:
 We have our internal data structure, but these files are only useful for resume MCMC runs from there. When you finishing running, please use this script to convert it to `tskit` format for your own analysis:
 
 ```
-python convert_to_tskit.py
+convert_to_tskit -input prefix_of_arg_files -output prefix_of_tskit_files \\
+-start start_index -end end_index -step step_size
 ```
+
+This tool will convert ARG sample with index from start_index to end_index, with interval size step_size. 
 
 ## Suggestions from developer
 
