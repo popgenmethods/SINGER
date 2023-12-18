@@ -5,6 +5,8 @@ SINGER stands for **S**ampling and **IN**ference of **GE**nealogies with **R**ec
 
 Here we maintained the version which is under active development, but you can still direclty download the binary files for all past versions. 
 
+[We are temporarily providing beta versions of it, the official versions will be released when the preprint has been accepted for publication. You are welcome to use it, and submit bug reports at GitHub Issues. ]
+
 ## Requirements
 
 If you want to compile the source files, then C++17 and cmake are required. Otherwise you can also used the pre-compiled binary files on various platforms. 
