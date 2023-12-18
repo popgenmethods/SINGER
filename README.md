@@ -41,7 +41,7 @@ This command is to get the ARG samples for a specific region in the vcf file. We
 |**-fast**|optional|you will run fast-SINGER with this flag, otherwise regular full SINGER|
 |**-Ne**|required|the diploid effective population size, which means the haploid effective population size will be **2*Ne**|
 |**-m**|required|per base pair per generation mutation rate|
-|**-m**|optional|the ratio between recombination and mutation rate, default at 1|
+|**-ratio**|optional|the ratio between recombination and mutation rate, default at 1|
 |**-vcf**|required|the prefix of the input .vcf file name|
 |**-output**|required|the prefix of the output .trees file name| 
 |**-start**|required|the start position of the region| 
