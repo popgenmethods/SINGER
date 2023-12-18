@@ -56,10 +56,10 @@ This command is to get the ARG samples for a specific region in the vcf file. We
 
 ### Running SINGER for a long chromosome
 
-Often people would like to run the ARG inference method for the entire chromosome (or even the entire genome), and we have provided a python script `parallelize_singer.py` to facilitate you to this end. It automatically handles parallelization for you and runs SINGER multi-threaded. 
+Often people would like to run the ARG inference method for the entire chromosome (or even the entire genome), and we have provided a python script `parallel_singer` to facilitate you to this end. It automatically handles parallelization for you and runs SINGER multi-threaded. 
 
 ```
-python parallelize_singer.py -Ne 2e4 -m 1.2e-8 
+parallel_singer -Ne 2e4 -m 1.2e-8 
 ```
 This script will:
 
@@ -92,7 +92,7 @@ This script will:
 We have our internal data structure, but these files are only useful for resume MCMC runs from there. When you finishing running, please use this script to convert it to `tskit` format for your own analysis:
 
 ```
-convert_to_tskit -input prefix_of_arg_files -output prefix_of_tskit_files \\
+convert_to_tskit -input prefix_of_arg_files -output prefix_of_tskit_files
 -start start_index -end end_index -step step_size
 ```
 
