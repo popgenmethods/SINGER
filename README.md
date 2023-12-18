@@ -34,7 +34,7 @@ path_to_singer/singer_master -Ne 1e4 -m 1.25e-8
 -n 1000 -thin 10
 ```
 
-We specify the details of the arguments here (or you can simply type ```path_to_singer/singer_master``` to display the same information):
+This command is to get the ARG samples for a specific region in the vcf file. We specify the details of the arguments here (or you can simply type ```path_to_singer/singer_master``` to display similar information):
 
 |flag|required?|details|  
 |-------------------|-----|---|  
@@ -44,9 +44,11 @@ We specify the details of the arguments here (or you can simply type ```path_to_
 |**-m**|optional|the ratio between recombination and mutation rate, default at 1|
 |**-vcf**|required|the prefix of the input .vcf file name|
 |**-output**|required|the prefix of the output .trees file name| 
+|**-start**|required|the start position of the region| 
+|**-end**|required|the end position of the region| 
 |**-n**|optional|MCMC iterations to run, default at 0, only getting initialization|
 |**-thin**|optional|we sample the ARG from MCMC every this number of iterations, default at 1|
-|**-polar**|optional|the probability of incorrectly phased probability, default at 0.5 for unpolarized data, please use 0.99 for polarized data|
+|**-polar**|optional|the probability of correctly polarized probability, default at 0.5 for unpolarized data, please use 0.99 for polarized data|
 
 ## Tools
 
