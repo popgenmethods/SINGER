@@ -11,7 +11,7 @@ If you want to compile the source files, then C++17 and cmake are required. Othe
 
 ## Installations
 
-The easiser way is to directory go to the folder `previous_releases/` and download one of the versions which work for your working platform (Windows/Linux/MacOS_Intel/MacOS_M1). After downloading, you can decompress it using:
+The easiser way is to directory go to the folder `previous_releases/` and download one of the versions which work for your working platform (Linux/MacOS_Intel/MacOS_M1). After downloading, you can decompress it using:
 
 ```
 tar -xvzf file_name
@@ -19,7 +19,7 @@ tar -xvzf file_name
 
 ## Input and output
 
-SINGER takes **.vcf(gz)** file and outputs a **.trees** file in tskit format. The mutations are already mapped to the branches, but non-polymorphic, multi-allelic sites and structral variants are excluded from inference. The branch length should be interpreted with units of generations, for example, for homo sapiens, you would need multiply that by 28 to convert to units of years. There will also be a **.log** file for you to check the argument you ran, and the summary statistic in MCMC iterations. 
+SINGER takes **.vcf** file and outputs a **.trees** file in tskit format. The mutations are already mapped to the branches, but non-polymorphic, multi-allelic sites and structral variants are excluded from inference. The branch length should be interpreted with units of generations, for example, for homo sapiens, you would need multiply that by 28 to convert to units of years. There will also be a **.log** file for you to check the argument you ran, and the summary statistic in MCMC iterations. 
 
 ## Basic usage
 
@@ -31,7 +31,7 @@ To sample ARGs with SINGER, you can run command line like shown below.
 path_to_singer/singer_master -Ne 1e4 -m 1.25e-8
 -vcf prefix_of_vcf_file -output prefix_of_output_file
 -start 0 -end 1e6
--n 1000
+-n 1000 -thin 10
 ```
 
 We specify the details of the arguments here (or you can simply type ```path_to_singer/singer_master``` to display the same information):
@@ -41,12 +41,12 @@ We specify the details of the arguments here (or you can simply type ```path_to_
 |**-fast**|optional|you will run fast-SINGER with this flag, otherwise regular full SINGER|
 |**-Ne**|required|the diploid effective population size, which means the haploid effective population size will be **2*Ne**|
 |**-m**|required|per base pair per generation mutation rate|
-|**-vcf**|required|the prefix of the input .vcf(.gz) file name|
+|**-m**|optional|the ratio between recombination and mutation rate, default at 1|
+|**-vcf**|required|the prefix of the input .vcf file name|
 |**-output**|required|the prefix of the output .trees file name| 
 |**-n**|optional|MCMC iterations to run, default at 0, only getting initialization|
 |**-thin**|optional|we sample the ARG from MCMC every this number of iterations, default at 1|
-|**-bandwith**|optional|the bandwidth of the search in fast-SINGER, default at INT_MAX|
-|**-polar**|optional|the probability of incorrectly phased probability, default at 0.01|
+|**-polar**|optional|the probability of incorrectly phased probability, default at 0.5 for unpolarized data, please use 0.99 for polarized data|
 
 ## Tools
 
