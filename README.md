@@ -52,6 +52,22 @@ This command is to get the ARG samples for a specific region in the vcf file. We
 |**-thin**|optional|we sample the ARG from MCMC every this number of iterations, default at 1|
 |**-polar**|optional|the probability of correctly polarized probability, default at 0.5 for unpolarized data, please use 0.99 for polarized data|
 
+The output files will be:
+
+```
+prefix_of_output_files_nodes_{i}.txt, prefix_of_output_files_branches_{i}.txt, prefix_of_output_files_muts_{i}.txt, prefix_of_output_files_recombs_{i}.txt
+```
+
+with `i` from `0` to `num_samples - 1`. We recommend converting these files to tree sequence format in tskit, with this function:
+
+```
+convert_to_tskit -input prefix_of_arg_files -output prefix_of_tskit_files
+-start start_index -end end_index -step step_size
+```
+
+This tool will convert ARG sample with index from `start_index` to `end_index`, with interval size `step_size`. 
+
+
 ## Tools
 
 ### Running SINGER for a long chromosome
@@ -86,17 +102,6 @@ This script will:
 1. Index the vcf file for these specified windows
 2. Automatically parallelize running SINGER on these windows
 3. Convert the output to `.trees` files with `tskit` format
-
-### Convert to `tskit` format
-
-We have our internal data structure, but these files are only useful for resume MCMC runs from there. When you finishing running, please use this script to convert it to `tskit` format for your own analysis:
-
-```
-convert_to_tskit -input prefix_of_arg_files -output prefix_of_tskit_files
--start start_index -end end_index -step step_size
-```
-
-This tool will convert ARG sample with index from start_index to end_index, with interval size step_size. 
 
 ## Suggestions from developer
 
