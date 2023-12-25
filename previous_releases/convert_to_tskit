@@ -54,84 +54,41 @@ def read_ARG(node_file, branch_file, mutation_file):
     ts = tables.tree_sequence()
     return ts
 
-def read_mts(node_file, branch_file, mutation_file):
-    ts = read_ARG(node_file, branch_file)
-    tables = ts.tables
-    read_mutation(tables, mutation_file)
-    new_ts = tables.tree_sequence()
-    return new_ts
 
+def write_trees(input_prefix, output_prefix, start, end, step):
+    for i in range(start, end, step):
+        trees_file = f"{output_prefix}_{i}.trees"
+        if os.path.exists(trees_file):
+            print(f"File {trees_file} already exists. Skipping...")
+            continue
 
-def write_trees(log_prefix, output_prefix, freq):
-    log_file = f"{log_prefix}.log"
+        node_file = f"{input_prefix}_nodes_{i}.txt"
+        branch_file = f"{input_prefix}_branches_{i}.txt"
+        mutation_file = f"{input_prefix}_muts_{i}.txt"
+        ts = read_ARG(node_file, branch_file, mutation_file)
+        ts.dump(trees_file) 
 
-    if not os.path.exists(log_file):
-        print(f"No log file found: {log_file}")
-        return
+def write_fast_trees(input_prefix, output_prefix, start, end, step):
+    for i in range(start, end, step):
+        trees_file = f"{output_prefix}_{i}.trees"
+        if os.path.exists(trees_file):
+            print(f"File {trees_file} already exists. Skipping...")
+            continue
 
-    with open(log_file, 'r') as file:
-        lines = file.readlines()
-        if not lines:
-            print("The log file is empty.")
-            return
-        
-        last_line = lines[-1].strip()
-        entries = last_line.split()
-        
-        if entries[2] == "rethread":
-            sample_number = int(entries[1])
-            for i in range(0, sample_number + 1, freq):
-                trees_file = f"{output_prefix}_{i}.trees"
-                if os.path.exists(trees_file):
-                    print(f"File {trees_file} already exists. Skipping...")
-                    continue
-
-                node_file = f"{log_prefix}_nodes_{i}.txt"
-                branch_file = f"{log_prefix}_branches_{i}.txt"
-                mutation_file = f"{log_prefix}_muts_{i}.txt"
-                ts = read_mts(node_file, branch_file, mutation_file)
-                ts.dump(trees_file) 
-        else:
-            print("No samples found.") 
-
-def write_fast_trees(log_prefix, output_prefix, freq):
-    log_file = f"{log_prefix}.log"
-
-    if not os.path.exists(log_file):
-        print(f"No log file found: {log_file}")
-        return
-
-    with open(log_file, 'r') as file:
-        lines = file.readlines()
-        if not lines:
-            print("The log file is empty.")
-            return
-
-        last_line = lines[-1].strip()
-        entries = last_line.split()
-
-        if entries[2] == "rethread":
-            sample_number = int(entries[1])
-            for i in range(0, sample_number, freq):
-                trees_file = f"{output_prefix}_{i}.trees"
-                if os.path.exists(trees_file):
-                    print(f"File {trees_file} already exists. Skipping...")
-                    continue
-
-                node_file = f"{log_prefix}_fast_nodes_{i}.txt"
-                branch_file = f"{log_prefix}_fast_branches_{i}.txt"
-                mutation_file = f"{log_prefix}_fast_muts_{i}.txt"
-                ts = read_mts(node_file, branch_file, mutation_file)
-                ts.dump(trees_file)
-        else:
-            print("No samples found.")
+        node_file = f"{input_prefix}_fast_nodes_{i}.txt"
+        branch_file = f"{input_prefix}_fast_branches_{i}.txt"
+        mutation_file = f"{input_prefix}_fast_muts_{i}.txt"
+        ts = read_ARG(node_file, branch_file, mutation_file)
+        ts.dump(trees_file)
 
 def main():
     parser = argparse.ArgumentParser(description='Convert to tskit format')
 
-    parser.add_argument('-log', type=str, required=True, help='Prefix of the log file.')
+    parser.add_argument('-input', type=str, required=True, help='Prefix of ARG files.')
     parser.add_argument('-output', type=str, required=True, help='Prefix of output files.')
-    parser.add_argument('-freq', type=int, default=1, help='Frequency of subsampling. Default: 1.') 
+    parser.add_argument('-start', type=int, required=True, help='Start index of the sample.')
+    parser.add_argument('-end', type=int, required=True, help='End index of the sample.')
+    parser.add_argument('-step', type=int, default=1, help='Step size of subsampling. Default: 1.') 
     parser.add_argument('-fast', action='store_true', help='Use this flag for fast-SINGER samples.')
 
     if len(sys.argv) == 1:
@@ -141,9 +98,9 @@ def main():
     args = parser.parse_args()
     
     if (args.fast):
-        write_fast_trees(args.log, args.output, args.freq)
+        write_fast_trees(args.input, args.output, args.start, args.end, args.step)
     else:
-        write_trees(args.log, args.output, args.freq)
+        write_trees(args.input, args.output, args.start, args.end, args.step)
 
 if __name__ == '__main__':
     main()
