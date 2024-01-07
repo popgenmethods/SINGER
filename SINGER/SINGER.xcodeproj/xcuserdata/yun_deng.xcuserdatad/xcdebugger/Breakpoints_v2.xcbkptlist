@@ -466,48 +466,32 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "F0E6C007-28E7-43CF-94DB-AEE916DAA70E"
+            uuid = "D46103E3-981A-4B14-A962-815BF065C412"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "SINGER/Scaler.cpp"
+            filePath = "SINGER/Sampler.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "88"
-            endingLineNumber = "88"
-            landmarkName = "Scaler::compute_old_grid()"
+            startingLineNumber = "329"
+            endingLineNumber = "329"
+            landmarkName = "Sampler::iterative_start()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "07485505-D4D0-420A-85B9-6D08F687B60A"
+            uuid = "21C4C6AB-8770-4011-BAE7-F5F600CE3E8D"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "SINGER/Scaler.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "80"
-            endingLineNumber = "80"
-            landmarkName = "Scaler::compute_deltas(a)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "EA1366E4-268E-41A1-88A4-8A6086224688"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "SINGER/Scaler.cpp"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "92"
-            endingLineNumber = "92"
-            landmarkName = "Scaler::compute_old_grid()"
+            startingLineNumber = "138"
+            endingLineNumber = "138"
+            landmarkName = "Scaler::map_mutations(a)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

@@ -53,7 +53,7 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-Ne 1e4 -m 2e-8 -r 2e-8 -input  /Users/yun_deng/Desktop/SINGER/arg_files/50_0 -output  /Users/yun_deng/Desktop/SINGER/arg_files/50_0 -polar 0.99 -start 0 -end 1e6 -n 0 -thin 1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-Ne 1e4 -m 1e-8 -r 1e-8 -input /Users/yun_deng/Desktop/POLEGON/arg_files/migration -output /Users/yun_deng/Desktop/POLEGON/arg_files/migration -start 0 -end 2e6 -n 0 -thin 1 -polar 0.99"
@@ -65,7 +65,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-Ne 1.5e4 -m 1.2e-8 -r 1.2e-9 -input /Users/yun_deng/Desktop/SINGER/arg_files/CEU_KGP4_TRIO_UNRELATED_PARENTS_MAC1_10Mbp -output /Users/yun_deng/Desktop/SINGER/arg_files/CEU_KGP4_TRIO_UNRELATED_PARENTS_MAC1_10Mbp -start 24620600 -end 34620600 -n 5 -thin 10"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
    </LaunchAction>

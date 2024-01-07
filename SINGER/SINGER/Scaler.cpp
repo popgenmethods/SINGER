@@ -126,13 +126,24 @@ void Scaler::compute_new_grid(double theta) {
 void Scaler::map_mutations(ARG &a) {
     observed_arg_length.resize(num_windows);
     for (auto &x : a.mutation_branches) {
-        for (auto &y : x.second) {
-            add_mutation(1.0, y.lower_node->time, y.upper_node->time);
+        if (x.first > 0 and x.first < a.sequence_length) {
+            for (auto &y : x.second) {
+                add_mutation(1.0, y.lower_node->time, y.upper_node->time);
+            }
         }
+    }
+    double num_sites = a.mutation_sites.size() - 2;
+    double num_muts = accumulate(observed_arg_length.begin(), observed_arg_length.end(), 0.0);
+    double r = num_sites/num_muts;
+    for (auto &x : observed_arg_length) {
+        x *= r;
     }
 }
 
 void Scaler::add_mutation(double w, double lb, double ub) {
+    if (isinf(ub)) {
+        return;
+    }
     double x, y, l;
     int index;
     auto it = upper_bound(old_grid.begin(), old_grid.end(), lb);
@@ -164,4 +175,8 @@ void Scaler::rescale(ARG &a, double theta) {
     for (int i = 0; i < sorted_nodes.size() - 1; i++) {
         assert(sorted_nodes[i]->time <= sorted_nodes[i+1]->time);
     }
+    for (auto &x : a.recombinations) {
+        x.second.start_time = -1;
+    }
+    a.adjust_recombinations();
 }
