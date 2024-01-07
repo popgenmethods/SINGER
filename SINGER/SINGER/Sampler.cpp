@@ -324,7 +324,8 @@ void Sampler::iterative_start() {
         write_iterative_start();
     }
     cout << "orignal ARG length: " << arg.get_arg_length() << endl;
-    normalize();
+    // normalize();
+    rescale();
     cout << "rescaled ARG length: " << arg.get_arg_length() << endl;
     string node_file = output_prefix + "_start_nodes_" + to_string(sample_index) + ".txt";
     string branch_file= output_prefix + "_start_branches_" + to_string(sample_index) + ".txt";
@@ -358,7 +359,8 @@ void Sampler::fast_iterative_start() {
         write_iterative_start();
     }
     cout << "orignal ARG length: " << arg.get_arg_length() << endl;
-    normalize();
+    // normalize();
+    rescale();
     cout << "rescaled ARG length: " << arg.get_arg_length() << endl;
     string node_file = output_prefix + "_fast_start_nodes_" + to_string(sample_index) + ".txt";
     string branch_file= output_prefix + "_fast_start_branches_" + to_string(sample_index) + ".txt";
@@ -533,7 +535,8 @@ void Sampler::internal_sample(int num_iters, int spacing) {
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
         }
-        normalize();
+        // normalize();
+        rescale();
         random_seed = random_engine();
         write_sample();
         arg.check_incompatibility();
@@ -564,7 +567,8 @@ void Sampler::fast_internal_sample(int num_iters, int spacing) {
             updated_length += arg.coordinates[threader.end_index] - arg.coordinates[threader.start_index];
             arg.clear_remove_info();
         }
-        normalize();
+        // normalize();
+        rescale();
         random_seed = random_engine();
         write_sample();
         arg.check_incompatibility();
@@ -676,10 +680,15 @@ void Sampler::debug_resume_fast_internal_sample(int num_iters, int spacing) {
         fast_internal_sample(num_iters, spacing);
     }
 }
- 
+
 void Sampler::normalize() {
     Normalizer nm = Normalizer();
     nm.normalize(arg, mut_rate);
+}
+
+void Sampler::rescale() {
+    Scaler scaler = Scaler();
+    scaler.rescale(arg, mut_rate);
 }
 
 void Sampler::start_log() {

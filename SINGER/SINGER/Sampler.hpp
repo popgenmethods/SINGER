@@ -16,6 +16,7 @@
 #include "Binary_emission.hpp"
 #include "Emission.hpp"
 #include "Normalizer.hpp"
+#include "Scaler.hpp"
 
 class Sampler {
     
@@ -106,6 +107,8 @@ public:
     void debug_resume_fast_internal_sample(int num_iters, int spacing);
     
     void normalize();
+    
+    void rescale();
     
     void start_log();
     

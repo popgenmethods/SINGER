@@ -41,6 +41,7 @@
 		6AD5CE1D2A48FA240004CCE7 /* approx_coalescent_calculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CE1B2A48FA240004CCE7 /* approx_coalescent_calculator.cpp */; };
 		6ADD720C2A5C826500AF1A62 /* BSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6ADD720A2A5C826500AF1A62 /* BSP.cpp */; };
 		6ADD720F2A6061CB00AF1A62 /* Normalizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6ADD720D2A6061CB00AF1A62 /* Normalizer.cpp */; };
+		6AF79A572B46837E00555D67 /* Scaler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AF79A552B46837E00555D67 /* Scaler.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -124,6 +125,8 @@
 		6ADD720B2A5C826500AF1A62 /* BSP.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = BSP.hpp; sourceTree = "<group>"; };
 		6ADD720D2A6061CB00AF1A62 /* Normalizer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Normalizer.cpp; sourceTree = "<group>"; };
 		6ADD720E2A6061CB00AF1A62 /* Normalizer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Normalizer.hpp; sourceTree = "<group>"; };
+		6AF79A552B46837E00555D67 /* Scaler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Scaler.cpp; sourceTree = "<group>"; };
+		6AF79A562B46837E00555D67 /* Scaler.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Scaler.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -188,6 +191,8 @@
 				6AD5CDCF2A3A7F410004CCE7 /* Node.cpp */,
 				6AD5CDDD2A3A7F410004CCE7 /* Node.hpp */,
 				6ADD720D2A6061CB00AF1A62 /* Normalizer.cpp */,
+				6AF79A552B46837E00555D67 /* Scaler.cpp */,
+				6AF79A562B46837E00555D67 /* Scaler.hpp */,
 				6ADD720E2A6061CB00AF1A62 /* Normalizer.hpp */,
 				6AD5CDC12A3A7F410004CCE7 /* Polar_emission.cpp */,
 				6AD5CDEC2A3A7F410004CCE7 /* Polar_emission.hpp */,
@@ -285,6 +290,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6AD5CE042A3A7F410004CCE7 /* Test.cpp in Sources */,
+				6AF79A572B46837E00555D67 /* Scaler.cpp in Sources */,
 				6AD5CDFA2A3A7F410004CCE7 /* Polar_emission.cpp in Sources */,
 				6AD5CDFE2A3A7F410004CCE7 /* TSP_smc.cpp in Sources */,
 				6ADD720C2A5C826500AF1A62 /* BSP.cpp in Sources */,
