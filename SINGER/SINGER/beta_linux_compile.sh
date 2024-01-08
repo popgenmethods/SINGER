@@ -9,20 +9,26 @@ fi
 # Version number from the first argument
 VERSION=$1
 
+# Directory for the release
+RELEASE_DIR="../../releases"
+VERSION_DIR="$RELEASE_DIR/singer-$VERSION-beta-linux-x86_64"
+
+# Create version directory
+mkdir -p $VERSION_DIR
+
 # Compile the program with optimizations and debugging information
-g++ -std=c++17 -O3 -g -static *.cpp -o ../../releases/singer
+g++ -std=c++17 -O3 -g -static *.cpp -o $VERSION_DIR/singer
 
 # Compile the debug version of the program
-g++ -std=c++17 -g -static *.cpp -o ../../releases/singer_debug
+g++ -std=c++17 -g -static *.cpp -o $VERSION_DIR/singer_debug
 
 # Copy additional files
-cp singer_master ../../releases/singer_master
-cp convert_to_tskit ../../releases/convert_to_tskit
+cp singer_master $VERSION_DIR/singer_master
+cp convert_to_tskit $VERSION_DIR/convert_to_tskit
+
+# Change directory to releases
+cd $RELEASE_DIR
 
 # Create a tarball with the version number in the name
-cd ../../releases
-tar -cvzf singer-$VERSION-beta-linux-x86_64.tar.gz \
-    singer_debug \
-    singer \
-    convert_to_tskit \
-    singer_master
+tar -cvzf "singer-$VERSION-beta-linux-x86_64.tar.gz" "singer-$VERSION-beta-linux-x86_64" 
+#rm -rf "singer-$VERSION-beta-linux-x86_64" 
