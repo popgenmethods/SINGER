@@ -13,7 +13,7 @@ If you want to compile the source files, then C++17 and cmake are required. Othe
 
 ## Installations
 
-The easiser way is to directory go to the folder `previous_releases/` and download one of the versions which work for your working platform (Linux/MacOS_Intel/MacOS_M1). After downloading, you can decompress it using:
+The easiser way is to directory go to the folder `releases/` and download one of the versions which work for your working platform (Linux/MacOS_Intel/MacOS_M1). After downloading, you can decompress it using:
 
 ```
 tar -xvzf file_name
