@@ -103,7 +103,7 @@ def main():
     
     # Add arguments with prefixes
     parser.add_argument("-vcf", required=True, help="VCF file prefix")
-    parser.add_argument("-output", required=True, help="Output files")
+    parser.add_argument("-output", required=True, help="Output files prefix")
     parser.add_argument("-iteration", type=int, required=True, help="MCMC iteration for generating filenames")
         
     args = parser.parse_args()

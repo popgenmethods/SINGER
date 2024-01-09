@@ -25,6 +25,7 @@ g++ -std=c++17 -g -static *.cpp -o $VERSION_DIR/singer_debug
 # Copy additional files
 cp singer_master $VERSION_DIR/singer_master
 cp convert_to_tskit $VERSION_DIR/convert_to_tskit
+cp parallel_singer $VERSION_DIR/parallel_singer
 
 # Change directory to releases
 cd $RELEASE_DIR
