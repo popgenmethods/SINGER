@@ -172,22 +172,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "1B85D1EA-7340-4E56-9C49-46D5CD905F15"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "SINGER/ARG.cpp"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "381"
-            endingLineNumber = "381"
-            landmarkName = "ARG::approx_sample_recombinations()"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "5BE040B7-3446-4B38-B99A-98759FE432F6"
             shouldBeEnabled = "No"
             ignoreCount = "0"
@@ -467,7 +451,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "D46103E3-981A-4B14-A962-815BF065C412"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "SINGER/Sampler.cpp"
@@ -476,22 +460,6 @@
             startingLineNumber = "329"
             endingLineNumber = "329"
             landmarkName = "Sampler::iterative_start()"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "21C4C6AB-8770-4011-BAE7-F5F600CE3E8D"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "SINGER/Scaler.cpp"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "138"
-            endingLineNumber = "138"
-            landmarkName = "Scaler::map_mutations(a)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

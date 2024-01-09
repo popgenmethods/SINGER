@@ -105,6 +105,7 @@ void Scaler::compute_old_grid() {
         expected_arg_length[i-1] = unit_arg_length;
         old_grid.push_back(sorted_nodes[new_index]->time - residue/rate);
     }
+    old_grid.back() = nextafter(sorted_nodes.back()->time, INT_MAX);
     assert(old_grid.size() == num_windows + 1);
 }
 
@@ -164,13 +165,17 @@ void Scaler::rescale(ARG &a, double theta) {
     map_mutations(a);
     compute_new_grid(theta);
     int k = 0;
-    double t;
+    double old_t = 0;
+    double new_t = 0;
     for (int i = 0; i < sorted_nodes.size(); i++) {
         while (sorted_nodes[i]->time > old_grid[k+1]) {
             k++;
+            assert(k <= num_windows);
         }
-        t = scaling_factors[k]*(sorted_nodes[i]->time - old_grid[k]) + new_grid[k];
-        sorted_nodes[i]->time = t;
+        new_t = scaling_factors[k]*(sorted_nodes[i]->time - old_grid[k]) + new_grid[k];
+        assert(new_t >= old_t);
+        sorted_nodes[i]->time = new_t;
+        old_t = new_t;
     }
     for (int i = 0; i < sorted_nodes.size() - 1; i++) {
         assert(sorted_nodes[i]->time <= sorted_nodes[i+1]->time);
