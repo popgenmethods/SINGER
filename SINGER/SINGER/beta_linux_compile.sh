@@ -28,6 +28,7 @@ cp convert_to_tskit $VERSION_DIR/convert_to_tskit
 cp parallel_singer $VERSION_DIR/parallel_singer
 cp index_vcf.py $VERSION_DIR/index_vcf.py
 cp convert_long_ARG.py $VERSION_DIR/convert_long_ARG.py
+cp ../../LICENSE $VERSION_DIR/LICENSE
 
 # Change directory to releases
 cd $RELEASE_DIR
