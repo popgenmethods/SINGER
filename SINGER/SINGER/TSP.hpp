@@ -17,12 +17,12 @@ class TSP {
     
 public:
     
-    float cut_time = 0;
-    float lower_bound = 0;
-    float gap = 0;
+    double cut_time = 0;
+    double lower_bound = 0;
+    double gap = 0;
     int min_num = 1;
-    float epsilon = 1e-7;
-    set<float> check_points = {};
+    double epsilon = 1e-7;
+    set<double> check_points = {};
     shared_ptr<Emission> eh;
     static int counter;
     
@@ -30,15 +30,15 @@ public:
     
     ~TSP();
     
-    void set_gap(float q);
+    void set_gap(double q);
     
     void set_emission(shared_ptr<Emission> e);
     
-    void set_check_points(set<float> &p);
+    void set_check_points(set<double> &p);
     
     void reserve_memory(int length);
     
-    void start(Branch &branch, float t);
+    void start(Branch &branch, double t);
     
     void set_interval_constraint(Recombination &r);
     
@@ -50,13 +50,13 @@ public:
     
     void recombine(Branch &prev_branch, Branch &next_branch);
     
-    void forward(float rho);
+    void forward(double rho);
     
-    void null_emit(float theta, Node_ptr query_node);
+    void null_emit(double theta, Node_ptr query_node);
     
-    void mut_emit(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node);
+    void mut_emit(double theta, double bin_size, set<double> &mut_set, Node_ptr query_node);
     
-    map<float, Node_ptr > sample_joining_nodes(int start_index, vector<float> &coordinates);
+    map<double, Node_ptr > sample_joining_nodes(int start_index, vector<double> &coordinates);
     
 // private:
 
@@ -66,60 +66,60 @@ public:
     map<int, vector<Interval *>>  state_spaces = {{INT_MAX, {}}};
     map<Interval *, Interval *> source_interval = {};
     
-    vector<float> rhos = {}; // length: number of blocks - 1
-    vector<float> thetas = {}; // length: number of blocks
+    vector<double> rhos = {}; // length: number of blocks - 1
+    vector<double> thetas = {}; // length: number of blocks
     
-    vector<float> lower_sums = {};
-    vector<float> upper_sums = {};
-    vector<float> diagonals = {};
-    vector<float> factors = {};
-    vector<float> lower_diagonals = {};
-    vector<float> upper_diagonals = {};
+    vector<double> lower_sums = {};
+    vector<double> upper_sums = {};
+    vector<double> diagonals = {};
+    vector<double> factors = {};
+    vector<double> lower_diagonals = {};
+    vector<double> upper_diagonals = {};
     
-    float prev_rho = -1;
-    float prev_theta = -1;
+    double prev_rho = -1;
+    double prev_theta = -1;
     Node_ptr prev_node = nullptr;
     
     int dim = 0;
-    vector<float> temp = {};
-    vector<float> null_emit_probs = {};
-    vector<float> mut_emit_probs = {};
+    vector<double> temp = {};
+    vector<double> null_emit_probs = {};
+    vector<double> mut_emit_probs = {};
     int sample_index = -1;
-    vector<float> trace_back_probs = {};
-    vector<vector<float>> forward_probs = {};
-    vector<float> emissions = vector<float>(4);
+    vector<double> trace_back_probs = {};
+    vector<vector<double>> forward_probs = {};
+    vector<double> emissions = vector<double>(4);
     
-    float recomb_cdf(float s, float t);
+    double recomb_cdf(double s, double t);
     
-    float recomb_prob(float s, float t1, float t2);
+    double recomb_prob(double s, double t1, double t2);
     
-    float non_recomb_prob(float rho, float s);
+    double non_recomb_prob(double rho, double s);
     
-    float standard_recomb_cdf(float rho, float s, float t);
+    double standard_recomb_cdf(double rho, double s, double t);
     
-    float psmc_cdf(float rho, float s, float t);
+    double psmc_cdf(double rho, double s, double t);
     
-    float psmc_prob(float rho, float s, float t1, float t2);
+    double psmc_prob(double rho, double s, double t1, double t2);
     
-    float get_exp_quantile(float p);
+    double get_exp_quantile(double p);
     
-    vector<float> generate_grid(float lb, float ub);
+    vector<double> generate_grid(double lb, double ub);
     
-    float random();
+    double random();
     
-    float get_prop(float lb1, float ub1, float lb2, float ub2);
+    double get_prop(double lb1, double ub1, double lb2, double ub2);
     
     void set_dimensions();
     
-    void compute_null_emit_probs(float theta, Node_ptr query_node);
+    void compute_null_emit_probs(double theta, Node_ptr query_node);
     
-    void compute_mut_emit_probs(float theta, float bin_size, set<float> &mut_set, Node_ptr query_node);
+    void compute_mut_emit_probs(double theta, double bin_size, set<double> &mut_set, Node_ptr query_node);
     
-    void compute_diagonals(float rho);
+    void compute_diagonals(double rho);
     
-    void compute_lower_diagonals(float rho);
+    void compute_lower_diagonals(double rho);
     
-    void compute_upper_diagonals(float rho);
+    void compute_upper_diagonals(double rho);
     
     void compute_lower_sums();
     
@@ -127,15 +127,15 @@ public:
     
     void compute_factors();
     
-    void compute_emissions(set<float> &mut_set, Branch branch, Node_ptr node);
+    void compute_emissions(set<double> &mut_set, Branch branch, Node_ptr node);
     
-    void compute_trace_back_probs(float rho, Interval *interval, vector<Interval *> &intervals);
+    void compute_trace_back_probs(double rho, Interval *interval, vector<Interval *> &intervals);
     
     void sanity_check(Recombination &r);
     
     void transfer_intervals(Recombination &r, Branch &prev_branch, Branch &next_branch);
     
-    void generate_intervals(Branch &next_branch, float lb, float ub);
+    void generate_intervals(Branch &next_branch, double lb, double ub);
     
     vector<Interval *> get_state_space(int x);
     
@@ -153,9 +153,9 @@ public:
     
     int trace_back_helper(Interval *interval, int x);
     
-    float sample_time(float lb, float ub);
+    double sample_time(double lb, double ub);
     
-    float exp_median(float lb, float ub);
+    double exp_median(double lb, double ub);
     
     Node_ptr sample_joining_node(Interval *interval);
 };

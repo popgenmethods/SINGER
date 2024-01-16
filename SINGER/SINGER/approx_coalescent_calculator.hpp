@@ -19,12 +19,12 @@ class approx_coalescent_calculator {
     
 public:
     
-    float cut_time;
-    float rho = 0;
-    float first_moment = 0;
+    double cut_time;
+    double rho = 0;
+    double first_moment = 0;
     int n0 = 0;
     
-    approx_coalescent_calculator(float t);
+    approx_coalescent_calculator(double t);
     
     ~approx_coalescent_calculator();
     
@@ -34,15 +34,15 @@ public:
     
     void update(Recombination &r);
     
-    pair<float, float> compute_time_weights(float x, float y);
+    pair<double, double> compute_time_weights(double x, double y);
     
     void compute_first_moment();
     
-    float prob(float x, float y);
+    double prob(double x, double y);
     
-    float prob_integral(float x);
+    double prob_integral(double x);
     
-    float find_median(float x, float y);
+    double find_median(double x, double y);
     
 };
 

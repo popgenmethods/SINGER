@@ -7,7 +7,7 @@
 
 #include "Node.hpp"
 
-Node::Node(float t) {
+Node::Node(double t) {
     time = t;
 }
 
@@ -15,11 +15,11 @@ void Node::set_index(int index) {
     this->index = index;
 }
 
-void Node::add_mutation(float pos) {
+void Node::add_mutation(double pos) {
     mutation_sites[pos] = 1;
 }
  
-float Node::get_state(float pos) {
+double Node::get_state(double pos) {
     move_iterator(pos);
     if (it->first == pos) {
         return it->second;
@@ -29,7 +29,7 @@ float Node::get_state(float pos) {
     return 0;
 }
 
-void Node::write_state(float pos, float s) {
+void Node::write_state(double pos, double s) {
     if (s == 0) {
         mutation_sites.erase(pos);
         if (it->first == pos) {
@@ -48,22 +48,22 @@ void Node::read_mutation(string filename) {
         cerr << "input file not found" << endl;
         exit(1);
     }
-    float x;
+    double x;
     while (fin >> x) {
         add_mutation(x);
     }
 }
 
-shared_ptr<Node> new_node(float t) {
+shared_ptr<Node> new_node(double t) {
     return make_shared<Node>(t);
 }
 
-void Node::move_iterator(float m) {
+void Node::move_iterator(double m) {
     if (it->first == m) {
         return;
     }
-    float next_pos = next(it)->first;
-    float prev_pos = prev(it)->first;
+    double next_pos = next(it)->first;
+    double prev_pos = prev(it)->first;
     if (it->first < m) {
         if (next_pos == m) {
             ++it;
@@ -90,7 +90,7 @@ void Node::move_iterator(float m) {
 }
 
 /*
-Node::Node(float t) {
+Node::Node(double t) {
     time = t;
 }
 
@@ -98,11 +98,11 @@ void Node::set_index(int index) {
     this->index = index;
 }
 
-void Node::add_mutation(float pos) {
+void Node::add_mutation(double pos) {
     mutation_sites.insert(pos);
 }
 
-float Node::get_state(float pos) {
+double Node::get_state(double pos) {
     if (mutation_sites.count(pos) > 0) {
         return 1;
     } else {
@@ -110,7 +110,7 @@ float Node::get_state(float pos) {
     }
 }
 
-void Node::write_state(float pos, float s) {
+void Node::write_state(double pos, double s) {
     if (s == 0) {
         mutation_sites.erase(pos);
         // ambiguous_sites.erase(pos);
@@ -128,13 +128,13 @@ void Node::read_mutation(string filename) {
         cerr << "input file not found" << endl;
         exit(1);
     }
-    float x;
+    double x;
     while (fin >> x) {
         add_mutation(x);
     }
 }
 
-shared_ptr<Node> new_node(float t) {
+shared_ptr<Node> new_node(double t) {
     return make_shared<Node>(t);
 }
 */

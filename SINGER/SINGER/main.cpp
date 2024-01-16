@@ -12,15 +12,15 @@ int main(int argc, const char * argv[]) {
     bool fast = false;
     bool resume = false;
     bool debug = false;
-    float r = -1, m = -1, Ne = -1;
+    double r = -1, m = -1, Ne = -1;
     int num_iters = 0;
     int spacing = 1;
-    float start_pos = -1, end_pos = -1;
+    double start_pos = -1, end_pos = -1;
     string input_filename = "", output_prefix = "";
-    float penalty = 0.01;
-    float polar = 0.5;
-    float epsilon_hmm = 0.1;
-    float epsilon_psmc = 0.05;
+    double penalty = 0.01;
+    double polar = 0.5;
+    double epsilon_hmm = 0.1;
+    double epsilon_psmc = 0.05;
     int seed = 42;
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];

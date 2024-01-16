@@ -18,12 +18,12 @@ class fast_coalescent_calculator {
     
 public:
     
-    float cut_time;
-    float first_moment = 0;
-    float rho = 0;
-    multiset<float> coalescence_times = {};
+    double cut_time;
+    double first_moment = 0;
+    double rho = 0;
+    multiset<double> coalescence_times = {};
     
-    fast_coalescent_calculator(float t);
+    fast_coalescent_calculator(double t);
     
     ~fast_coalescent_calculator();
     
@@ -33,13 +33,13 @@ public:
     
     void compute_first_moment();
     
-    pair<float, float> compute_time_weights(float x, float y);
+    pair<double, double> compute_time_weights(double x, double y);
     
-    float prob(float x, float y);
+    double prob(double x, double y);
     
-    float get_num_lineages(float x);
+    double get_num_lineages(double x);
     
-    float get_integral(float x);
+    double get_integral(double x);
 
 };
 

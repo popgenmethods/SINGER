@@ -18,7 +18,7 @@ public:
     
     Fitch_reconstruction(Tree tree);
     
-    void reconstruct(float pos);
+    void reconstruct(double pos);
     
     void update(Recombination& r);
     
@@ -28,9 +28,9 @@ private:
     set<Node_ptr> node_set = {};
     map<Node_ptr, pair<Node_ptr, Node_ptr>> children_nodes = {};
     map<Node_ptr, Node_ptr> parent_node = {};
-    map<Node_ptr, float> pruning_node_states = {};
-    map<Node_ptr, float> peeling_node_states = {};
-    float recon_pos = 0.0f;
+    map<Node_ptr, double> pruning_node_states = {};
+    map<Node_ptr, double> peeling_node_states = {};
+    double recon_pos = 0.0f;
     
     void fill_tree_info(Tree tree);
     

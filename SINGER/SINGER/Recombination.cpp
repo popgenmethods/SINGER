@@ -17,7 +17,7 @@ Recombination::Recombination(set<Branch> db, set<Branch> ib) {
     find_nodes();
 }
 
-void Recombination::set_pos(float x) {
+void Recombination::set_pos(double x) {
     pos = x;
 }
 
@@ -35,7 +35,7 @@ bool Recombination::create(const Branch &b) {
     return false;
 }
 
-Branch Recombination::trace_forward(float t, Branch curr_branch) {
+Branch Recombination::trace_forward(double t, Branch curr_branch) {
     if (pos == 0 or pos == INT_MAX) {
         return Branch();
     }
@@ -59,7 +59,7 @@ Branch Recombination::trace_forward(float t, Branch curr_branch) {
     }
 }
 
-Branch Recombination::trace_backward(float t, Branch curr_branch) {
+Branch Recombination::trace_backward(double t, Branch curr_branch) {
     if (deleted_branches.size() == 0) {
         return Branch();
     }
@@ -187,7 +187,7 @@ void Recombination::add(Branch prev_added_branch, Branch next_added_branch, Bran
     // when joining the source branch, depending on whether it joins above the start time or below, determine the new source branch
     /*
     if (prev_joining_branch == source_branch) {
-        float t = prev_added_branch.upper_node->time;
+        double t = prev_added_branch.upper_node->time;
         if (t >= start_time) {
             source_branch = Branch(source_branch.lower_node, prev_added_branch.upper_node);
         } else {

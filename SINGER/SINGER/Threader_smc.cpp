@@ -7,7 +7,7 @@
 
 #include "Threader_smc.hpp"
 
-Threader_smc::Threader_smc(float c, float q) {
+Threader_smc::Threader_smc(double c, double q) {
     cutoff = c;
     gap = q;
 }
@@ -65,7 +65,7 @@ void Threader_smc::fast_thread(ARG &a, Node_ptr n) {
     cout << a.recombinations.size() << endl;
 }
 
-void Threader_smc::internal_rethread(ARG &a, tuple<float, Branch, float> cut_point) {
+void Threader_smc::internal_rethread(ARG &a, tuple<double, Branch, double> cut_point) {
     cut_time = get<2>(cut_point);
     // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_branches.txt");
     a.remove(cut_point);
@@ -77,8 +77,8 @@ void Threader_smc::internal_rethread(ARG &a, tuple<float, Branch, float> cut_poi
     sample_joining_branches(a);
     run_TSP(a);
     sample_joining_points(a);
-    float ar = acceptance_ratio(a);
-    float q = random();
+    double ar = acceptance_ratio(a);
+    double q = random();
     if (q < ar) {
         a.add(new_joining_branches, added_branches);
     } else {
@@ -89,7 +89,7 @@ void Threader_smc::internal_rethread(ARG &a, tuple<float, Branch, float> cut_poi
 }
 
 
-void Threader_smc::terminal_rethread(ARG &a, tuple<float, Branch, float> cut_point) {
+void Threader_smc::terminal_rethread(ARG &a, tuple<double, Branch, double> cut_point) {
     cut_time = get<2>(cut_point);
     a.remove(cut_point);
     get_boundary(a);
@@ -105,7 +105,7 @@ void Threader_smc::terminal_rethread(ARG &a, tuple<float, Branch, float> cut_poi
     a.clear_remove_info();
 }
 
-void Threader_smc::fast_internal_rethread(ARG &a, tuple<float, Branch, float> cut_point) {
+void Threader_smc::fast_internal_rethread(ARG &a, tuple<double, Branch, double> cut_point) {
     cut_time = get<2>(cut_point);
     // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_recombs.txt");
     a.remove(cut_point);
@@ -118,8 +118,8 @@ void Threader_smc::fast_internal_rethread(ARG &a, tuple<float, Branch, float> cu
     sample_fast_joining_branches(a);
     run_TSP(a);
     sample_joining_points(a);
-    float ar = acceptance_ratio(a);
-    float q = random();
+    double ar = acceptance_ratio(a);
+    double q = random();
     if (q < ar) {
         a.add(new_joining_branches, added_branches);
     } else {
@@ -130,7 +130,7 @@ void Threader_smc::fast_internal_rethread(ARG &a, tuple<float, Branch, float> cu
     // a.write("/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_nodes.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_branches.txt", "/Users/yun_deng/Desktop/SINGER/arg_files/full_ts_recombs.txt");
 }
 
-void Threader_smc::fast_terminal_rethread(ARG &a, tuple<float, Branch, float> cut_point) {
+void Threader_smc::fast_terminal_rethread(ARG &a, tuple<double, Branch, double> cut_point) {
     cut_time = get<2>(cut_point);
     a.remove(cut_point);
     get_boundary(a);
@@ -154,7 +154,7 @@ void Threader_smc::get_boundary(ARG &a) {
 }
 
 void Threader_smc::set_check_points(ARG &a) {
-    set<float> check_points = a.get_check_points();
+    set<double> check_points = a.get_check_points();
     pruner.set_check_points(check_points);
     bsp.set_check_points(check_points);
     fbsp.set_check_points(check_points);
@@ -173,8 +173,8 @@ void Threader_smc::run_BSP(ARG &a) {
     auto recomb_it = a.recombinations.upper_bound(start);
     auto mut_it = a.mutation_sites.lower_bound(start);
     auto query_it = a.removed_branches.begin();
-    vector<float> mutations;
-    set<float> mut_set = {};
+    vector<double> mutations;
+    set<double> mut_set = {};
     set<Branch> deletions = {};
     set<Branch> insertions = {};
     Node_ptr query_node = nullptr;
@@ -219,8 +219,8 @@ void Threader_smc::run_fast_BSP(ARG &a) {
     auto query_it = a.removed_branches.begin();
     auto delete_it = pruner.deletions.upper_bound(start);
     auto insert_it = pruner.insertions.upper_bound(start);
-    vector<float> mutations;
-    set<float> mut_set = {};
+    vector<double> mutations;
+    set<double> mut_set = {};
     Node_ptr query_node = nullptr;
     for (int i = start_index; i < end_index; i++) {
         if (a.coordinates[i] == query_it->first) {
@@ -269,7 +269,7 @@ void Threader_smc::run_TSP(ARG &a) {
     Branch prev_branch = start_branch;
     Branch next_branch = start_branch;
     Node_ptr query_node = nullptr;
-    set<float> mut_set = {};
+    set<double> mut_set = {};
     for (int i = start_index; i < end_index; i++) {
         if (a.coordinates[i] == query_it->first) {
             query_node = query_it->second.lower_node;
@@ -288,7 +288,7 @@ void Threader_smc::run_TSP(ARG &a) {
             tsp.recombine(prev_branch, next_branch);
             prev_branch = next_branch;
         } else if (a.coordinates[i] != start) {
-            float rho = a.rhos[i];
+            double rho = a.rhos[i];
             tsp.forward(rho);
         }
         mut_set.clear();
@@ -317,12 +317,12 @@ void Threader_smc::sample_fast_joining_branches(ARG &a) {
 }
 
 void Threader_smc::sample_joining_points(ARG &a) {
-    map<float, Node_ptr> added_nodes = tsp.sample_joining_nodes(start_index, a.coordinates);
+    map<double, Node_ptr> added_nodes = tsp.sample_joining_nodes(start_index, a.coordinates);
     auto add_it = added_nodes.begin();
     auto end_it = added_nodes.end();
     Node_ptr query_node = nullptr;
     Node_ptr added_node = nullptr;
-    float x;
+    double x;
     while (add_it != end_it) {
         x = add_it->first;
         added_node = add_it->second;
@@ -332,10 +332,10 @@ void Threader_smc::sample_joining_points(ARG &a) {
     }
 }
 
-float Threader_smc::acceptance_ratio(ARG &a) {
-    float cut_height = a.cut_tree.parents.rbegin()->first->time;
-    float old_height = cut_height;
-    float new_height = cut_height;
+double Threader_smc::acceptance_ratio(ARG &a) {
+    double cut_height = a.cut_tree.parents.rbegin()->first->time;
+    double old_height = cut_height;
+    double new_height = cut_height;
     auto old_join_it = a.joining_branches.upper_bound(a.cut_pos);
     old_join_it--;
     auto new_join_it = new_joining_branches.upper_bound(a.cut_pos);
@@ -353,15 +353,15 @@ float Threader_smc::acceptance_ratio(ARG &a) {
     return old_height/new_height;
 }
 
-float Threader_smc::random() {
+double Threader_smc::random() {
     return uniform_random();
 }
 
-vector<float> Threader_smc::expected_diff(float m) {
-    vector<float> diff(3);
+vector<double> Threader_smc::expected_diff(double m) {
+    vector<double> diff(3);
     auto join_it = new_joining_branches.begin();
     auto add_it = added_branches.begin();
-    float span;
+    double span;
     while (add_it != prev(added_branches.end())) {
         span = next(add_it)->first - add_it->first;
         diff[0] += m*span*(add_it->second.upper_node->time - join_it->second.lower_node->time);
@@ -377,17 +377,17 @@ vector<float> Threader_smc::expected_diff(float m) {
     return diff;
 }
 
-vector<float> Threader_smc::observed_diff(ARG &a) {
-    vector<float> diff(3);
+vector<double> Threader_smc::observed_diff(ARG &a) {
+    vector<double> diff(3);
     auto join_it = new_joining_branches.begin();
     auto add_it = added_branches.begin();
     auto mut_it = a.mutation_sites.begin();
-    float sl, su, sm, s0;
+    double sl, su, sm, s0;
     while (add_it != prev(added_branches.end())) {
         Branch &joining_branch = join_it->second;
         Branch &added_branch = add_it->second;
         while (*mut_it < next(add_it)->first) {
-            float m = *mut_it;
+            double m = *mut_it;
             sl = joining_branch.lower_node->get_state(m);
             su = joining_branch.upper_node->get_state(m);
             sm = added_branch.upper_node->get_state(m);

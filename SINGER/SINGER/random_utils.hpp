@@ -19,7 +19,7 @@
 extern std::mt19937 random_engine;
 extern std::uniform_real_distribution<> uniform_distribution;
 
-float uniform_random();
+double uniform_random();
 
 void set_seed(unsigned seed);
 

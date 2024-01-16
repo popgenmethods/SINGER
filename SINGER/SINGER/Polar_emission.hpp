@@ -18,31 +18,31 @@ class Polar_emission : public Emission {
     
 public:
     
-    float penalty = 0.01;
-    float ancestral_prob = 0.5;
-    float root_reward = 1;
+    double penalty = 0.01;
+    double ancestral_prob = 0.5;
+    double root_reward = 1;
     
-    vector<float> diff = vector<float>(4);
+    vector<double> diff = vector<double>(4);
     
     Polar_emission();
     
     ~Polar_emission();
     
-    float null_emit(Branch &branch, float time, float theta, Node_ptr node) override;
+    double null_emit(Branch &branch, double time, double theta, Node_ptr node) override;
     
-    float mut_emit(Branch &branch, float time, float theta, float bin_size, set<float> &mut_set, Node_ptr node) override;
+    double mut_emit(Branch &branch, double time, double theta, double bin_size, set<double> &mut_set, Node_ptr node) override;
     
-    float emit(Branch &branch, float time, float theta, float bin_size, vector<float> &emissions, Node_ptr node) override;
+    double emit(Branch &branch, double time, double theta, double bin_size, vector<double> &emissions, Node_ptr node) override;
     
-    float mut_prob(float theta, float bin_size, float ll, float lu, float l0, int sl, int su, int s0);
+    double mut_prob(double theta, double bin_size, double ll, double lu, double l0, int sl, int su, int s0);
     
-    float null_prob(float theta, float ll, float lu, float l0);
+    double null_prob(double theta, double ll, double lu, double l0);
     
-    float mut_prob(float theta, float bin_size, int s);
+    double mut_prob(double theta, double bin_size, int s);
     
-    float null_prob(float theta);
+    double null_prob(double theta);
     
-    void get_diff(float m, Branch branch, Node_ptr node);
+    void get_diff(double m, Branch branch, Node_ptr node);
 };
 
 

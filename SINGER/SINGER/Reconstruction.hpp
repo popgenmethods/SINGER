@@ -15,7 +15,7 @@ class Reconstruction {
     
     virtual void update(Recombination &r) = 0;
     
-    virtual void reconstruct(float pos) = 0;
+    virtual void reconstruct(double pos) = 0;
     
 };
 

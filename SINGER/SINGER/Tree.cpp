@@ -10,8 +10,8 @@
 Tree::Tree() {
 }
 
-float Tree::length() {
-    float l = 0;
+double Tree::length() {
+    double l = 0;
     for (auto &x : parents) {
         if (x.second->index != -1) {
             l += x.second->time - x.first->time;
@@ -37,7 +37,7 @@ void Tree::insert_branch(const Branch &b) {
     children[b.upper_node].insert(b.lower_node);
 }
 
-void Tree::internal_insert_branch(const Branch &b, float cut_time) {
+void Tree::internal_insert_branch(const Branch &b, double cut_time) {
     if (b.upper_node->time <= cut_time) {
         return;
     }
@@ -45,7 +45,7 @@ void Tree::internal_insert_branch(const Branch &b, float cut_time) {
     children[b.upper_node].insert(b.lower_node);
 }
 
-void Tree::internal_delete_branch(const Branch &b, float cut_time) {
+void Tree::internal_delete_branch(const Branch &b, double cut_time) {
     if (b.upper_node->time <= cut_time) {
         return;
     }
@@ -153,9 +153,9 @@ Branch Tree::find_joining_branch(Branch removed_branch) {
     return Branch(c, p);
 }
 
-pair<Branch, float> Tree::sample_cut_point() {
-    float root_time = parents.rbegin()->first->time;
-    float cut_time = random()*root_time;
+pair<Branch, double> Tree::sample_cut_point() {
+    double root_time = parents.rbegin()->first->time;
+    double cut_time = random()*root_time;
     vector<Branch> candidates = {};
     for (auto &x : parents) {
         if (x.second->time > cut_time and x.first->time <= cut_time) {
@@ -167,7 +167,7 @@ pair<Branch, float> Tree::sample_cut_point() {
     return {candidates[index], cut_time};
 }
 
-void Tree::internal_cut(float cut_time) {
+void Tree::internal_cut(double cut_time) {
     for (auto it = parents.begin(); it != parents.end();) {
         if (it->second->time <= cut_time) {
             it = parents.erase(it);
@@ -177,7 +177,7 @@ void Tree::internal_cut(float cut_time) {
     }
 }
 
-void Tree::internal_forward_update(Recombination &r, float cut_time) {
+void Tree::internal_forward_update(Recombination &r, double cut_time) {
     for (const Branch &b : r.deleted_branches) {
         internal_delete_branch(b, cut_time);
     }
@@ -186,7 +186,7 @@ void Tree::internal_forward_update(Recombination &r, float cut_time) {
     }
 }
 
-void Tree::internal_backward_update(Recombination &r, float cut_time) {
+void Tree::internal_backward_update(Recombination &r, double cut_time) {
     for (const Branch &b : r.inserted_branches) {
         internal_delete_branch(b, cut_time);
     }
@@ -195,31 +195,31 @@ void Tree::internal_backward_update(Recombination &r, float cut_time) {
     }
 }
 
-float Tree::prior_likelihood() {
-    float log_likelihood = 0;
-    set<float> coalescence_times = {};
+double Tree::prior_likelihood() {
+    double log_likelihood = 0;
+    set<double> coalescence_times = {};
     int num_leaves = (int) (parents.size() + 1)/2;
     for (auto &x : parents) {
         coalescence_times.insert(x.first->time);
         coalescence_times.insert(x.second->time);
     }
-    vector<float> sorted_coalescence_times = vector(coalescence_times.begin(), coalescence_times.end());
+    vector<double> sorted_coalescence_times = vector(coalescence_times.begin(), coalescence_times.end());
     for (int i = 0; i < num_leaves - 1; i++) {
-        float lambda = (num_leaves - i)*(num_leaves - i - 1);
-        float t = sorted_coalescence_times[i+1] - sorted_coalescence_times[i];
+        double lambda = (num_leaves - i)*(num_leaves - i - 1);
+        double t = sorted_coalescence_times[i+1] - sorted_coalescence_times[i];
         log_likelihood += log_exp(lambda, t);
     }
     return log_likelihood;
 }
 
-float Tree::data_likelihood(float theta, float pos) {
-    float log_likelihood = 0;
-    float branch_likelihood = 0;
+double Tree::data_likelihood(double theta, double pos) {
+    double log_likelihood = 0;
+    double branch_likelihood = 0;
     for (auto &x : parents) {
         Branch b = Branch(x.first, x.second);
-        if (b.length() != numeric_limits<float>::infinity()) {
-            float sl = b.lower_node->get_state(pos);
-            float su = b.upper_node->get_state(pos);
+        if (b.length() != numeric_limits<double>::infinity()) {
+            double sl = b.lower_node->get_state(pos);
+            double su = b.upper_node->get_state(pos);
             if (sl != su) {
                 branch_likelihood = log(theta) + log(b.length()) - theta*b.length();
             } else {
@@ -231,33 +231,33 @@ float Tree::data_likelihood(float theta, float pos) {
     return log_likelihood;
 }
 
-float Tree::null_likelihood(float theta) {
+double Tree::null_likelihood(double theta) {
     return -theta*length();
 }
 
-float Tree::data_likelihood(float theta, float bin_size, set<float> mutations) {
-    float log_likelihood = 0;
-    for (float x : mutations) {
+double Tree::data_likelihood(double theta, double bin_size, set<double> mutations) {
+    double log_likelihood = 0;
+    for (double x : mutations) {
         log_likelihood += data_likelihood(theta/bin_size, x);
     }
-    float prop = 1 - mutations.size()/bin_size;
+    double prop = 1 - mutations.size()/bin_size;
     log_likelihood += null_likelihood(-theta*prop);
     return log_likelihood;
 }
 
-float Tree::transition_likelihood(Recombination &r) {
-    float log_likelihood = 0;
+double Tree::transition_likelihood(Recombination &r) {
+    double log_likelihood = 0;
     log_likelihood -= log(length());
-    set<float> coalescence_times = {};
+    set<double> coalescence_times = {};
     for (auto &x : parents) {
         if (x.second->time > r.start_time) {
             coalescence_times.insert(x.second->time);
         }
     }
-    vector<float> sorted_coalescence_times = vector(coalescence_times.begin(), coalescence_times.end());
+    vector<double> sorted_coalescence_times = vector(coalescence_times.begin(), coalescence_times.end());
     int num_leaves = (int) sorted_coalescence_times.size();
-    float base_time = r.start_time;
-    float join_time = r.inserted_node->time;
+    double base_time = r.start_time;
+    double join_time = r.inserted_node->time;
     for (int i = 0; i < sorted_coalescence_times.size(); i++) {
         if (sorted_coalescence_times[i] > join_time) {
             log_likelihood += log_exp(num_leaves, join_time - base_time);
@@ -273,7 +273,7 @@ float Tree::transition_likelihood(Recombination &r) {
 
 // private methods:
 
-float Tree::log_exp(float lambda, float x) {
+double Tree::log_exp(double lambda, double x) {
     return -lambda*x + log(lambda);
 }
 
@@ -311,8 +311,8 @@ int Tree::distance(Node_ptr n1, Node_ptr n2) {
     return depth1 + depth2;
 }
 
-void Tree::impute_states(float m, set<Branch> &mutation_branches) {
-    map<Node_ptr, float> states = {};
+void Tree::impute_states(double m, set<Branch> &mutation_branches) {
+    map<Node_ptr, double> states = {};
     for (const Branch &b : mutation_branches) {
         states[b.lower_node] = b.lower_node->get_state(m);
         states[b.upper_node] = b.upper_node->get_state(m);
@@ -325,7 +325,7 @@ void Tree::impute_states(float m, set<Branch> &mutation_branches) {
     }
 }
 
-void Tree::impute_states_helper(Node_ptr n, map<Node_ptr, float> &states) {
+void Tree::impute_states_helper(Node_ptr n, map<Node_ptr, double> &states) {
     if (n->index == -1) {
         states[n] = 0;
         return;
@@ -338,7 +338,7 @@ void Tree::impute_states_helper(Node_ptr n, map<Node_ptr, float> &states) {
     states[n] = states[p];
 }
 
-float Tree::random() {
-    float p = uniform_random();
+double Tree::random() {
+    double p = uniform_random();
     return p;
 }

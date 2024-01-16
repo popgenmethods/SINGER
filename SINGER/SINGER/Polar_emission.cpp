@@ -12,12 +12,12 @@ Polar_emission::Polar_emission() {}
 Polar_emission::~Polar_emission() {}
 
 /*
-float Polar_emission::null_emit(Branch &branch, float time, float theta, Node_ptr node) {
-    float emit_prob = 1;
-    float old_prob = 1;
-    float ll = time - branch.lower_node->time;
-    float lu = branch.upper_node->time - time;
-    float l0 = time - node->time;
+double Polar_emission::null_emit(Branch &branch, double time, double theta, Node_ptr node) {
+    double emit_prob = 1;
+    double old_prob = 1;
+    double ll = time - branch.lower_node->time;
+    double lu = branch.upper_node->time - time;
+    double l0 = time - node->time;
     emit_prob = null_prob(theta, ll, lu, l0);
     if (!isinf(lu)) {
         old_prob = null_prob(theta*(ll + lu));
@@ -29,11 +29,11 @@ float Polar_emission::null_emit(Branch &branch, float time, float theta, Node_pt
 }
  */
 
-float Polar_emission::null_emit(Branch &branch, float time, float theta, Node_ptr node) {
-    float emit_prob = 1;
-    float ll = time - branch.lower_node->time;
-    float lu = branch.upper_node->time - time;
-    float l0 = time - node->time;
+double Polar_emission::null_emit(Branch &branch, double time, double theta, Node_ptr node) {
+    double emit_prob = 1;
+    double ll = time - branch.lower_node->time;
+    double lu = branch.upper_node->time - time;
+    double l0 = time - node->time;
     if (!isinf(lu)) {
         emit_prob = null_prob(theta*l0);
     } else {
@@ -43,13 +43,13 @@ float Polar_emission::null_emit(Branch &branch, float time, float theta, Node_pt
 }
 
 /*
-float Polar_emission::mut_emit(Branch &branch, float time, float theta, float bin_size, set<float> &mut_set, Node_ptr node) {
-    float emit_prob = 1;
-    float old_prob = 1;
-    float ll = time - branch.lower_node->time;
-    float lu = branch.upper_node->time - time;
-    float l0 = time - node->time;
-    for (float m : mut_set) {
+double Polar_emission::mut_emit(Branch &branch, double time, double theta, double bin_size, set<double> &mut_set, Node_ptr node) {
+    double emit_prob = 1;
+    double old_prob = 1;
+    double ll = time - branch.lower_node->time;
+    double lu = branch.upper_node->time - time;
+    double l0 = time - node->time;
+    for (double m : mut_set) {
         get_diff(m, branch, node);
         emit_prob *= mut_prob(theta, bin_size, ll, lu, l0, diff[0], diff[1], diff[2]);
         old_prob *= mut_prob(theta*(ll + lu), bin_size, diff[3]);
@@ -64,13 +64,13 @@ float Polar_emission::mut_emit(Branch &branch, float time, float theta, float bi
 }
  */
 
-float Polar_emission::mut_emit(Branch &branch, float time, float theta, float bin_size, set<float> &mut_set, Node_ptr node) {
-    float emit_prob = 1;
-    float old_prob = 1;
-    float ll = time - branch.lower_node->time;
-    float lu = branch.upper_node->time - time;
-    float l0 = time - node->time;
-    for (float m : mut_set) {
+double Polar_emission::mut_emit(Branch &branch, double time, double theta, double bin_size, set<double> &mut_set, Node_ptr node) {
+    double emit_prob = 1;
+    double old_prob = 1;
+    double ll = time - branch.lower_node->time;
+    double lu = branch.upper_node->time - time;
+    double l0 = time - node->time;
+    for (double m : mut_set) {
         get_diff(m, branch, node);
         emit_prob *= mut_prob(theta, bin_size, ll, lu, l0, diff[0], diff[1], diff[2]);
         old_prob *= mut_prob(theta*(ll + lu), bin_size, diff[3]);
@@ -82,17 +82,17 @@ float Polar_emission::mut_emit(Branch &branch, float time, float theta, float bi
     }
     emit_prob /= old_prob;
     emit_prob *= root_reward;
-    emit_prob = max(emit_prob, 1e-20f);
+    emit_prob = max(emit_prob, 1e-20);
     assert(emit_prob > 0);
     return emit_prob;
 }
 
-float Polar_emission::emit(Branch &branch, float time, float theta, float bin_size, vector<float> &emissions, Node_ptr node) {
-    float emit_prob = 1;
-    float old_prob = 1;
-    float ll = time - branch.lower_node->time;
-    float lu = branch.upper_node->time - time;
-    float l0 = time - node->time;
+double Polar_emission::emit(Branch &branch, double time, double theta, double bin_size, vector<double> &emissions, Node_ptr node) {
+    double emit_prob = 1;
+    double old_prob = 1;
+    double ll = time - branch.lower_node->time;
+    double lu = branch.upper_node->time - time;
+    double l0 = time - node->time;
     emit_prob = mut_prob(theta, bin_size, ll, lu, l0, emissions[0], emissions[1], emissions[2]);
     old_prob = mut_prob(theta*(ll + lu), bin_size, emissions[3]);
     emit_prob *= null_prob(theta, ll, lu, l0);
@@ -101,8 +101,8 @@ float Polar_emission::emit(Branch &branch, float time, float theta, float bin_si
     return emit_prob;
 }
 
-float Polar_emission::mut_prob(float theta, float bin_size, float ll, float lu, float l0, int sl, int su, int s0) {
-    float prob = 1;
+double Polar_emission::mut_prob(double theta, double bin_size, double ll, double lu, double l0, int sl, int su, int s0) {
+    double prob = 1;
     prob *= mut_prob(ll*theta, bin_size, sl);
     prob *= mut_prob(lu*theta, bin_size, su);
     prob *= mut_prob(l0*theta, bin_size, s0);
@@ -112,8 +112,8 @@ float Polar_emission::mut_prob(float theta, float bin_size, float ll, float lu, 
     return prob;
 }
 
-float Polar_emission::null_prob(float theta, float ll, float lu, float l0) {
-    float prob = 1;
+double Polar_emission::null_prob(double theta, double ll, double lu, double l0) {
+    double prob = 1;
     prob *= null_prob(ll*theta);
     if (!isinf(lu)) {
         prob *= null_prob(lu*theta);
@@ -122,26 +122,26 @@ float Polar_emission::null_prob(float theta, float ll, float lu, float l0) {
     return prob;
 }
 
-float Polar_emission::mut_prob(float theta, float bin_size, int s) {
+double Polar_emission::mut_prob(double theta, double bin_size, int s) {
     if (isinf(theta)) {
         return 1.0;
     }
-    float unit_theta = theta/bin_size;
+    double unit_theta = theta/bin_size;
     return pow(unit_theta, abs(s));
 }
 
-float Polar_emission::null_prob(float theta) {
+double Polar_emission::null_prob(double theta) {
     if (isinf(theta)) {
         return 1;
     }
     return exp(-theta);
 }
 
-void Polar_emission::get_diff(float m, Branch branch, Node_ptr node) {
-    float sl = 0;
-    float su = 0;
-    float s0 = 0;
-    float sm = 0;
+void Polar_emission::get_diff(double m, Branch branch, Node_ptr node) {
+    double sl = 0;
+    double su = 0;
+    double s0 = 0;
+    double sm = 0;
     sl = branch.lower_node->get_state(m);
     su = branch.upper_node->get_state(m);
     s0 = node->get_state(m);

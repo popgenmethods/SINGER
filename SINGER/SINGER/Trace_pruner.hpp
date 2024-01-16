@@ -18,54 +18,54 @@ class Trace_pruner : public Pruner {
     
 public:
     
-    float cutoff = 1e-2;
-    float mut_prob = 4e-4;
-    float max_time = 100;
-    float start = 0;
-    float end = 0;
-    float cut_time = 0;
+    double cutoff = 1e-2;
+    double mut_prob = 4e-4;
+    double max_time = 100;
+    double start = 0;
+    double end = 0;
+    double cut_time = 0;
     int band_width = 10;
     
-    float length = 0;
+    double length = 0;
     
-    map<float, Branch> queries = {};
-    set<float> private_mutations = {};
+    map<double, Branch> queries = {};
+    set<double> private_mutations = {};
     
-    map<float, Tree> seed_trees = {};
+    map<double, Tree> seed_trees = {};
     
-    map<float, float> match_map = {};
-    map<float, float> potential_seeds = {};
-    set<float> used_seeds = {};
+    map<double, double> match_map = {};
+    map<double, double> potential_seeds = {};
+    set<double> used_seeds = {};
     
-    map<Branch, float> seed_match = {};
-    map<Interval_info, float> seed_scores = {};
-    map<Interval_info, float> curr_scores = {};
+    map<Branch, double> seed_match = {};
+    map<Interval_info, double> seed_scores = {};
+    map<Interval_info, double> curr_scores = {};
     
-    set<float> check_points;
+    set<double> check_points;
     
-    map<float, set<Branch>> reductions = {};
-    map<float, set<Interval_info>> deletions = {};
-    map<float, set<Interval_info>> insertions = {};
+    map<double, set<Branch>> reductions = {};
+    map<double, set<Interval_info>> deletions = {};
+    map<double, set<Interval_info>> insertions = {};
     
-    map<Interval_info, float> transition_scores = {};
+    map<Interval_info, double> transition_scores = {};
     
-    set<pair<float, float>> segments = {};
+    set<pair<double, double>> segments = {};
     
     Trace_pruner();
     
     void prune_arg(ARG &a);
     
-    void set_check_points(set<float> &p);
+    void set_check_points(set<double> &p);
     
-    void start_search(ARG &a, float m);
+    void start_search(ARG &a, double m);
     
-    void extend(ARG &a, float x);
+    void extend(ARG &a, double x);
     
-    void extend_forward(ARG &a, float x);
+    void extend_forward(ARG &a, double x);
     
-    void extend_backward(ARG &a, float x);
+    void extend_backward(ARG &a, double x);
     
-    void mutation_update(Node_ptr n, float m);
+    void mutation_update(Node_ptr n, double m);
 
     void recombination_forward(Recombination &r);
     
@@ -75,49 +75,49 @@ public:
     
     void write_reduction_size(string filename);
     
-    float min_reduction_error();
+    double min_reduction_error();
     
     void write_reductions(ARG &a);
     
-    Node_ptr get_node_at(float x);
+    Node_ptr get_node_at(double x);
     
-    float get_match_time(set<Branch> &branches, float m, Node_ptr n);
+    double get_match_time(set<Branch> &branches, double m, Node_ptr n);
     
     void build_match_map(ARG &a);
     
-    float find_closest_reference(float x);
+    double find_closest_reference(double x);
     
-    float find_minimum_match();
+    double find_minimum_match();
     
-    float count_mismatch(Branch branch, Node_ptr n, float m);
+    double count_mismatch(Branch branch, Node_ptr n, double m);
     
-    void forward_prune_states(float x);
+    void forward_prune_states(double x);
     
-    void backward_prune_states(float x);
+    void backward_prune_states(double x);
     
-    void delete_all(float x);
+    void delete_all(double x);
     
-    void insert_all(float x);
+    void insert_all(double x);
     
     void forward_transition(Recombination &r, const Interval_info &interval);
     
     void backward_transition(Recombination &r, const Interval_info &interval);
     
-    void forward_transition_helper(Interval_info prev_interval, Interval_info next_interval, float x, float p);
+    void forward_transition_helper(Interval_info prev_interval, Interval_info next_interval, double x, double p);
     
-    void backward_transition_helper(Interval_info next_interval, Interval_info prev_interval, float x, float p);
+    void backward_transition_helper(Interval_info next_interval, Interval_info prev_interval, double x, double p);
     
-    float exp_prob(float l, float u);
+    double exp_prob(double l, double u);
     
-    float exp_prop(float l, float u, float x, float y);
+    double exp_prop(double l, double u, double x, double y);
     
-    float exp_median(float l, float u);
+    double exp_median(double l, double u);
     
-    float forward_overwrite_prob(Recombination &r, float lb, float ub);
+    double forward_overwrite_prob(Recombination &r, double lb, double ub);
     
-    float backward_overwrite_prob(Recombination &r, float lb, float ub);
+    double backward_overwrite_prob(Recombination &r, double lb, double ub);
     
-    void remove_segment(float x, float y);
+    void remove_segment(double x, double y);
     
     void restrict_search();
 };

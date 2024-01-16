@@ -31,7 +31,7 @@ public:
     
     Branch(Node_ptr l, Node_ptr u);
     
-    float length();
+    double length();
     
     bool operator<(const Branch &other) const;
     

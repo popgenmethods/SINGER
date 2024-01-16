@@ -22,35 +22,35 @@ class Sampler {
     
 public:
     
-    float rho_unit = 4e-3;
-    float Ne = 1;
-    float mut_rate = 0;
-    float recomb_rate = 0;
+    double rho_unit = 4e-3;
+    double Ne = 1;
+    double mut_rate = 0;
+    double recomb_rate = 0;
     string input_prefix = "";
     string output_prefix = "";
     string log_prefix = "";
-    float start = 0;
-    float end = 0;
-    float sequence_length = 0;
+    double start = 0;
+    double end = 0;
+    double sequence_length = 0;
     int num_samples = 0;
     ARG arg;
     bool fast_mode = false;
-    float bsp_c = 0.01;
-    float tsp_q = 0.05;
+    double bsp_c = 0.01;
+    double tsp_q = 0.05;
     int random_seed = 0;
-    float penalty = 0.01;
-    float polar = 0.99;
+    double penalty = 0.01;
+    double polar = 0.99;
     int sample_index = 0;
     set<Node_ptr, compare_node> sample_nodes = {};
     vector<Node_ptr> ordered_sample_nodes = {};
-    unordered_map<float, set<Node_ptr>> carriers = {};
-    unordered_map<Node_ptr, set<float>> mutation_sets = {};
+    unordered_map<double, set<Node_ptr>> carriers = {};
+    unordered_map<Node_ptr, set<double>> mutation_sets = {};
     
-    Sampler(float pop_size, float r, float m);
+    Sampler(double pop_size, double r, double m);
     
-    void set_pop_size(float n);
+    void set_pop_size(double n);
     
-    void set_precision(float c, float q);
+    void set_precision(double c, double q);
     
     void set_input_file_prefix(string f);
     
@@ -58,19 +58,19 @@ public:
     
     void set_log_file_prefix(string f);
     
-    void set_sequence_length(float x);
+    void set_sequence_length(double x);
     
     void set_num_samples(int n);
     
-    void naive_read_vcf(string prefix, float start_pos, float end_pos);
+    void naive_read_vcf(string prefix, double start_pos, double end_pos);
     
-    void guide_read_vcf(string prefix, float start, float end);
+    void guide_read_vcf(string prefix, double start, double end);
     
-    void load_vcf(string prefix, float start, float end);
+    void load_vcf(string prefix, double start, double end);
     
     void optimal_ordering();
     
-    Node_ptr build_node(int index, float time);
+    Node_ptr build_node(int index, double time);
     
     void build_all_nodes();
     
@@ -116,7 +116,7 @@ public:
     
     void write_sample();
     
-    void write_cut(tuple<float, Branch, float> cut_point);
+    void write_cut(tuple<double, Branch, double> cut_point);
     
     void load_resume_arg();
     

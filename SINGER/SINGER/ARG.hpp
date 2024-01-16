@@ -21,43 +21,43 @@ class ARG {
     
 public:
     
-    float Ne = 1;
-    Node_ptr root = new_node(numeric_limits<float>::infinity());
+    double Ne = 1;
+    Node_ptr root = new_node(numeric_limits<double>::infinity());
     Node_ptr cut_node = nullptr;
-    float cut_time = 0;
-    set<float> mutation_sites = {};
-    map<float, set<Branch>> mutation_branches = {};
-    map<float, Recombination> recombinations = {};
+    double cut_time = 0;
+    set<double> mutation_sites = {};
+    map<double, set<Branch>> mutation_branches = {};
+    map<double, Recombination> recombinations = {};
     int bin_num = 0;
-    float sequence_length = 0;
-    float bin_size = 0;
-    vector<float> coordinates = {};
-    vector<float> rhos = {};
-    vector<float> thetas = {};
+    double sequence_length = 0;
+    double bin_size = 0;
+    vector<double> coordinates = {};
+    vector<double> rhos = {};
+    vector<double> thetas = {};
     set<Node_ptr, compare_node> sample_nodes = {};
     set<Node_ptr, compare_node> node_set = {};
-    map<float, Branch> joining_branches = {};
-    map<float, Branch> removed_branches = {};
-    map<float, Tree> tree_map = {};
+    map<double, Branch> joining_branches = {};
+    map<double, Branch> removed_branches = {};
+    map<double, Tree> tree_map = {};
     
-    float start = 0;
-    float end = 0;
-    float cut_pos = 0;
+    double start = 0;
+    double end = 0;
+    double cut_pos = 0;
     Tree cut_tree;
     Tree start_tree;
     Tree end_tree;
     
     ARG();
     
-    ARG(float N, float l);
+    ARG(double N, double l);
     
     ~ARG();
     
-    void discretize(float s);
+    void discretize(double s);
     
-    int get_index(float x);
+    int get_index(double x);
     
-    void compute_rhos_thetas(float r, float m);
+    void compute_rhos_thetas(double r, double m);
     
     void build_singleton_arg(Node_ptr n);
     
@@ -65,25 +65,25 @@ public:
     
     void add_node(Node_ptr n);
     
-    void add_new_node(float t);
+    void add_new_node(double t);
     
-    Tree get_tree_at(float x);
+    Tree get_tree_at(double x);
     
-    Node_ptr get_query_node_at(float x);
+    Node_ptr get_query_node_at(double x);
     
-    Tree modify_tree_to(float x, Tree &reference_tree, float x0);
+    Tree modify_tree_to(double x, Tree &reference_tree, double x0);
     
-    Tree internal_modify_tree_to(float x, Tree &reference_tree, float x0);
+    Tree internal_modify_tree_to(double x, Tree &reference_tree, double x0);
 
-    void remove(tuple<float, Branch, float> cut_point);
+    void remove(tuple<double, Branch, double> cut_point);
     
-    void remove(map<float, Branch> seed_branches);
+    void remove(map<double, Branch> seed_branches);
     
     void remove_leaf(int index);
     
-    float get_updated_length();
+    double get_updated_length();
     
-    void add(map<float, Branch> &new_joining_branches, map<float, Branch> &added_branches);
+    void add(map<double, Branch> &new_joining_branches, map<double, Branch> &added_branches);
     
     void smc_sample_recombinations();
     
@@ -111,31 +111,31 @@ public:
     
     void read(string node_file, string branch_file, string recomb_file, string mut_file);
     
-    float get_arg_length();
+    double get_arg_length();
     
-    float get_arg_length(float x, float y);
+    double get_arg_length(double x, double y);
     
-    float get_arg_length(map<float, Branch> &new_joining_branches, map<float, Branch> &new_added_branches);
+    double get_arg_length(map<double, Branch> &new_joining_branches, map<double, Branch> &new_added_branches);
     
-    tuple<float, Branch, float> sample_internal_cut();
+    tuple<double, Branch, double> sample_internal_cut();
     
-    tuple<float, Branch, float> sample_terminal_cut();
+    tuple<double, Branch, double> sample_terminal_cut();
     
-    tuple<float, Branch, float> sample_recombination_cut();
+    tuple<double, Branch, double> sample_recombination_cut();
     
-    tuple<float, Branch, float> sample_mutation_cut();
+    tuple<double, Branch, double> sample_mutation_cut();
     
-    void impute_nodes(float x, float y);
+    void impute_nodes(double x, double y);
     
-    void impute(map<float, Branch> &new_joining_branches, map<float, Branch> &added_branches);
+    void impute(map<double, Branch> &new_joining_branches, map<double, Branch> &added_branches);
     
-    void map_mutations(float x, float y);
+    void map_mutations(double x, double y);
     
     void remap_mutations();
     
-    void map_mutation(float x, Branch joining_branch, Branch added_branch);
+    void map_mutation(double x, Branch joining_branch, Branch added_branch);
     
-    void map_mutation(Tree tree, float x);
+    void map_mutation(Tree tree, double x);
 
     void check_mapping();
     
@@ -145,25 +145,25 @@ public:
     
     void clear_remove_info();
     
-    float smc_prior_likelihood(float r);
+    double smc_prior_likelihood(double r);
     
-    float data_likelihood(float m);
+    double data_likelihood(double m);
     
-    float smc_likelihood(float r, float m);
+    double smc_likelihood(double r, double m);
     
-    set<float> get_check_points();
+    set<double> get_check_points();
     
-    bool check_disjoint_nodes(float x, float y);
+    bool check_disjoint_nodes(double x, double y);
     
     // private:
     
-    float random();
+    double random();
     
-    void new_recombination(float pos, Branch prev_added_branch, Branch prev_joining_branch, Branch next_added_branch, Branch next_joining_branch);
+    void new_recombination(double pos, Branch prev_added_branch, Branch prev_joining_branch, Branch next_added_branch, Branch next_joining_branch);
     
     void remove_empty_recombinations();
     
-    int count_incompatibility(Tree tree, float x);
+    int count_incompatibility(Tree tree, double x);
     
     void create_node_set();
     
@@ -183,13 +183,13 @@ public:
     
     void read_muts(string filename);
     
-    // void normalize(float t, Distribution &d);
+    // void normalize(double t, Distribution &d);
     
     // void normalize();
     
 };
 
-bool compare_edge(const tuple<int, int, float, float>& edge1, const tuple<int, int, float, float>& edge2);
+bool compare_edge(const tuple<int, int, double, double>& edge1, const tuple<int, int, double, double>& edge2);
 
 
 #endif /* ARG_hpp */

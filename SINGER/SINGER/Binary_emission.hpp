@@ -18,26 +18,26 @@ class Binary_emission : public Emission {
     
 public:
     
-    map<float, float> num_unmapped = {};
-    float penalty = 0.1;
+    map<double, double> num_unmapped = {};
+    double penalty = 0.1;
     
-    vector<float> diff = vector<float>(4);
+    vector<double> diff = vector<double>(4);
     
     Binary_emission();
     
     ~Binary_emission();
     
-    float null_emit(Branch &branch, float time, float theta, Node_ptr node) override;
+    double null_emit(Branch &branch, double time, double theta, Node_ptr node) override;
     
-    float mut_emit(Branch &branch, float time, float theta, float bin_size, set<float> &mut_set, Node_ptr node) override;
+    double mut_emit(Branch &branch, double time, double theta, double bin_size, set<double> &mut_set, Node_ptr node) override;
     
-    float emit(Branch &branch, float time, float theta, float bin_size, vector<float> &emissions, Node_ptr node) override;
+    double emit(Branch &branch, double time, double theta, double bin_size, vector<double> &emissions, Node_ptr node) override;
     
-    float calculate_prob(float theta, float bin_size, float ll, float lu, float l0, int sl, int su, int s0);
+    double calculate_prob(double theta, double bin_size, double ll, double lu, double l0, int sl, int su, int s0);
     
-    float calculate_prob(float theta, float bin_size, int s);
+    double calculate_prob(double theta, double bin_size, int s);
     
-    void get_diff(set<float> &mut_set, Branch branch, Node_ptr node);
+    void get_diff(set<double> &mut_set, Branch branch, Node_ptr node);
 };
 
 #endif /* Binary_emission_hpp */

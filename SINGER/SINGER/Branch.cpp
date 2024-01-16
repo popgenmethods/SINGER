@@ -18,7 +18,7 @@ Branch::Branch(Node_ptr l, Node_ptr u) {
     upper_node = u;
 }
 
-float Branch::length() {
+double Branch::length() {
     return upper_node->time - lower_node->time;
 }
 
