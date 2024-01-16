@@ -18,9 +18,9 @@ public:
     
     virtual void thread(ARG &a, Node *n) = 0;
     
-    virtual void internal_rethread(ARG &a, tuple<int, Branch, float> cut_point) = 0;
+    virtual void internal_rethread(ARG &a, tuple<int, Branch, double> cut_point) = 0;
     
-    virtual void terminal_rethread(ARG &old_arg, tuple<int, Branch, float> cut_point) = 0;
+    virtual void terminal_rethread(ARG &old_arg, tuple<int, Branch, double> cut_point) = 0;
     
 };
 

@@ -29,41 +29,41 @@ class Threader_smc {
     
 public:
     
-    // Threader_smc(float c, float q, shared_ptr<Emission> e);
+    // Threader_smc(double c, double q, shared_ptr<Emission> e);
     
-    Threader_smc(float c, float q);
+    Threader_smc(double c, double q);
     
     ~Threader_smc();
     
     void thread(ARG &a, Node_ptr n);
     
-    void internal_rethread(ARG &a, tuple<float, Branch, float> cut_point);
+    void internal_rethread(ARG &a, tuple<double, Branch, double> cut_point);
     
-    void terminal_rethread(ARG &a, tuple<float, Branch, float> cut_point);
+    void terminal_rethread(ARG &a, tuple<double, Branch, double> cut_point);
     
     void fast_thread(ARG &a, Node_ptr n);
     
-    void fast_internal_rethread(ARG &a, tuple<float, Branch, float> cut_point);
+    void fast_internal_rethread(ARG &a, tuple<double, Branch, double> cut_point);
     
-    void fast_terminal_rethread(ARG &a, tuple<float, Branch, float> cut_point);
+    void fast_terminal_rethread(ARG &a, tuple<double, Branch, double> cut_point);
     
 // private:
     
-    float cut_time = 0;
-    float start = 0;
-    float end = 0;
+    double cut_time = 0;
+    double start = 0;
+    double end = 0;
     int start_index = 0;
     int end_index = 0;
     Trace_pruner pruner = Trace_pruner();
     approx_BSP bsp = approx_BSP();
     fast_BSP fbsp = fast_BSP();
     TSP tsp = TSP();
-    float gap;
-    float cutoff;
+    double gap;
+    double cutoff;
     shared_ptr<Binary_emission> be = make_shared<Binary_emission>();
     shared_ptr<Polar_emission> pe = make_shared<Polar_emission>();
-    map<float, Branch> new_joining_branches = {};
-    map<float, Branch> added_branches = {};
+    map<double, Branch> new_joining_branches = {};
+    map<double, Branch> added_branches = {};
     
     void get_boundary(ARG &a);
     
@@ -83,13 +83,13 @@ public:
     
     void sample_joining_points(ARG &a);
     
-    float acceptance_ratio(ARG &a);
+    double acceptance_ratio(ARG &a);
     
-    float random();
+    double random();
     
-    vector<float> expected_diff(float m);
+    vector<double> expected_diff(double m);
     
-    vector<float> observed_diff(ARG &a);
+    vector<double> observed_diff(ARG &a);
     
 };
 

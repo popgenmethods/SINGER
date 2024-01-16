@@ -15,7 +15,7 @@
 
 struct compare_time {
     
-    bool operator()(const pair<float, float> p1, const pair<float, float> p2) const {
+    bool operator()(const pair<double, double> p1, const pair<double, double> p2) const {
         return p1.first < p2.first;
     }
     
@@ -23,7 +23,7 @@ struct compare_time {
 
 struct compare_prob {
     
-    bool operator()(const pair<float, float> p1, const pair<float, float> p2) const {
+    bool operator()(const pair<double, double> p1, const pair<double, double> p2) const {
             if (p1.second != p2.second) {
                 return p1.second < p2.second;
             }
@@ -36,22 +36,22 @@ class Coalescent_calculator {
     
 public:
     
-    float cut_time;
-    float min_time, max_time;
-    map<float, int> rate_changes = {};
-    map<float, int> rates = {};
-    set<pair<float, float>, compare_time> probs = {};
-    set<pair<float, float>, compare_prob> quantiles = {};
+    double cut_time;
+    double min_time, max_time;
+    map<double, int> rate_changes = {};
+    map<double, int> rates = {};
+    set<pair<double, double>, compare_time> probs = {};
+    set<pair<double, double>, compare_prob> quantiles = {};
     
-    Coalescent_calculator(float t);
+    Coalescent_calculator(double t);
     
     ~Coalescent_calculator();
     
     void compute(set<Branch> &branches);
     
-    float weight(float lb, float ub);
+    double weight(double lb, double ub);
     
-    float time(float lb, float ub);
+    double time(double lb, double ub);
     
 // private:
     
@@ -61,9 +61,9 @@ public:
     
     void compute_probs_quantiles();
     
-    float prob(float x);
+    double prob(double x);
     
-    float quantile(float p);
+    double quantile(double p);
     
 };
 

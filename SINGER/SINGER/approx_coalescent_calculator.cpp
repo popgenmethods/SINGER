@@ -7,7 +7,7 @@
 
 #include "approx_coalescent_calculator.hpp"
 
-approx_coalescent_calculator::approx_coalescent_calculator(float t) {
+approx_coalescent_calculator::approx_coalescent_calculator(double t) {
     cut_time = t;
 }
 
@@ -38,11 +38,11 @@ void approx_coalescent_calculator::update(Recombination &r) {
     }
 }
 
-pair<float, float> approx_coalescent_calculator::compute_time_weights(float x, float y) {
+pair<double, double> approx_coalescent_calculator::compute_time_weights(double x, double y) {
     if (x == y) { // no need to compute when point mass
         return {x, 0};
     }
-    float t, w, p, q;
+    double t, w, p, q;
     p = prob(x, y);
     t = find_median(x, y);
     q = p*(t - cut_time);
@@ -59,25 +59,25 @@ void approx_coalescent_calculator::compute_first_moment() {
     first_moment = 2.0/n0;
 }
 
-float approx_coalescent_calculator::prob(float x, float y) {
-    float p1 = prob_integral(x);
-    float p2 = prob_integral(y);
-    return max(p2 - p1, 0.0f);
+double approx_coalescent_calculator::prob(double x, double y) {
+    double p1 = prob_integral(x);
+    double p2 = prob_integral(y);
+    return max(p2 - p1, 0.0);
 }
 
-float approx_coalescent_calculator::prob_integral(float x) {
+double approx_coalescent_calculator::prob_integral(double x) {
     x -= cut_time;
     if (n0 == 1) {
         return 1 - exp(-x);
     }
-    float v = n0 + (1 - n0)*exp(-0.5*x);
-    float p = -2*log(v) -2*n0/v;
+    double v = n0 + (1 - n0)*exp(-0.5*x);
+    double p = -2*log(v) -2*n0/v;
     p = p/(1 - n0)/(1 - n0);
     assert(!isnan(p));
     return p;
 }
 
-float approx_coalescent_calculator::find_median(float x, float y) {
+double approx_coalescent_calculator::find_median(double x, double y) {
     if (x == y) {
         return x;
     }
@@ -85,17 +85,17 @@ float approx_coalescent_calculator::find_median(float x, float y) {
         return 0.5*(x + y);
     }
     if (n0 == 1) {
-        float q = 0.5*(exp(-x) + exp(-y));
-        float t = -log(q);
+        double q = 0.5*(exp(-x) + exp(-y));
+        double t = -log(q);
         assert(t >= x and t <= y);
         return t;
     }
     x -= cut_time;
     y -= cut_time;
-    float z = 0;
-    float nx = n0 + (1 - n0)*exp(-0.5*x);
-    float ny = n0 + (1 - n0)*exp(-0.5*y);
-    float nm = sqrt(nx*ny);
+    double z = 0;
+    double nx = n0 + (1 - n0)*exp(-0.5*x);
+    double ny = n0 + (1 - n0)*exp(-0.5*y);
+    double nm = sqrt(nx*ny);
     z = 2*log(n0 - 1) - 2*log(n0 - nm);
     if (isinf(y)) {
         z = x + 1;

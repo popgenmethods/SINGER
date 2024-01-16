@@ -16,9 +16,9 @@ class Emission {
     
 public:
     
-    virtual float null_emit(Branch &branch, float time, float theta, Node_ptr node) = 0;
-    virtual float mut_emit(Branch &branch, float time, float theta, float bin_size, set<float> &mut_set, Node_ptr node) = 0;
-    virtual float emit(Branch &branch, float time, float theta, float bin_size, vector<float> &emissions, Node_ptr node) = 0;
+    virtual double null_emit(Branch &branch, double time, double theta, Node_ptr node) = 0;
+    virtual double mut_emit(Branch &branch, double time, double theta, double bin_size, set<double> &mut_set, Node_ptr node) = 0;
+    virtual double emit(Branch &branch, double time, double theta, double bin_size, vector<double> &emissions, Node_ptr node) = 0;
 };
 
 #endif /* Emission_hpp */

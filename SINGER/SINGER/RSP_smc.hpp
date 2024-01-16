@@ -22,35 +22,35 @@ public:
     
     RSP_smc();
     
-    void sample_recombination(Recombination &r, float cut_time, Tree &tree);
+    void sample_recombination(Recombination &r, double cut_time, Tree &tree);
     
-    void approx_sample_recombination(Recombination &r, float cut_time);
+    void approx_sample_recombination(Recombination &r, double cut_time);
     
-    void adjust(Recombination &r, float cut_time);
+    void adjust(Recombination &r, double cut_time);
     
-    void approx_sample_recombination(Recombination &r, float cut_time, float n);
+    void approx_sample_recombination(Recombination &r, double cut_time, double n);
     
-    void adjust(Recombination &r, float cut_time, float n);
+    void adjust(Recombination &r, double cut_time, double n);
     
 private:
     
-    map<float, int> coalescence_rates = {};
+    map<double, int> coalescence_rates = {};
     
-    float sample_start_time(Branch b, int density, float join_time, float cut_time);
+    double sample_start_time(Branch b, int density, double join_time, double cut_time);
     
-    pair<Branch, float> sample_start_time(Branch b1, Branch b2, int density, float join_time, float cut_time);
+    pair<Branch, double> sample_start_time(Branch b1, Branch b2, int density, double join_time, double cut_time);
     
-    void get_coalescence_rate(Tree &tree, Recombination &r, float cut_time);
+    void get_coalescence_rate(Tree &tree, Recombination &r, double cut_time);
     
-    float recomb_pdf(float s, float t);
+    double recomb_pdf(double s, double t);
     
-    float random_time(float lb, float ub);
+    double random_time(double lb, double ub);
     
-    float random_time(float lb, float ub, float q);
+    double random_time(double lb, double ub, double q);
     
-    float choose_time(float lb, float ub);
+    double choose_time(double lb, double ub);
     
-    float choose_time(float lb, float ub, float n);
+    double choose_time(double lb, double ub, double n);
     
 };
 

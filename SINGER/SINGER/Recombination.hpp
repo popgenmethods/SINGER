@@ -15,7 +15,7 @@ class Recombination {
     
 public:
     
-    float pos;
+    double pos;
     Branch source_branch;
     Branch target_branch;
     Branch source_sister_branch;
@@ -24,7 +24,7 @@ public:
     Branch merging_branch;
     Branch lower_transfer_branch;
     Branch upper_transfer_branch;
-    float start_time = -1;
+    double start_time = -1;
     Node_ptr deleted_node;
     Node_ptr inserted_node;
     set<Branch> deleted_branches = {};
@@ -34,7 +34,7 @@ public:
     
     Recombination(set<Branch> db, set<Branch> ib);
     
-    void set_pos(float x);
+    void set_pos(double x);
     
     bool affect(const Branch &b);
     
@@ -46,9 +46,9 @@ public:
     
     void find_recomb_info(); // find other branches;
     
-    Branch trace_forward(float t, Branch curr_branch);
+    Branch trace_forward(double t, Branch curr_branch);
     
-    Branch trace_backward(float t, Branch curr_branch);
+    Branch trace_backward(double t, Branch curr_branch);
     
     Branch next_joining_branch(Branch removed_branch, Branch joining_branch);
     

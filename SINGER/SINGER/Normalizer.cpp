@@ -12,20 +12,20 @@ Normalizer::Normalizer() {}
 Normalizer::~Normalizer() {}
 
 void Normalizer::compute_max_time(ARG &a) {
-    float num_muts = a.mutation_sites.size();
-    float theta = accumulate(a.thetas.begin(), a.thetas.end(), 0.0f);
-    float last_mut_pos = *prev(a.mutation_sites.end(), 2);
-    float first_mut_pos = *a.mutation_sites.begin();
-    float q = (last_mut_pos - first_mut_pos)/a.sequence_length;
+    double num_muts = a.mutation_sites.size();
+    double theta = accumulate(a.thetas.begin(), a.thetas.end(), 0.0f);
+    double last_mut_pos = *prev(a.mutation_sites.end(), 2);
+    double first_mut_pos = *a.mutation_sites.begin();
+    double q = (last_mut_pos - first_mut_pos)/a.sequence_length;
     theta *= q;
-    float num_samples = a.sample_nodes.size();
-    float scaling = num_muts/2/theta/log(num_samples);
+    double num_samples = a.sample_nodes.size();
+    double scaling = num_muts/2/theta/log(num_samples);
     max_time = 10*scaling;
 }
 
 void Normalizer::get_root_span(ARG &a) {
-    map<Node_ptr, float, compare_node> root_start = {};
-    map<Node_ptr, float, compare_node> root_span = {};
+    map<Node_ptr, double, compare_node> root_start = {};
+    map<Node_ptr, double, compare_node> root_span = {};
     Branch prev_branch;
     Branch next_branch;
     Recombination &r = a.recombinations.begin()->second;
@@ -65,8 +65,8 @@ void Normalizer::get_root_span(ARG &a) {
 }
 
 void Normalizer::get_node_span(ARG &a) {
-    map<Node_ptr, float, compare_node> node_start = {};
-    map<Node_ptr, float, compare_node> node_span = {};
+    map<Node_ptr, double, compare_node> node_start = {};
+    map<Node_ptr, double, compare_node> node_span = {};
     for (const Branch &b : a.recombinations.begin()->second.inserted_branches) {
         node_start[b.upper_node] = 0;
     }
@@ -96,7 +96,7 @@ void Normalizer::get_node_span(ARG &a) {
 }
 
 void Normalizer::randomize_mutation_ages(ARG &a) {
-    float lb, ub, m;
+    double lb, ub, m;
     for (auto &x : a.mutation_branches) {
         for (auto &y : x.second) {
             if (y.upper_node != a.root) {
@@ -113,27 +113,27 @@ void Normalizer::randomize_mutation_ages(ARG &a) {
 
 void Normalizer::randomized_normalize(ARG &a) {}
 
-void Normalizer::normalize(ARG &a, float theta) {
+void Normalizer::normalize(ARG &a, double theta) {
     compute_max_time(a);
     get_root_span(a);
     get_node_span(a);
     partition_arg(a);
     count_mutations(a);
     count_recombinations(a);
-    float t = 1.0/a.Ne;
+    double t = 1.0/a.Ne;
     int k = 0;
     new_grid.resize(old_grid.size());
     new_grid[0] = t;
     for (int i = 0; i < new_grid.size() - 1; i++) {
-        float e = expected_mutation_counts[i];
-        float o = observed_mutation_counts[i]/theta;
-        float scale = o/e;
+        double e = expected_mutation_counts[i];
+        double o = observed_mutation_counts[i]/theta;
+        double scale = o/e;
         new_grid[i+1] = new_grid[i] + scale*(old_grid[i+1] - old_grid[i]);
         new_grid[i+1] = min(max_time, new_grid[i+1]); // process grid values
-        new_grid[i+1] = max(new_grid[i+1], nextafter(new_grid[i], numeric_limits<float>::infinity())); // process grid values
+        new_grid[i+1] = max(new_grid[i+1], nextafter(new_grid[i], numeric_limits<double>::infinity())); // process grid values
     }
     int i = 0;
-    float p;
+    double p;
     k = 0;
     while (k < new_grid.size() - 1) {
         while (i < all_nodes.size() and all_nodes[i]->time <= old_grid[k+1]) {
@@ -141,7 +141,7 @@ void Normalizer::normalize(ARG &a, float theta) {
             p = (node->time - old_grid[k])/(old_grid[k+1] - old_grid[k]);
             t = (1 - p)*new_grid[k] + p*new_grid[k+1];
             if (i > 0 and t <= all_nodes[i-1]->time) {
-                t = nextafter(all_nodes[i-1]->time, numeric_limits<float>::infinity());
+                t = nextafter(all_nodes[i-1]->time, numeric_limits<double>::infinity());
                 assert(t > all_nodes[i-1]->time); // don't want duplicated coalescence time
             }
             node->time = t;
@@ -156,9 +156,9 @@ void Normalizer::normalize(ARG &a, float theta) {
 }
 
 void Normalizer::partition_arg(ARG &a) {
-    float active_lineages = accumulate(all_spans.begin(), all_spans.end(), 0);
+    double active_lineages = accumulate(all_spans.begin(), all_spans.end(), 0);
     active_lineages += accumulate(all_root_spans.begin(), all_root_spans.end(), 0);
-    float t = 0;
+    double t = 0;
     int j = 0;
     for (int i = 0; i < all_spans.size(); i++) {
         Node_ptr n = all_nodes[i];
@@ -170,8 +170,8 @@ void Normalizer::partition_arg(ARG &a) {
         }
         t = n->time;
     }
-    float l = 0;
-    float x = 0;
+    double l = 0;
+    double x = 0;
     t = 0;
     j = 0;
     int k = 1;
@@ -205,7 +205,7 @@ void Normalizer::normalize_recombinations(ARG &a) {
 
 void Normalizer::count_mutations(ARG &a) {
     observed_mutation_counts.resize(expected_mutation_counts.size());
-    float lb, ub;
+    double lb, ub;
     for (auto &x : a.mutation_branches) {
         for (auto &y : x.second) {
             if (y.upper_node != a.root) {
@@ -215,9 +215,9 @@ void Normalizer::count_mutations(ARG &a) {
             }
         }
     }
-    float num_muts = a.mutation_sites.size() - 1;
-    float num_mapped_muts = accumulate(observed_mutation_counts.begin(), observed_mutation_counts.end(), 0.0);
-    float r = num_muts/num_mapped_muts;
+    double num_muts = a.mutation_sites.size() - 1;
+    double num_mapped_muts = accumulate(observed_mutation_counts.begin(), observed_mutation_counts.end(), 0.0);
+    double r = num_muts/num_mapped_muts;
     for (auto &x : observed_mutation_counts) {
         x *= r;
     }
@@ -225,7 +225,7 @@ void Normalizer::count_mutations(ARG &a) {
 
 void Normalizer::count_recombinations(ARG &a) {
     observed_recombination_counts.resize(observed_mutation_counts.size());
-    float lb, ub;
+    double lb, ub;
     for (auto &x : a.recombinations) {
         if (x.first > 0 and x.first < a.sequence_length) {
             Recombination &r = x.second;
@@ -234,7 +234,7 @@ void Normalizer::count_recombinations(ARG &a) {
             add_recombination(lb, ub);
         }
     }
-    float num_recs = accumulate(observed_recombination_counts.begin(), observed_recombination_counts.end(), 0.0f);
+    double num_recs = accumulate(observed_recombination_counts.begin(), observed_recombination_counts.end(), 0.0f);
     num_recs /= observed_recombination_counts.size();
     recombination_density.resize(observed_recombination_counts.size());
     for (int i = 0; i < observed_recombination_counts.size(); i++) {
@@ -242,8 +242,8 @@ void Normalizer::count_recombinations(ARG &a) {
     }
 }
 
-void Normalizer::add_mutation(float lb, float ub) {
-    float x, y, l;
+void Normalizer::add_mutation(double lb, double ub) {
+    double x, y, l;
     int index;
     auto it = upper_bound(old_grid.begin(), old_grid.end(), lb);
     it--;
@@ -257,8 +257,8 @@ void Normalizer::add_mutation(float lb, float ub) {
     }
 }
 
-void Normalizer::add_recombination(float lb, float ub) {
-    float x, y, l;
+void Normalizer::add_recombination(double lb, double ub) {
+    double x, y, l;
     int index;
     auto it = upper_bound(old_grid.begin(), old_grid.end(), lb);
     it--;
@@ -273,13 +273,13 @@ void Normalizer::add_recombination(float lb, float ub) {
 }
 
 /*
-void Normalizer::calculate_branch_length(ARG &a, float Ne) {
+void Normalizer::calculate_branch_length(ARG &a, double Ne) {
     observed_branch_length.resize(expected_mutation_counts.size());
     expected_branch_length.resize(expected_mutation_counts.size());
-    float all_lineages = accumulate(all_spans.begin(), all_spans.end(), 0);
-    float t = 0;
+    double all_lineages = accumulate(all_spans.begin(), all_spans.end(), 0);
+    double t = 0;
     int k = 0;
-    float lb = 0, ub = 0;
+    double lb = 0, ub = 0;
     for (int i = 0; i < all_spans.size(); i++) {
         Node_ptr n = all_nodes[i];
         lb = max(t, old_grid[k]);
@@ -302,11 +302,11 @@ void Normalizer::calculate_branch_length(ARG &a, float Ne) {
 }
 */
 
-float Normalizer::sample_recombination_time(float lb, float ub) {
+double Normalizer::sample_recombination_time(double lb, double ub) {
     lb = max(lb, new_grid.front());
-    float tau;
-    float x, y, l;
-    float q = 0;
+    double tau;
+    double x, y, l;
+    double q = 0;
     int base_index, index;
     auto it = upper_bound(new_grid.begin(), new_grid.end(), lb);
     it--;
@@ -319,7 +319,7 @@ float Normalizer::sample_recombination_time(float lb, float ub) {
         q += l/(y - x)*recombination_density[index];
         index++;
     }
-    float rq = q*uniform_random();
+    double rq = q*uniform_random();
     index = base_index;
     while (new_grid[index] < ub) {
         x = new_grid[index];
@@ -337,7 +337,7 @@ float Normalizer::sample_recombination_time(float lb, float ub) {
 }
 
 void Normalizer::sample_recombinations(ARG &a) {
-    float lb, ub;
+    double lb, ub;
     for (auto &x : a.recombinations) {
         if (x.first > 0 and x.first < a.sequence_length) {
             Recombination &r = x.second;

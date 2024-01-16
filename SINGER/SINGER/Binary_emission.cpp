@@ -11,12 +11,12 @@ Binary_emission::Binary_emission() {}
 
 Binary_emission::~Binary_emission() {}
 
-float Binary_emission::null_emit(Branch &branch, float time, float theta, Node_ptr node) {
-    float emit_prob = 1;
-    float old_prob = 1;
-    float ll = time - branch.lower_node->time;
-    float lu = branch.upper_node->time - time;
-    float l0 = time - node->time;
+double Binary_emission::null_emit(Branch &branch, double time, double theta, Node_ptr node) {
+    double emit_prob = 1;
+    double old_prob = 1;
+    double ll = time - branch.lower_node->time;
+    double lu = branch.upper_node->time - time;
+    double l0 = time - node->time;
     emit_prob = calculate_prob(theta, 1, ll, lu, l0, 0, 0, 0);
     if (!isinf(lu)) {
         old_prob = calculate_prob(theta*(ll + lu), 1, 0);
@@ -27,12 +27,12 @@ float Binary_emission::null_emit(Branch &branch, float time, float theta, Node_p
     return emit_prob;
 }
 
-float Binary_emission::mut_emit(Branch &branch, float time, float theta, float bin_size, set<float> &mut_set, Node_ptr node) {
-    float emit_prob = 1;
-    float old_prob = 1;
-    float ll = time - branch.lower_node->time;
-    float lu = branch.upper_node->time - time;
-    float l0 = time - node->time;
+double Binary_emission::mut_emit(Branch &branch, double time, double theta, double bin_size, set<double> &mut_set, Node_ptr node) {
+    double emit_prob = 1;
+    double old_prob = 1;
+    double ll = time - branch.lower_node->time;
+    double lu = branch.upper_node->time - time;
+    double l0 = time - node->time;
     get_diff(mut_set, branch, node);
     emit_prob = calculate_prob(theta, bin_size, ll, lu, l0, diff[0], diff[1], diff[2]);
     old_prob = calculate_prob(theta*(ll + lu), bin_size, diff[3]);
@@ -41,12 +41,12 @@ float Binary_emission::mut_emit(Branch &branch, float time, float theta, float b
     return emit_prob;
 }
 
-float Binary_emission::emit(Branch &branch, float time, float theta, float bin_size, vector<float> &emissions, Node_ptr node) {
-    float emit_prob = 1;
-    float old_prob = 1;
-    float ll = time - branch.lower_node->time;
-    float lu = branch.upper_node->time - time;
-    float l0 = time - node->time;
+double Binary_emission::emit(Branch &branch, double time, double theta, double bin_size, vector<double> &emissions, Node_ptr node) {
+    double emit_prob = 1;
+    double old_prob = 1;
+    double ll = time - branch.lower_node->time;
+    double lu = branch.upper_node->time - time;
+    double l0 = time - node->time;
     emit_prob = calculate_prob(theta, bin_size, ll, lu, l0, emissions[0], emissions[1], emissions[2]);
     old_prob = calculate_prob(theta*(ll + lu), bin_size, emissions[3]);
     emit_prob /= old_prob;
@@ -54,8 +54,8 @@ float Binary_emission::emit(Branch &branch, float time, float theta, float bin_s
     return emit_prob;
 }
 
-float Binary_emission::calculate_prob(float theta, float bin_size, float ll, float lu, float l0, int sl, int su, int s0) {
-    float prob = 1;
+double Binary_emission::calculate_prob(double theta, double bin_size, double ll, double lu, double l0, int sl, int su, int s0) {
+    double prob = 1;
     prob *= calculate_prob(ll*theta, bin_size, sl);
     if (!isinf(lu)) {
         prob *= calculate_prob(lu*theta, bin_size, su);
@@ -64,21 +64,21 @@ float Binary_emission::calculate_prob(float theta, float bin_size, float ll, flo
     return prob;
 }
 
-float Binary_emission::calculate_prob(float theta, float bin_size, int s) {
+double Binary_emission::calculate_prob(double theta, double bin_size, int s) {
     if (isinf(theta)) {
         return 1.0;
     }
-    float unit_theta = theta/bin_size;
+    double unit_theta = theta/bin_size;
     return exp(-theta)*pow(unit_theta, s);
 }
 
-void Binary_emission::get_diff(set<float> &mut_set, Branch branch, Node_ptr node) {
-    float sl = 0;
-    float su = 0;
-    float s0 = 0;
-    float sm = 0;
+void Binary_emission::get_diff(set<double> &mut_set, Branch branch, Node_ptr node) {
+    double sl = 0;
+    double su = 0;
+    double s0 = 0;
+    double sm = 0;
     fill(diff.begin(), diff.end(), 0);
-    for (float x : mut_set) {
+    for (double x : mut_set) {
         sl = branch.lower_node->get_state(x);
         su = branch.upper_node->get_state(x);
         s0 = node->get_state(x);

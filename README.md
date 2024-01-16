@@ -13,7 +13,7 @@ If you want to compile the source files, then C++17 and cmake are required. Othe
 
 ## Installations
 
-The easiser way is to directory go to the folder `previous_releases/` and download one of the versions which work for your working platform (Linux/MacOS_Intel/MacOS_M1). After downloading, you can decompress it using:
+The easiser way is to directory go to the folder `releases/` and download one of the versions which work for your working platform (Linux/MacOS_Intel/MacOS_M1). After downloading, you can decompress it using:
 
 ```
 tar -xvzf file_name
@@ -61,7 +61,7 @@ prefix_of_output_files_nodes_{i}.txt, prefix_of_output_files_branches_{i}.txt, p
 with `i` from `0` to `num_samples - 1`. We recommend converting these files to tree sequence format in tskit, with this function:
 
 ```
-convert_to_tskit -input prefix_of_arg_files -output prefix_of_tskit_files
+path_to_singer/convert_to_tskit -input prefix_of_arg_files -output prefix_of_tskit_files
 -start start_index -end end_index -step step_size
 ```
 

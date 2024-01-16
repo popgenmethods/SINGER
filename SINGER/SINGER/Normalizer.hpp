@@ -17,20 +17,20 @@ class Normalizer {
 public:
     
     int num_windows = 100;
-    float ls = 0;
-    float max_time = 20;
+    double ls = 0;
+    double max_time = 20;
     
     vector<Node_ptr> all_root_nodes = {};
-    vector<float> all_root_spans = {};
+    vector<double> all_root_spans = {};
     vector<Node_ptr> all_nodes = {};
-    vector<float> all_spans = {};
-    set<float> mutation_ages = {};
-    vector<float> old_grid = {};
-    vector<float> new_grid = {};
-    vector<float> observed_mutation_counts = {};
-    vector<float> expected_mutation_counts = {};
-    vector<float> observed_recombination_counts = {};
-    vector<float> recombination_density = {};
+    vector<double> all_spans = {};
+    set<double> mutation_ages = {};
+    vector<double> old_grid = {};
+    vector<double> new_grid = {};
+    vector<double> observed_mutation_counts = {};
+    vector<double> expected_mutation_counts = {};
+    vector<double> observed_recombination_counts = {};
+    vector<double> recombination_density = {};
     
     Normalizer();
     
@@ -46,7 +46,7 @@ public:
     
     void randomized_normalize(ARG &a);
     
-    void normalize(ARG &a, float theta);
+    void normalize(ARG &a, double theta);
     
     void partition_arg(ARG &a);
     
@@ -56,11 +56,11 @@ public:
     
     void count_recombinations(ARG &a);
     
-    void add_mutation(float lb, float ub);
+    void add_mutation(double lb, double ub);
     
-    void add_recombination(float lb, float ub);
+    void add_recombination(double lb, double ub);
     
-    float sample_recombination_time(float lb, float ub);
+    double sample_recombination_time(double lb, double ub);
     
     void sample_recombinations(ARG &a);
 };

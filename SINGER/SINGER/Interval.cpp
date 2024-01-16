@@ -9,7 +9,7 @@
 
 Interval::Interval() {}
 
-Interval::Interval(Branch b, float tl, float tu, int init_pos) {
+Interval::Interval(Branch b, double tl, double tu, int init_pos) {
     branch = b;
     lb = tl;
     ub = tu;
@@ -19,28 +19,28 @@ Interval::Interval(Branch b, float tl, float tu, int init_pos) {
     start_pos = init_pos;
 }
 
-void Interval::assign_weight(float w) {
+void Interval::assign_weight(double w) {
     weight = w;
 }
 
-void Interval::assign_time(float t) {
+void Interval::assign_time(double t) {
     assert(t >= lb and t <= ub);
     assert(!isinf(time));
     time = t;
 }
 
 void Interval::fill_time() {
-    if (ub == numeric_limits<float>::infinity()) {
+    if (ub == numeric_limits<double>::infinity()) {
         time = lb + log(2);
     } else if (abs(lb - ub) < 1e-3) {
         time = 0.5*(lb + ub);
     } else {
-        float lq = 1 - exp(-lb);
-        float uq = 1 - exp(-ub);
+        double lq = 1 - exp(-lb);
+        double uq = 1 - exp(-ub);
         if (uq - lq < 1e-3) {
             time = 0.5*(lb + ub);
         } else {
-            float q = 0.5*(lq + uq);
+            double q = 0.5*(lq + uq);
             time = -log(1 - q);
         }
     }
@@ -48,7 +48,7 @@ void Interval::fill_time() {
     assert(time >= lb and time <= ub);
 }
 
-bool Interval::full(float t) {
+bool Interval::full(double t) {
     assert(lb >= t);
     return lb == max(t, branch.lower_node->time) and ub == branch.upper_node->time;
 }
@@ -98,14 +98,14 @@ bool Interval::operator!=(const Interval &other) const {
     return false;
 }
 
-shared_ptr<Interval> create_interval(Branch b, float tl, float tu, int init_pos) {
+shared_ptr<Interval> create_interval(Branch b, double tl, double tu, int init_pos) {
     return make_shared<Interval>(b, tl, tu, init_pos);
 }
 
 Interval_info::Interval_info() {
 }
 
-Interval_info::Interval_info(Branch b, float tl, float tu) {
+Interval_info::Interval_info(Branch b, double tl, double tu) {
     assert(tl <= tu);
     assert(tl >= b.lower_node->time and tu <= b.upper_node->time);
     branch = b;

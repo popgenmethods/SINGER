@@ -26,56 +26,56 @@ using namespace std;
 class Node {
     
 public:
-    map<float, float> mutation_sites = {{-1, 0}, {INT_MAX, 0}};
-    map<float, float>::iterator it = next(mutation_sites.begin());
+    map<double, double> mutation_sites = {{-1, 0}, {INT_MAX, 0}};
+    map<double, double>::iterator it = next(mutation_sites.begin());
     
     int index = 0;
     
-    float time = 0;
+    double time = 0;
     
-    Node(float t);
+    Node(double t);
     
     void set_index(int index);
     
     void print();
     
-    void add_mutation(float pos);
+    void add_mutation(double pos);
     
-    float get_state(float pos);
+    double get_state(double pos);
     
-    void write_state(float pos, float s);
+    void write_state(double pos, double s);
     
     void read_mutation(string filename);
     
-    void move_iterator(float m);
+    void move_iterator(double m);
 
 /*
 public:
     
-    unordered_set<float> mutation_sites = {};
-    // unordered_set<float> ambiguous_sites = {};
+    unordered_set<double> mutation_sites = {};
+    // unordered_set<double> ambiguous_sites = {};
     
     int index = 0;
     
-    float time = 0;
+    double time = 0;
     
-    Node(float t);
+    Node(double t);
     
     void set_index(int index);
     
     void print();
     
-    void add_mutation(float pos);
+    void add_mutation(double pos);
     
-    float get_state(float pos);
+    double get_state(double pos);
     
-    void write_state(float pos, float s);
+    void write_state(double pos, double s);
     
     void read_mutation(string filename);
  */
 };
 
-shared_ptr<Node> new_node(float t);
+shared_ptr<Node> new_node(double t);
 
 struct compare_node {
     
