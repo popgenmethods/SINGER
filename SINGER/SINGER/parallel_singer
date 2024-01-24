@@ -10,11 +10,8 @@ def index_vcf(vcf_prefix, block_length):
     """Index the VCF file using the index_vcf.py script."""
     script_dir = os.path.dirname(os.path.realpath(__file__))
     indexer = os.path.join(script_dir, "index_vcf.py")    
-    if not os.path.exists(f"{vcf_prefix}.index"):
-        print(f"Indexing VCF file: {vcf_prefix}.vcf with block length: {block_length}")
-        subprocess.run(["python", indexer, vcf_prefix, str(block_length)])
-    else:
-        print(f"Index file {vcf_prefix}.index already exists. Skipping indexing.")
+    print(f"Indexing VCF file: {vcf_prefix}.vcf with block length: {block_length}")
+    subprocess.run(["python", indexer, vcf_prefix, str(block_length)])
 
 
 def run_singer_in_parallel(vcf_prefix, output_prefix, mutation_rate, ratio, block_length, num_iters, thinning_interval, Ne, polar, num_cores):
@@ -81,8 +78,8 @@ def main():
     print(f"Tskit conversion freq: {args.freq}")
     print(f"Number of cores: {args.num_cores}") 
 
-    # index_vcf(args.vcf, args.L)
-    # run_singer_in_parallel(args.vcf, args.output, args.m, args.ratio, args.L, args.n, args.thin, args.Ne, args.polar, args.num_cores)
+    index_vcf(args.vcf, args.L)
+    run_singer_in_parallel(args.vcf, args.output, args.m, args.ratio, args.L, args.n, args.thin, args.Ne, args.polar, args.num_cores)
     convert_long_ARG(args.vcf, args.output, args.n, args.freq)
 
 if __name__ == "__main__":
