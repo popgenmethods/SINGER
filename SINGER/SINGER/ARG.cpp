@@ -1032,6 +1032,7 @@ void ARG::write_recombs(string filename) {
 void ARG::write_mutations(string filename) {
     ofstream file;
     file.open(filename);
+    file.precision(numeric_limits<double>::max_digits10);
     for (auto &x : mutation_branches) {
         double m = x.first;
         for (auto &y : x.second) {

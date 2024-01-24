@@ -41,7 +41,7 @@ def read_mutation(tables, mutation_file):
     n = mutations.shape[0]
     mut_pos = 0
     for i in range(n):
-        if mutations[i, 0] != mut_pos and mutations[i, 0] < 1e6:
+        if mutations[i, 0] != mut_pos:
             tables.sites.add_row(position=mutations[i, 0], ancestral_state='0')
             mut_pos = mutations[i, 0]
         site_id = tables.sites.num_rows - 1
