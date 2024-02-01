@@ -58,10 +58,6 @@ def read_ARG(node_file, branch_file, mutation_file):
 def write_trees(input_prefix, output_prefix, start, end, step):
     for i in range(start, end, step):
         trees_file = f"{output_prefix}_{i}.trees"
-        if os.path.exists(trees_file):
-            print(f"File {trees_file} already exists. Skipping...")
-            continue
-
         node_file = f"{input_prefix}_nodes_{i}.txt"
         branch_file = f"{input_prefix}_branches_{i}.txt"
         mutation_file = f"{input_prefix}_muts_{i}.txt"
@@ -71,10 +67,6 @@ def write_trees(input_prefix, output_prefix, start, end, step):
 def write_fast_trees(input_prefix, output_prefix, start, end, step):
     for i in range(start, end, step):
         trees_file = f"{output_prefix}_{i}.trees"
-        if os.path.exists(trees_file):
-            print(f"File {trees_file} already exists. Skipping...")
-            continue
-
         node_file = f"{input_prefix}_fast_nodes_{i}.txt"
         branch_file = f"{input_prefix}_fast_branches_{i}.txt"
         mutation_file = f"{input_prefix}_fast_muts_{i}.txt"
