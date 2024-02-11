@@ -1,0 +1,154 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import subprocess
+import argparse
+import random
+
+
+def run_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, end, vcf_prefix, output_prefix, num_iters, thin, polar, seed):
+    attempts = 0
+    max_attempts = 100
+    random.seed(seed)
+    random_seeds = [random.randint(0, 2**30 - 1) for _ in range(max_attempts)]   
+   
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    singer_executable = os.path.join(script_dir, "singer") 
+    
+    start_cmd = f"{singer_executable} -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin}"    
+    debug_cmd = f"{singer_executable} -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -debug"    
+
+    seeded_start_cmd = start_cmd + f" -seed {seed}"
+    print(seeded_start_cmd)
+    process = subprocess.run(seeded_start_cmd.split(), check=False)
+    while process.returncode != 0 and attempts < max_attempts:
+        print(f"Auto-debug iteration: {attempts}")
+        seeded_debug_cmd = debug_cmd + f" -seed {random_seeds[attempts]}"
+        print(seeded_debug_cmd)
+        process = subprocess.run(seeded_debug_cmd.split(), check=False)
+        attempts += 1
+
+    if attempts == max_attempts:
+        print("Auto-debug failed. Contact the author for help: yun_deng@berkeley.edu")
+        sys.exit(1)
+
+def run_fast_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, end, vcf_prefix, output_prefix, num_iters, thin, polar, seed):
+    attempts = 0
+    max_attempts = 100
+    random.seed(seed)
+    random_seeds = [random.randint(0, 2**30 - 1) for _ in range(max_attempts)]
+    
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    singer_executable = os.path.join(script_dir, "singer")
+
+    start_cmd = f"{singer_executable} -fast -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin}"
+    debug_cmd = f"{singer_executable} -fast -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -debug"
+
+    seeded_start_cmd = start_cmd + f" -seed {seed}"
+    print(seeded_start_cmd)
+    process = subprocess.run(start_cmd.split(), check=False)
+    while process.returncode != 0 and attempts < max_attempts:
+        print(f"Auto-debug iteration: {attempts}")
+        seeded_debug_cmd = debug_cmd + f" -seed {random_seeds[attempts]}"
+        print(seeded_debug_cmd)
+        process = subprocess.run(seeded_debug_cmd.split(), check=False)
+        attempts += 1  
+ 
+    if attempts == max_attempts:
+        print("Auto-debug failed. Contact the author for help: yun_deng@berkeley.edu")
+        sys.exit(1)
+
+
+def resume_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, end, vcf_prefix, output_prefix, num_iters, thin, polar, seed):
+    attempts = 0
+    max_attempts = 100
+    random.seed(seed)
+    random_seeds = [random.randint(0, 2**30 - 1) for _ in range(max_attempts)]
+
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    singer_executable = os.path.join(script_dir, "singer")
+
+    resume_cmd = f"{singer_executable} -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -resume" 
+    debug_cmd = f"{singer_executable} -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -debug"
+      
+    seeded_resume_cmd = resume_cmd + f" -seed {seed}"
+    print(seeded_resume_cmd)
+    process = subprocess.run(seeded_resume_cmd.split(), check=False)
+    while process.returncode != 0 and attempts < max_attempts:
+        print(f"Auto-debug iteration: {attempts}")
+        seeded_debug_cmd = debug_cmd + f" -seed {random_seeds[attempts]}"
+        print(seeded_debug_cmd)
+        process = subprocess.run(seeded_debug_cmd.split(), check=False)
+        attempts += 1
+
+    if attempts == max_attempts:
+        print("Auto-debug failed. Contact the author for help: yun_deng@berkeley.edu")
+        sys.exit(1)
+
+      
+def resume_fast_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, end, vcf_prefix, output_prefix, num_iters, thin, polar, seed):
+    attempts = 0
+    max_attempts = 100
+    random.seed(seed)
+    random_seeds = [random.randint(0, 2**30 - 1) for _ in range(max_attempts)]
+
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    singer_executable = os.path.join(script_dir, "singer")
+
+    resume_cmd = f"{singer_executable} -fast -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -resume"
+    debug_cmd = f"{singer_executable} -fast -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -debug"
+
+    seeded_resume_cmd = resume_cmd + f" -seed {seed}"
+    print(seeded_resume_cmd)
+    process = subprocess.run(seeded_resume_cmd.split(), check=False)
+    while process.returncode != 0 and attempts < max_attempts:
+        print(f"Auto-debug iteration: {attempts}")
+        seeded_debug_cmd = debug_cmd + f" -seed {random_seeds[attempts]}"
+        print(seeded_debug_cmd)
+        process = subprocess.run(seeded_debug_cmd.split(), check=False)
+        attempts += 1
+
+    if attempts == max_attempts:
+        print("Auto-debug failed. Contact the author for help: yun_deng@berkeley.edu")
+        sys.exit(1)
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Sample and infer ARG from genetic variation data')
+
+    parser.add_argument('-Ne', type=float, default=1e4, help='Effective population size. Default: 1e4.')
+    parser.add_argument('-m', type=float, required=True, help='Mutation rate.')
+    parser.add_argument('-ratio', type=float, default=1, help='Recombination to mutation ratio. Default: 1.')
+    parser.add_argument('-vcf', type=str, required=True, help='VCF file prefix (without .vcf or .vcf.gz extension).')
+    parser.add_argument('-output', type=str, required=True, help='Output file prefix.')
+    parser.add_argument('-start', type=str, required=True, help='Start position.')
+    parser.add_argument('-end', type=str, required=True, help='End position.')
+    parser.add_argument('-n', type=int, required=True, help='Number of MCMC samples.')
+    parser.add_argument('-thin', type=int, required=True, help='Thinning interval length.')
+    parser.add_argument('-polar', type=float, default=0.5, help='Site flip probability. Default: 0.5.')
+    parser.add_argument('-resume', action='store_true', help='Resume MCMC with this flag.')
+    parser.add_argument('-fast', action='store_true', help='Run fast-SINGER with this flag.')
+    parser.add_argument('-seed', type=int, default=42, help='Random seed for reproducibility. Default: 42')
+
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
+    args = parser.parse_args()
+
+    if (args.fast):
+        if (args.resume):
+            resume_fast_singer(args.Ne, args.m, args.ratio, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.seed)
+        else:
+            run_fast_singer(args.Ne, args.m, args.ratio, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.seed)
+
+    else:
+        if (args.resume):
+            resume_singer(args.Ne, args.m, args.ratio, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.seed)
+        else:
+            run_singer(args.Ne, args.m, args.ratio, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.seed)
+
+
+if __name__ == "__main__":
+    main()

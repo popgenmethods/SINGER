@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+
+import sys
+import argparse
+import subprocess
+import os
+import shlex
+import pandas as pd
+
+def parallelize_multi_window_singer(windows, vcfs, outputs, mutation_rate, ratio, num_iters, thinning_interval, Ne, polar, num_cores):
+    """Run singer in parallel for the genomic windows"""
+
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    singer_master_executable = os.path.join(script_dir, "singer_master")
+
+    segment_table = pd.read_csv(windows, delim_whitespace=True, header=None)
+    vcf_table = pd.read_csv(vcfs, delim_whitespace=True, header=None)
+    output_table = pd.read_csv(outputs, delim_whitespace=True, header=None) 
+
+    # Prepare the singer commands
+    cmd = ""
+    for i in range(vcf_table.shape[0]):
+        start = segment_table.iloc[i, 1]
+        end = segment_table.iloc[i, 2]
+        vcf_prefix = vcf_table.iloc[i, 0]
+        output_prefix = output_table.iloc[i, 0]
+
+        # Base command
+        cmd += f" \'{singer_master_executable} -Ne {Ne} -m {mutation_rate} -ratio {ratio} -vcf {vcf_prefix} -output {output_prefix} -start {start} -end {end} -n {num_iters} -thin {thinning_interval} -polar {polar}\'"
+
+
+    # Execute the commands in parallel
+    print(f"parallel -u -j {num_cores} :::" + cmd)
+    subprocess.run(f"parallel -u -j {num_cores} :::" + cmd, shell=True)
+
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Parallelize singer runs with provided genomic windows")
+    parser.add_argument('-Ne', type=float, required=True, help='Effective population size. Default: 1e4.')
+    parser.add_argument("-m", type=float, required=True, help="Mutation rate.")
+    parser.add_argument("-ratio", type=float, default=1, help="Recombination to mutation ratio. Default: 1.")
+    parser.add_argument("-windows", type=str, required=True, help="The bed file of genomic windows.")
+    parser.add_argument("-vcfs", type=str, required=True, help="The vcf files corresponding to each genomic window.")
+    parser.add_argument("-outputs", type=str, required=True, help="Output file prefices for all genomic windows.")
+    parser.add_argument("-n", type=int, required=True, help="Number of MCMC samples.")
+    parser.add_argument("-thin", type=int, required=True, help="Thinning interval length.")
+    parser.add_argument("-polar", type=float, default=0.5, required=False, help="Site flip probability. Default: 0.5.")
+    parser.add_argument("-freq", type=float, default=1, required=False, help="Convert to tskit every {freq} samples. Default: 1.")
+    parser.add_argument("-num_cores", type=int, default=20, required=False, help="Number of cores. Default: 20.")
+
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
+    args = parser.parse_args()
+    
+    print("Parameters:")
+    print(f"Effective population size: {args.Ne}")
+    print(f"Mutation rate: {args.m}")
+    print(f"Recombination to mutation ratio: {args.ratio}")
+    print(f"VCF files for the windows: {args.vcfs}")
+    print(f"Output file prefices for the windows: {args.outputs}")
+    print(f"Number of MCMC samples: {args.n}")
+    print(f"Thinning interval length: {args.thin}")
+    print(f"Site flip probability: {args.polar}")
+    print(f"Tskit conversion freq: {args.freq}")
+    print(f"Number of cores: {args.num_cores}")
+
+    parallelize_multi_window_singer(args.windows, args.vcfs, args.outputs, args.m, args.ratio, args.n, args.thin, args.Ne, args.polar, args.num_cores)
+
+if __name__ == "__main__":
+    main()
