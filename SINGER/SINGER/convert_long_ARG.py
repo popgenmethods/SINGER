@@ -86,10 +86,9 @@ def generate_file_lists(vcf_prefix, output_prefix, MCMC_iteration):
     mutation_files = []
 
     for i in range(len(block_coordinates)):
-        start_index = round(block_coordinates[i]/1e6)
-        node_files.append(f"{output_prefix}_{start_index}_{start_index+1}_nodes_{MCMC_iteration}.txt")
-        branch_files.append(f"{output_prefix}_{start_index}_{start_index+1}_branches_{MCMC_iteration}.txt")
-        mutation_files.append(f"{output_prefix}_{start_index}_{start_index+1}_muts_{MCMC_iteration}.txt")
+        node_files.append(f"{output_prefix}_{i}_{i+1}_nodes_{MCMC_iteration}.txt")
+        branch_files.append(f"{output_prefix}_{i}_{i+1}_branches_{MCMC_iteration}.txt")
+        mutation_files.append(f"{output_prefix}_{i}_{i+1}_muts_{MCMC_iteration}.txt")
     return node_files, branch_files, mutation_files, block_coordinates
 
 def write_output_ts(ts, output_prefix, MCMC_iteration):
@@ -110,14 +109,10 @@ def main():
 
     # Generate file lists
     node_files, branch_files, mutation_files, block_coordinates = generate_file_lists(args.vcf, args.output, args.iteration)
-
     # Apply the function
     output_ts_filename = f"{args.output}_{args.iteration}.trees"
-    if os.path.exists(output_ts_filename):
-        print(f"File {output_ts_filename} already exists. Skipping.")
-    else:
-        ts = read_long_ARG(node_files, branch_files, mutation_files, block_coordinates)
-        write_output_ts(ts, args.output, args.iteration)    
+    ts = read_long_ARG(node_files, branch_files, mutation_files, block_coordinates)
+    write_output_ts(ts, args.output, args.iteration)    
 
 if __name__  == "__main__":
     main()
