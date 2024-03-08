@@ -40,7 +40,6 @@ This command is to get the ARG samples for a specific region in the vcf file. We
 
 |flag|required?|details|  
 |-------------------|-----|---|  
-|**-fast**|optional|you will run fast-SINGER with this flag, otherwise regular full SINGER|
 |**-Ne**|required|the diploid effective population size, which means the haploid effective population size will be **2*Ne**|
 |**-m**|required|per base pair per generation mutation rate|
 |**-ratio**|optional|the ratio between recombination and mutation rate, default at 1|
@@ -106,6 +105,5 @@ This script will:
 ## Suggestions from developer
 
 1. As a Bayesian sampling method, SINGER works best when you sample some ARGs from posterior, **only using one single sample is NOT ideal**. To this point, we highly encourage specifying **-n, -thin** flags. You can find how we run SINGER on real datasets on:
-2. To decide whether to run SINGER or fast-SINGER, the best way is to run both on test data (for example, subsampled individuals on a small genomic region), and compare the inference results from them. If fast-SINGER agrees with SINGER well then it is good to go with fast-SINGER to save computational time. 
-3. It is of importance to carefully choose the parameters, such as -Ne, -m, and -ratio. We recommend first choosing the mutation rate m, and then based on average pairwise diversity \($\pi=4\cdot N_e \cdot m\$), you can decide the Ne parameter. If you are not super sure about the recombination rate, you can use the default ratio of 1. 
-4. Unfortunately for now we only support phased, high-quality genomes, and polymorphic sites with missingness will be excluded. We are working on incorporating missingness and unphased data in the near future. ARGweaver has better support in these regards.
+2. It is of importance to carefully choose the parameters, such as -Ne, -m, and -ratio. We recommend first choosing the mutation rate m, and then based on average pairwise diversity \($\pi=4\cdot N_e \cdot m\$), you can decide the Ne parameter. If you are not super sure about the recombination rate, you can use the default ratio of 1. 
+3. Unfortunately for now we only support phased, high-quality genomes, and polymorphic sites with missingness will be excluded. We are working on incorporating missingness and unphased data in the near future. ARGweaver has better support in these regards.
