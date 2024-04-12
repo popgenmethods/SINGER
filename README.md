@@ -33,7 +33,7 @@ To sample ARGs with SINGER, you can run command line like shown below.
 path_to_singer/singer_master -Ne 1e4 -m 1.25e-8
 -vcf prefix_of_vcf_file -output prefix_of_output_file
 -start 0 -end 1e6
--n 1000 -thin 10
+-n 100 -thin 20
 ```
 
 This command is to get the ARG samples for a specific region in the vcf file. We specify the details of the arguments here (or you can simply type ```path_to_singer/singer_master``` to display similar information):
