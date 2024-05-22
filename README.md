@@ -47,8 +47,8 @@ This command is to get the ARG samples for a specific region in the vcf file. We
 |**-output**|required|the prefix of the output .trees file name| 
 |**-start**|required|the start position of the region| 
 |**-end**|required|the end position of the region| 
-|**-n**|optional|MCMC iterations to run, default at 0, only getting initialization|
-|**-thin**|optional|we sample the ARG from MCMC every this number of iterations, default at 1|
+|**-n**|optional|the number of posterior samples, default at 0, only getting initialization|
+|**-thin**|optional|the number of MCMC iterations between adjacent samples, default at 1|
 |**-polar**|optional|the probability of correctly polarized probability, default at 0.5 for unpolarized data, please use 0.99 for polarized data|
 
 The output files will be:
