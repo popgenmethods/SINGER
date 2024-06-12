@@ -17,6 +17,7 @@
 #include "Emission.hpp"
 #include "Normalizer.hpp"
 #include "Scaler.hpp"
+#include "Rate_map.hpp"
 
 class Sampler {
     
@@ -47,6 +48,8 @@ public:
     unordered_map<Node_ptr, set<double>> mutation_sets = {};
     
     Sampler(double pop_size, double r, double m);
+    
+    Sampler(double pop_size, Rate_map &rm, Rate_map &mm);
     
     void set_pop_size(double n);
     

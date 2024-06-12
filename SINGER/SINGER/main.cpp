@@ -17,6 +17,7 @@ int main(int argc, const char * argv[]) {
     int spacing = 1;
     double start_pos = -1, end_pos = -1;
     string input_filename = "", output_prefix = "";
+    string recomb_map_filename = "", mut_map_filename = "";
     double penalty = 0.01;
     double polar = 0.5;
     double epsilon_hmm = 0.1;
@@ -168,6 +169,20 @@ int main(int argc, const char * argv[]) {
             }
             output_prefix = argv[++i];
         }
+        else if (arg == "-recomb_map") {
+            if (i + 1 > argc || argv[i+1][0] == '-') {
+                cerr << "Error: -recomb_map flag cannot be empty. " << endl;
+                exit(1);
+            }
+            recomb_map_filename = argv[++i];
+        }
+        else if (arg == "-mut_map") {
+            if (i + 1 > argc || argv[i+1][0] == '-') {
+                cerr << "Error: -mut_map flag cannot be empty. " << endl;
+                exit(1);
+            }
+            mut_map_filename = argv[++i];
+        }
         else if (arg == "-n") {
             if (i + 1 > argc || argv[i+1][0] == '-') {
                 cerr << "Error: -n flag cannot be empty. " << endl;
@@ -237,7 +252,12 @@ int main(int argc, const char * argv[]) {
         cerr << "-thin flag is invalid. " << endl;
         exit(1);
     }
-    Sampler sampler = Sampler(Ne, r, m);
+    // Sampler sampler = Sampler(Ne, r, m);
+    Rate_map recomb_map = Rate_map();
+    recomb_map.load_map(recomb_map_filename);
+    Rate_map mut_map = Rate_map();
+    mut_map.load_map(mut_map_filename);
+    Sampler sampler = Sampler(Ne, recomb_map, mut_map);
     sampler.penalty = penalty;
     sampler.polar = polar;
     sampler.set_precision(epsilon_hmm, epsilon_psmc);

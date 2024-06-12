@@ -13,6 +13,12 @@ Sampler::Sampler(double pop_size, double r, double m) {
     recomb_rate = r*pop_size;
 }
 
+Sampler::Sampler(double pop_size, Rate_map &rm, Rate_map &mm) {
+    Ne = pop_size;
+    mut_rate = mm.mean_rate()*Ne;
+    recomb_rate = rm.mean_rate()*Ne;
+}
+
 void Sampler::set_precision(double c, double q) {
     bsp_c = c;
     tsp_q = q;
