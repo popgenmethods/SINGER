@@ -38,17 +38,25 @@ path_to_singer/singer_master -Ne 1e4 -m 1.25e-8
 
 This command is to get the ARG samples for a specific region in the vcf file. We specify the details of the arguments here (or you can simply type ```path_to_singer/singer_master``` to display similar information):
 
+The required flags include (either `-m` or `-mut_map` has to be provided):
+
 |flag|required?|details|  
 |-------------------|-----|---|  
-|**-Ne**|required|the diploid effective population size, which means the haploid effective population size will be **2*Ne**|
-|**-m**|required|per base pair per generation mutation rate|
+|**-m**|conditionally required|per base pair per generation mutation rate|
+|**-mut_map**|conditionally required|name of the file describing the mutation rate landscape|
+|**-vcf**|required|prefix of the input .vcf file name|
+|**-output**|required|prefix of the output .trees file name| 
+|**-start**|required|start position of the region| 
+|**-end**|required|end position of the region| 
+
+The optional flags include:
+
+|flag|required?|details|  
+|-------------------|-----|---|  
+|**-Ne**|optional|the diploid effective population size, which means the haploid effective population size will be **2*Ne**|
 |**-ratio**|optional|the ratio between recombination and mutation rate, default at 1|
-|**-vcf**|required|the prefix of the input .vcf file name|
-|**-output**|required|the prefix of the output .trees file name| 
-|**-start**|required|the start position of the region| 
-|**-end**|required|the end position of the region| 
-|**-n**|optional|the number of posterior samples, default at 0, only getting initialization|
-|**-thin**|optional|the number of MCMC iterations between adjacent samples, default at 1|
+|**-n**|optional|the number of posterior samples, default at 100|
+|**-thin**|optional|the number of MCMC iterations between adjacent samples, default at 20|
 |**-polar**|optional|the probability of correctly polarized probability, default at 0.5 for unpolarized data, please use 0.99 for polarized data|
 
 The output files will be:
