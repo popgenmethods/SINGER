@@ -38,11 +38,12 @@ path_to_singer/singer_master -Ne 1e4 -m 1.25e-8
 
 This command is to get the ARG samples for a specific region in the vcf file. We specify the details of the arguments here (or you can simply type ```path_to_singer/singer_master``` to display similar information):
 
-The required flags include:
+The required flags include (either `-m` or `-mut_map` has to be provided):
 
 |flag|required?|details|  
 |-------------------|-----|---|  
-|**-m**|required|per base pair per generation mutation rate|
+|**-m**|conditionally required|per base pair per generation mutation rate|
+|**-mut_map**|conditionally required|name of the file describing the mutation rate landscape|
 |**-vcf**|required|prefix of the input .vcf file name|
 |**-output**|required|prefix of the output .trees file name| 
 |**-start**|required|start position of the region| 
@@ -54,6 +55,7 @@ The optional flags include:
 |-------------------|-----|---|  
 |**-Ne**|optional|the diploid effective population size, which means the haploid effective population size will be **2*Ne**|
 |**-ratio**|optional|the ratio between recombination and mutation rate, default at 1|
+|**-recomb_map**|optional|name of the file describing the recombination rate landscape|
 |**-n**|optional|the number of posterior samples, default at 100|
 |**-thin**|optional|the number of MCMC iterations between adjacent samples, default at 20|
 |**-polar**|optional|the probability of correct polarization, default at 0.5 for unpolarized data, please use 0.99 for polarized data|
