@@ -38,12 +38,11 @@ path_to_singer/singer_master -Ne 1e4 -m 1.25e-8
 
 This command is to get the ARG samples for a specific region in the vcf file. We specify the details of the arguments here (or you can simply type ```path_to_singer/singer_master``` to display similar information):
 
-The required flags include (either `-m` or `-mut_map` has to be provided):
+The required flags include:
 
 |flag|required?|details|  
 |-------------------|-----|---|  
-|**-m**|conditionally required|per base pair per generation mutation rate|
-|**-mut_map**|conditionally required|name of the file describing the mutation rate landscape|
+|**-m**|required|per base pair per generation mutation rate|
 |**-vcf**|required|prefix of the input .vcf file name|
 |**-output**|required|prefix of the output .trees file name| 
 |**-start**|required|start position of the region| 
