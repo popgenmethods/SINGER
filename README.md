@@ -57,7 +57,7 @@ The optional flags include:
 |**-ratio**|optional|the ratio between recombination and mutation rate, default at 1|
 |**-n**|optional|the number of posterior samples, default at 100|
 |**-thin**|optional|the number of MCMC iterations between adjacent samples, default at 20|
-|**-polar**|optional|the probability of correctly polarized probability, default at 0.5 for unpolarized data, please use 0.99 for polarized data|
+|**-polar**|optional|the probability of correct polarization, default at 0.5 for unpolarized data, please use 0.99 for polarized data|
 
 The output files will be:
 
