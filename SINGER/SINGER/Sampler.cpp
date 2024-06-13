@@ -17,6 +17,8 @@ Sampler::Sampler(double pop_size, Rate_map &rm, Rate_map &mm) {
     Ne = pop_size;
     mut_rate = mm.mean_rate()*Ne;
     recomb_rate = rm.mean_rate()*Ne;
+    recomb_map = rm;
+    mut_map = mm;
 }
 
 void Sampler::set_precision(double c, double q) {
@@ -302,7 +304,8 @@ void Sampler::build_singleton_arg() {
     arg = ARG(Ne, sequence_length);
     arg.discretize(bin_size);
     arg.build_singleton_arg(n);
-    arg.compute_rhos_thetas(recomb_rate, mut_rate);
+    // arg.compute_rhos_thetas(recomb_rate, mut_rate);
+    arg.compute_rhos_thetas(recomb_map, mut_map);
 }
 
 void Sampler::build_void_arg() {

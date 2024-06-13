@@ -25,6 +25,8 @@ public:
     
     double rho_unit = 4e-3;
     double Ne = 1;
+    Rate_map recomb_map;
+    Rate_map mut_map;
     double mut_rate = 0;
     double recomb_rate = 0;
     string input_prefix = "";

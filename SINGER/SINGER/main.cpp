@@ -224,6 +224,7 @@ int main(int argc, const char * argv[]) {
             exit(1);
         }
     }
+    /*
     if (r < 0) {
         cerr << "-r flag missing or invalid value. " << endl;
         exit(1);
@@ -232,6 +233,7 @@ int main(int argc, const char * argv[]) {
         cerr << "-m flag missing or invalid value. " << endl;
         exit(1);
     }
+     */
     if (Ne < 0) {
         cerr << "-Ne flag missing or invalid value. " << endl;
         exit(1);

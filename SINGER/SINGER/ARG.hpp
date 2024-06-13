@@ -15,7 +15,7 @@
 #include "RSP_smc.hpp"
 #include "Reconstruction.hpp"
 #include "Fitch_reconstruction.hpp"
-// #include "Distribution.hpp"
+#include "Rate_map.hpp"
 
 class ARG {
     
@@ -58,6 +58,8 @@ public:
     int get_index(double x);
     
     void compute_rhos_thetas(double r, double m);
+    
+    void compute_rhos_thetas(Rate_map &rm, Rate_map &mm);
     
     void build_singleton_arg(Node_ptr n);
     

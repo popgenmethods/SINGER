@@ -61,6 +61,16 @@ void ARG::compute_rhos_thetas(double r, double m) {
     }
 }
 
+void ARG::compute_rhos_thetas(Rate_map &rm, Rate_map &mm) {
+    int n = (int) coordinates.size() - 1;
+    for (int i = 0; i < n; i++) {
+        // rhos.push_back(r*(coordinates[i+1] - coordinates[i]));
+        // thetas.push_back(m*(coordinates[i+1] - coordinates[i]));
+        rhos.push_back(rm.segment_distance(coordinates[i], coordinates[i+1])*Ne);
+        thetas.push_back(mm.segment_distance(coordinates[i], coordinates[i+1])*Ne);
+    }
+}
+
 void ARG::build_singleton_arg(Node_ptr n) {
     add_sample(n);
     Branch branch = Branch(n, root);
