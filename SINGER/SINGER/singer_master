@@ -5,9 +5,99 @@ import os
 import subprocess
 import argparse
 import random
+import uuid
 
+def random_string():
+    unique_id = uuid.uuid4().hex
+    return unique_id
 
-def run_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, end, vcf_prefix, output_prefix, num_iters, thin, polar, seed):
+def write_rate_map(output_prefix, rate, x, y):
+    rate_table = np.array([[0, y, rate]])
+    rand_suffix = random_string()
+    map_filename = f"{output_prefix}_{rand_suffix}.txt"
+    np.savetxt(map_filename, rate_table, delimiter=' ')
+    return map_filename
+
+def compute_average_rate(map_file, x, y):
+    data = np.loadtxt(map_file)
+    mask = (data[:, 1] > x) & (data[:, 0] < y)
+    selected_data = data[mask]
+
+    total_length = 0
+    weighted_sum = 0
+    for row in selected_data:
+        bin_start, bin_end, rate = row
+        effective_start = max(bin_start, x)
+        effective_end = min(bin_end, y)
+        bin_length = effective_end - effective_start
+        total_length += bin_length
+        weighted_sum += rate * bin_length
+
+    if total_length == 0:
+        return 0
+    average_rate = weighted_sum / total_length
+    return average_rate
+
+def tabix_vcf(vcf_file):
+    index_file = vcf_file + '.tbi'
+    if not os.path.exists(index_file):
+        print(f"Indexing VCF file: {vcf_file}")
+        subprocess.run(['tabix', '-p', 'vcf', vcf_file], check=True)
+    else:
+        print(f"Index file already exists: {index_file}")
+
+def calculate_diversity_with_filter(vcf_file, start, end):
+    tabix_vcf(vcf_file)
+    vcf = pysam.VariantFile(vcf_file)
+    try:
+        first_variant = next(vcf.fetch())
+        chrom = first_variant.chrom
+    except StopIteration:
+        raise ValueError("The VCF file is empty or does not contain any variants.")
+
+    num_variants = 0
+    total_diversity = 0.0
+    snp_positions = []
+
+    for record in vcf.fetch(chrom, start, end):
+        snp_positions.append(record.pos)
+        allele_counts = [0] * len(record.alleles)
+        num_samples = 0
+
+        for sample in record.samples.values():
+            gt = sample['GT']
+            if gt is None:
+                continue
+            num_samples += 1
+            for allele in gt:
+                if allele is not None:
+                    allele_counts[allele] += 1
+        
+        allele_freqs = [ac / (2 * num_samples) for ac in allele_counts]
+        
+        variant_diversity = sum(f * (1 - f) for f in allele_freqs if f > 0 and f < 1)
+        
+        total_diversity += variant_diversity
+        num_variants += 1
+
+    snp_distances = np.diff(snp_positions)
+    
+    if len(snp_distances) == 0:
+        return 0.0
+    snp_distances = np.append(snp_positions[0] - start, snp_distances, )
+    snp_distances = np.append(snp_distances, end - snp_positions[-1])
+    sorted_snp_distances = np.sort(snp_distances)
+    filtered_length = np.sum(sorted_snp_distances[0:-5])
+    nucleotide_diversity = total_diversity / filtered_length
+    return nucleotide_diversity
+
+def compute_Ne(vcf_prefix, start, end, m):
+    vcf_filename = vcf + ".vcf"
+    effective_diversity = calculate_diversity_with_filter(vcf_filename, start, end)
+    Ne = effective_diversity/4/m
+    return Ne 
+
+def run_singer(Ne, mut_map_filename, recomb_map_filename, start, end, vcf_prefix, output_prefix, num_iters, thin, polar, seed):
     attempts = 0
     max_attempts = 100
     random.seed(seed)
@@ -16,7 +106,7 @@ def run_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, end, v
     script_dir = os.path.dirname(os.path.realpath(__file__))
     singer_executable = os.path.join(script_dir, "singer") 
     
-    start_cmd = f"{singer_executable} -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin}"    
+    start_cmd = f"{singer_executable} -Ne {Ne} -mut_map {mut_map_filename} -recomb_map {recomb_map_filename} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin}"    
     debug_cmd = f"{singer_executable} -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -debug"    
 
     seeded_start_cmd = start_cmd + f" -seed {seed}"
@@ -33,32 +123,31 @@ def run_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, end, v
         print("Auto-debug failed. Contact the author for help: yun_deng@berkeley.edu")
         sys.exit(1)
 
-def run_fast_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, end, vcf_prefix, output_prefix, num_iters, thin, polar, seed):
+def run_haps_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, end, haps_prefix, output_prefix, num_iters, thin, polar, seed):
     attempts = 0
     max_attempts = 100
     random.seed(seed)
     random_seeds = [random.randint(0, 2**30 - 1) for _ in range(max_attempts)]
-    
+
     script_dir = os.path.dirname(os.path.realpath(__file__))
     singer_executable = os.path.join(script_dir, "singer")
 
-    start_cmd = f"{singer_executable} -fast -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin}"
-    debug_cmd = f"{singer_executable} -fast -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -input {vcf_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -debug"
+    start_cmd = f"{singer_executable} -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -haps {haps_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin}"
+    debug_cmd = f"{singer_executable} -Ne {Ne} -m {mutation_rate} -r {mutation_rate * recombination_to_mutation_ratio} -haps {haps_prefix} -output {output_prefix} -start {start} -end {end} -polar {polar} -n {num_iters} -thin {thin} -debug"
 
     seeded_start_cmd = start_cmd + f" -seed {seed}"
     print(seeded_start_cmd)
-    process = subprocess.run(start_cmd.split(), check=False)
+    process = subprocess.run(seeded_start_cmd.split(), check=False)
     while process.returncode != 0 and attempts < max_attempts:
         print(f"Auto-debug iteration: {attempts}")
         seeded_debug_cmd = debug_cmd + f" -seed {random_seeds[attempts]}"
         print(seeded_debug_cmd)
         process = subprocess.run(seeded_debug_cmd.split(), check=False)
-        attempts += 1  
- 
+        attempts += 1
+
     if attempts == max_attempts:
         print("Auto-debug failed. Contact the author for help: yun_deng@berkeley.edu")
         sys.exit(1)
-
 
 def resume_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start, end, vcf_prefix, output_prefix, num_iters, thin, polar, seed):
     attempts = 0
@@ -117,38 +206,52 @@ def resume_fast_singer(Ne, mutation_rate, recombination_to_mutation_ratio, start
 def main():
     parser = argparse.ArgumentParser(description='Sample and infer ARG from genetic variation data')
 
-    parser.add_argument('-Ne', type=float, default=1e4, help='Effective population size. Default: 1e4.')
+    parser.add_argument('-Ne', type=float, default=-1, help='Effective population size.')
     parser.add_argument('-m', type=float, required=True, help='Mutation rate.')
     parser.add_argument('-ratio', type=float, default=1, help='Recombination to mutation ratio. Default: 1.')
-    parser.add_argument('-vcf', type=str, required=True, help='VCF file prefix (without .vcf or .vcf.gz extension).')
+    parser.add_argument('-recomb_map', type=str, help='Filename for the recombination rate map.')
+    parser.add_argument('-mut_map', type=str, help='Filename for the mutation rate map.')
+    parser.add_argument('-vcf', type=str, help='VCF file prefix (without .vcf extension).')
     parser.add_argument('-output', type=str, required=True, help='Output file prefix.')
     parser.add_argument('-start', type=str, required=True, help='Start position.')
     parser.add_argument('-end', type=str, required=True, help='End position.')
-    parser.add_argument('-n', type=int, required=True, help='Number of MCMC samples.')
-    parser.add_argument('-thin', type=int, required=True, help='Thinning interval length.')
+    parser.add_argument('-n', type=int, default=100, help='Number of MCMC samples. Default: 100.')
+    parser.add_argument('-thin', type=int, default=20, help='Thinning interval length. Default: 20.')
     parser.add_argument('-polar', type=float, default=0.5, help='Site flip probability. Default: 0.5.')
     parser.add_argument('-resume', action='store_true', help='Resume MCMC with this flag.')
-    parser.add_argument('-fast', action='store_true', help='Run fast-SINGER with this flag.')
-    parser.add_argument('-seed', type=int, default=42, help='Random seed for reproducibility. Default: 42')
+    parser.add_argument('-seed', type=int, default=42, help='Random seed for reproducibility. Default: 42.')
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
 
     args = parser.parse_args()
+    
+    if not args.m and not args.mut_map:
+        parser.error("You must provide either -m or -mut_map")
 
-    if (args.fast):
-        if (args.resume):
-            resume_fast_singer(args.Ne, args.m, args.ratio, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.seed)
+    if not args.ratio and not args.recomb_map:
+        parser.error("You must provide either -ratio or -recomb_map") 
+
+
+    if args.m:
+        args.mut_map = write_rate_map(args.m, args.output, args.start, args.end)
+
+    if args.ratio:
+        if not args.m:
+            parser.error("You must provide -m when using the -ratio flag")
         else:
-            run_fast_singer(args.Ne, args.m, args.ratio, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.seed)
+            args.recomb_map = write_rate_map(args.ratio*args.m, args.vcf, args.start, args.end, args.output)
+    
+    if not args.Ne:
+        args.m = compute_average_rate(args.mut_map, args.start, args.end)
+        args.Ne = compute_Ne(args.vcf, args.start, args.end, args.m)
 
+    if (args.resume):
+        resume_singer(args.Ne, args.mut_map, args.recomb_map, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.seed)
     else:
-        if (args.resume):
-            resume_singer(args.Ne, args.m, args.ratio, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.seed)
-        else:
-            run_singer(args.Ne, args.m, args.ratio, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.seed)
-
+        run_singer(args.Ne, args.mut_map, args.recomb_map, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.seed)
+    
 
 if __name__ == "__main__":
     main()

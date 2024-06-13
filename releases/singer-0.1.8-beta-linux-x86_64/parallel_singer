@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+
+import sys
+import argparse
+import subprocess
+import os
+import shlex
+
+def index_vcf(vcf_prefix, block_length):
+    """Index the VCF file using the index_vcf.py script."""
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    indexer = os.path.join(script_dir, "index_vcf.py")    
+    print(f"Indexing VCF file: {vcf_prefix}.vcf with block length: {block_length}")
+    subprocess.run(["python", indexer, vcf_prefix, str(block_length)])
+
+
+def run_singer_in_parallel(vcf_prefix, output_prefix, mutation_rate, ratio, block_length, num_iters, thinning_interval, Ne, polar, num_cores):
+    """Run singer in parallel using the specified parameters."""
+    
+    # Read the breakpoints from the index file
+    with open(f"{vcf_prefix}.index", 'r') as f:
+        breakpoints = [int(line.split()[0]) for line in f.readlines()]
+    
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    singer_master_executable = os.path.join(script_dir, "singer_master")
+    
+    # Prepare the singer commands
+    cmd_list = []
+    for i in range(len(breakpoints)):
+        start = breakpoints[i]
+        
+        # Base command
+        cmd = f"{singer_master_executable} -Ne {Ne} -m {mutation_rate} -ratio {ratio} -vcf {vcf_prefix} -output {output_prefix}_{i}_{i+1} -start {start} -end {start + block_length} -n {num_iters} -thin {thinning_interval} -polar {polar}"
+        
+        cmd_list.append(cmd)
+
+    # Execute the commands in parallel
+    print(["parallel", "-u", "-j", f"{num_cores}", ":::"] + cmd_list)
+    subprocess.run(["parallel", "-u", "-j", f"{num_cores}", ":::"] + cmd_list)
+    #subprocess.run(["rm", f"{vcf_prefix}.index"])
+
+def convert_long_ARG(vcf_prefix, output_prefix, num_iters, freq):
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    converter = os.path.join(script_dir, "convert_long_ARG.py")
+    for i in range(0, num_iters, freq):
+        subprocess.run(["python", converter, "-vcf", vcf_prefix, "-output", output_prefix, "-iteration", str(i)])
+
+def main():
+    parser = argparse.ArgumentParser(description="Parallelize singer runs by cutting the chromosome")
+    parser.add_argument('-Ne', type=float, required=True, help='Effective population size. Default: 1e4.')
+    parser.add_argument("-m", type=float, required=True, help="Mutation rate.")
+    parser.add_argument("-ratio", type=float, default=1, help="Recombination to mutation ratio. Default: 1.")
+    parser.add_argument("-L", type=int, default=int(1e6), help="Block length. Default: 1e6.")
+    parser.add_argument("-vcf", type=str, required=True, help="VCF file prefix (without .vcf or .vcf.gz extension).")
+    parser.add_argument("-output", type=str, required=True, help="Output file prefix.")
+    parser.add_argument("-n", type=int, required=True, help="Number of MCMC samples.")
+    parser.add_argument("-thin", type=int, required=True, help="Thinning interval length.")
+    parser.add_argument("-polar", type=float, default=0.5, required=False, help="Site flip probability. Default: 0.5.")
+    parser.add_argument("-freq", type=float, default=1, required=False, help="Convert to tskit every {freq} samples. Default: 1.")
+    parser.add_argument("-num_cores", type=int, default=20, required=False, help="Number of cores. Default: 20.")    
+        
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
+    args = parser.parse_args()
+
+    print("Parameters:")
+    print(f"Effective population size: {args.Ne}")
+    print(f"Mutation rate: {args.m}")
+    print(f"Recombination to mutation ratio: {args.ratio}")
+    print(f"Block length: {args.L}")
+    print(f"VCF file prefix: {args.vcf}")
+    print(f"Output file prefix: {args.output}")
+    print(f"Number of MCMC samples: {args.n}")
+    print(f"Thinning interval length: {args.thin}")
+    print(f"Site flip probability: {args.polar}")
+    print(f"Tskit conversion freq: {args.freq}")
+    print(f"Number of cores: {args.num_cores}") 
+
+    index_vcf(args.vcf, args.L)
+    run_singer_in_parallel(args.vcf, args.output, args.m, args.ratio, args.L, args.n, args.thin, args.Ne, args.polar, args.num_cores)
+    convert_long_ARG(args.vcf, args.output, args.n, args.freq)
+
+if __name__ == "__main__":
+    main()
+
