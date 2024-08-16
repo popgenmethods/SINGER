@@ -77,6 +77,19 @@ This tool will convert ARG sample with index from `start_index` to `end_index`, 
 
 ## Tools
 
+### Examining the convergence of the MCMC in SINGER
+
+SINGER is an MCMC-based sampling algorithm. To examine the convergence of it we normally examine the traces of summary statistics, and we have found that 2 summary statistics are quite good at indicating the convergence of the SINGER MCMC: fit to the diversity landscape and number of non-uniquely-mapped sites, as used in the manuscript. We have provided a python script to calculate the traces for these 2 quantities:
+
+```
+python compute_traces.py
+-prefix prefix_of_tree_sequence_file -m mutation_rate
+-start_index index_start_sample -end_index index_terminal_sample
+-output_filename output_trace_filename
+```
+The script will calculate the aforementioned two statistics for all samples with index between the `start_index` and the `end_index`, and they will be output as the the 2 columns in the output file. The fit to the diversity landscape and the number of non-uniquely-mapped sites typically drops with more iterations of the MCMC, and when they reach to a stable stage that is usually a good sign for convergence. 
+
+
 ### Running SINGER for a long chromosome
 
 Often people would like to run the ARG inference method for the entire chromosome (or even the entire genome), and we have provided a python script `parallel_singer` to facilitate you to this end. It automatically handles parallelization for you and runs SINGER multi-threaded. 
