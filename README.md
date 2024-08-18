@@ -89,6 +89,16 @@ python compute_traces.py
 ```
 The script will calculate the aforementioned two statistics for all samples with index between the `start_index` and the `end_index`, and they will be output as the the 2 columns in the output file. The fit to the diversity landscape and the number of non-uniquely-mapped sites typically drops with more iterations of the MCMC, and when they reach to a stable stage that is usually a good sign for convergence. 
 
+### Computing the pairwise coalescence times with respect to a particular haplotype
+
+In the manuscript we used the coalescence ratio to find introgression signals, which is based on the distribution of pairwise coalescence times between one haplytype and others, in every 10kb genome windows. Here we provide a python script tools, to compute the pairwise coalescence times between one given haplotype (indiciated by leaf node index) and others, in a windowed fashion. 
+
+```
+python compute_pairwise_coalescence_times.py
+--trees_file tree_sequence_filename --leaf_index index_of_leaf_node
+--interval_size size_of_genome_window --output_filename output_file_name
+```
+Each row in the output file stands for all the pairwise coalescence times between the input leaf node index and all others. The rows are in the order of the genome windows. 
 
 ### Running SINGER for a long chromosome
 
