@@ -135,7 +135,7 @@ This script will:
 
 ## FAQ
 
-1. By far the most common bug is caused by not choosing the **-Ne, -m** parameter so that you roughly have $\pi=4\cdot N_e \cdot m\$. For example, some bioinformatics pipeline can remove polymorphic sites significantly. If you'll have to either change (effective) mutation rate or effective population size. Another common case is centromeres with almost no sequenced sites, please make sure not to include such regions in SINGER;
+1. By far the most common bug is caused by not choosing the **-Ne, -m** parameter so that you roughly have $\pi=4\cdot N_e \cdot m\$. For example, some bioinformatics pipeline can remove polymorphic sites significantly. You'll have to either change (effective) mutation rate or effective population size. Another common case is centromeres with almost no sequenced sites, please make sure not to include such regions in SINGER;
    
 
 ## Suggestions from developer
