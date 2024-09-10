@@ -301,7 +301,7 @@ def main():
             run_rate_singer(args.Ne, args.m, args.m*args.ratio, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.seed) 
     return 
 
-    else if args.mut_map and not args.m:
+    if args.mut_map and not args.m:
         args.m = compute_average_rate(args.mut_map, args.start, args.end) 
         if not args.recomb_map:
             parser.error("You must provide -recomb_map when using the -mut_map flag")
