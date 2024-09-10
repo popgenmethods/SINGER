@@ -133,6 +133,11 @@ This script will:
 2. Automatically parallelize running SINGER on these windows
 3. Convert the output to `.trees` files with `tskit` format
 
+## FAQ
+
+1. By far the most common bug is caused by not choosing the **-Ne, -m** parameter so that you roughly have $\pi=4\cdot N_e \cdot m\$. For example, some bioinformatics pipeline can remove polymorphic sites significantly. If you'll have to either change (effective) mutation rate or effective population size. Another common case is centromeres with almost no sequenced sites, please make sure not to include such regions in SINGER;
+   
+
 ## Suggestions from developer
 
 1. As a Bayesian sampling method, SINGER works best when you sample some ARGs from posterior, **only using one single sample is NOT ideal**. To this point, we highly encourage specifying **-n, -thin** flags. You can find how we run SINGER on real datasets on:
