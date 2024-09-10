@@ -30,6 +30,8 @@ cp multi_window_singer $VERSION_DIR/multi_window_singer
 cp index_vcf.py $VERSION_DIR/index_vcf.py
 cp convert_long_ARG.py $VERSION_DIR/convert_long_ARG.py
 cp ../../LICENSE $VERSION_DIR/LICENSE
+cp $VERSION_DIR/singer singer
+cp $VERSION_DIR/singer_debug singer_debug
 
 # Change directory to releases
 cd $RELEASE_DIR
