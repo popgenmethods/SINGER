@@ -41,6 +41,7 @@
 		6AD5CE1D2A48FA240004CCE7 /* approx_coalescent_calculator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AD5CE1B2A48FA240004CCE7 /* approx_coalescent_calculator.cpp */; };
 		6ADD720C2A5C826500AF1A62 /* BSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6ADD720A2A5C826500AF1A62 /* BSP.cpp */; };
 		6ADD720F2A6061CB00AF1A62 /* Normalizer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6ADD720D2A6061CB00AF1A62 /* Normalizer.cpp */; };
+		6AEF0D312C1A27A7002BDD8D /* Rate_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AEF0D302C1A27A7002BDD8D /* Rate_map.cpp */; };
 		6AF79A572B46837E00555D67 /* Scaler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6AF79A552B46837E00555D67 /* Scaler.cpp */; };
 /* End PBXBuildFile section */
 
@@ -125,6 +126,8 @@
 		6ADD720B2A5C826500AF1A62 /* BSP.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = BSP.hpp; sourceTree = "<group>"; };
 		6ADD720D2A6061CB00AF1A62 /* Normalizer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Normalizer.cpp; sourceTree = "<group>"; };
 		6ADD720E2A6061CB00AF1A62 /* Normalizer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Normalizer.hpp; sourceTree = "<group>"; };
+		6AEF0D2F2C1A27A7002BDD8D /* Rate_map.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Rate_map.hpp; sourceTree = "<group>"; };
+		6AEF0D302C1A27A7002BDD8D /* Rate_map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rate_map.cpp; sourceTree = "<group>"; };
 		6AF79A552B46837E00555D67 /* Scaler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Scaler.cpp; sourceTree = "<group>"; };
 		6AF79A562B46837E00555D67 /* Scaler.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Scaler.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -159,6 +162,8 @@
 		6AD5CDBE2A3A7F410004CCE7 /* SINGER */ = {
 			isa = PBXGroup;
 			children = (
+				6AEF0D302C1A27A7002BDD8D /* Rate_map.cpp */,
+				6AEF0D2F2C1A27A7002BDD8D /* Rate_map.hpp */,
 				6AC081F12A8C26930021DD8E /* approx_BSP.cpp */,
 				6AC081F22A8C26930021DD8E /* approx_BSP.hpp */,
 				6AD5CE1B2A48FA240004CCE7 /* approx_coalescent_calculator.cpp */,
@@ -307,6 +312,7 @@
 				6AD5CE012A3A7F410004CCE7 /* Trace_pruner.cpp in Sources */,
 				6AD5CE072A3A7F410004CCE7 /* Sampler.cpp in Sources */,
 				6AD5CE052A3A7F410004CCE7 /* Node.cpp in Sources */,
+				6AEF0D312C1A27A7002BDD8D /* Rate_map.cpp in Sources */,
 				6AD5CE142A3A7F410004CCE7 /* Interval.cpp in Sources */,
 				6AD5CE102A3A7F410004CCE7 /* Binary_emission.cpp in Sources */,
 				6ADD720F2A6061CB00AF1A62 /* Normalizer.cpp in Sources */,
@@ -370,7 +376,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -426,7 +432,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;

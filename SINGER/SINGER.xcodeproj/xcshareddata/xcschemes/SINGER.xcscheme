@@ -52,28 +52,12 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-Ne 1e4 -m 2e-8 -r 2e-8 -input  /Users/yun_deng/Desktop/SINGER/arg_files/50_0 -output  /Users/yun_deng/Desktop/SINGER/arg_files/50_0 -polar 0.99 -start 0 -end 1e6 -n 0 -thin 1"
+            argument = "-Ne 1e4 -mut_map /Users/yun_deng/Desktop/SINGER/arg_files/mut_map_0.txt -recomb_map /Users/yun_deng/Desktop/SINGER/arg_files/recomb_map_0.txt -input /Users/yun_deng/Desktop/SINGER/arg_files/recomb_map_0 -output /Users/yun_deng/Desktop/SINGER/arg_files/recomb_map_0 -n 100 -thin 20 -start 0 -end 1e6 -polar 0.99"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-Ne 1e4 -m 1e-8 -r 1e-8 -input /Users/yun_deng/Desktop/POLEGON/arg_files/migration -output /Users/yun_deng/Desktop/POLEGON/arg_files/migration -start 0 -end 2e6 -n 0 -thin 1 -polar 0.99"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "-fast -Ne 1e4 -m 2e-8 -r 2e-8 -input /Users/yun_deng/Desktop/SINGER/arg_files/500_6 -output /Users/yun_deng/Desktop/SINGER/arg_files/500_6 -start 0 -end 1e6 -polar 0.99 -n 1000 -thin 5 -debug"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "-Ne 1.5e4 -m 1.2e-8 -r 1.2e-9 -input /Users/yun_deng/Desktop/SINGER/arg_files/CEU_KGP4_TRIO_UNRELATED_PARENTS_MAC1_10Mbp -output /Users/yun_deng/Desktop/SINGER/arg_files/CEU_KGP4_TRIO_UNRELATED_PARENTS_MAC1_10Mbp -start 24620600 -end 34620600 -n 5 -thin 10"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "-Ne 1e4 -m 1.2e-8 -r 1.2e-8 -input  /Users/yun_deng/Desktop/SINGER/arg_files/ceu_ts_0 -output  /Users/yun_deng/Desktop/SINGER/arg_files/ceu_ts_0 -polar 0.99 -start 9000000 -end 10000000 -n 100 -thin 20"
+            argument = "-Ne 1e4 -mut_map /Users/yun_deng/Desktop/SINGER/arg_files/mut_map_0.txt -recomb_map /Users/yun_deng/Desktop/SINGER/arg_files/const_rec_map_0.txt -input /Users/yun_deng/Desktop/SINGER/arg_files/50_0 -output /Users/yun_deng/Desktop/SINGER/arg_files/50_0 -n 100 -thin 20 -start 0 -end 1e6 -polar 0.99"
             isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "-Ne 2.5e5 -m 1.8e-8  -r 9e-8 -input /Users/yun_deng/Desktop/SINGER/arg_files/region101 -output /Users/yun_deng/Desktop/SINGER/arg_files/region101 -n 100 -thin 10 -start 51883700 -end 52880300 -penalty 0.001"
-            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
    </LaunchAction>

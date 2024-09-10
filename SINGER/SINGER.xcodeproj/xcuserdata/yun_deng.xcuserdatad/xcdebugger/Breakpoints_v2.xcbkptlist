@@ -31,8 +31,8 @@
             filePath = "SINGER/ARG.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "304"
-            endingLineNumber = "304"
+            startingLineNumber = "314"
+            endingLineNumber = "314"
             landmarkName = "ARG::add(new_joining_branches, added_branches)"
             landmarkType = "7">
          </BreakpointContent>
@@ -64,8 +64,8 @@
             filePath = "SINGER/ARG.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "313"
-            endingLineNumber = "313"
+            startingLineNumber = "323"
+            endingLineNumber = "323"
             landmarkName = "ARG::add(new_joining_branches, added_branches)"
             landmarkType = "7">
          </BreakpointContent>
@@ -179,8 +179,8 @@
             filePath = "SINGER/Threader_smc.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "307"
-            endingLineNumber = "307"
+            startingLineNumber = "308"
+            endingLineNumber = "308"
             landmarkName = "Threader_smc::run_TSP(a)"
             landmarkType = "7">
          </BreakpointContent>
@@ -196,8 +196,8 @@
             filePath = "SINGER/ARG.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "212"
-            endingLineNumber = "212"
+            startingLineNumber = "222"
+            endingLineNumber = "222"
             landmarkName = "ARG::remove(cut_point)"
             landmarkType = "7">
          </BreakpointContent>
@@ -230,8 +230,8 @@
             filePath = "SINGER/Threader_smc.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "285"
-            endingLineNumber = "285"
+            startingLineNumber = "286"
+            endingLineNumber = "286"
             landmarkName = "Threader_smc::run_TSP(a)"
             landmarkType = "7">
          </BreakpointContent>
@@ -247,8 +247,8 @@
             filePath = "SINGER/Threader_smc.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "288"
-            endingLineNumber = "288"
+            startingLineNumber = "289"
+            endingLineNumber = "289"
             landmarkName = "Threader_smc::run_TSP(a)"
             landmarkType = "7">
          </BreakpointContent>
@@ -263,8 +263,8 @@
             filePath = "SINGER/ARG.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "872"
-            endingLineNumber = "872"
+            startingLineNumber = "882"
+            endingLineNumber = "882"
             landmarkName = "ARG::get_check_points()"
             landmarkType = "7">
          </BreakpointContent>
@@ -279,8 +279,8 @@
             filePath = "SINGER/ARG.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "876"
-            endingLineNumber = "876"
+            startingLineNumber = "886"
+            endingLineNumber = "886"
             landmarkName = "ARG::get_check_points()"
             landmarkType = "7">
          </BreakpointContent>
@@ -329,8 +329,8 @@
             filePath = "SINGER/Threader_smc.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "189"
-            endingLineNumber = "189"
+            startingLineNumber = "190"
+            endingLineNumber = "190"
             landmarkName = "Threader_smc::run_BSP(a)"
             landmarkType = "7">
          </BreakpointContent>
@@ -354,22 +354,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "94EFF74B-DB89-4212-987B-C97185C7A9A7"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "SINGER/main.cpp"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "255"
-            endingLineNumber = "255"
-            landmarkName = "main(argc, argv)"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "FF14D951-2968-436C-9DF4-585872319F66"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
@@ -377,8 +361,8 @@
             filePath = "SINGER/Sampler.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "669"
-            endingLineNumber = "669"
+            startingLineNumber = "680"
+            endingLineNumber = "680"
             landmarkName = "Sampler::debug_resume_fast_internal_sample(num_iters, spacing)"
             landmarkType = "7">
          </BreakpointContent>
@@ -393,8 +377,8 @@
             filePath = "SINGER/main.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "278"
-            endingLineNumber = "278"
+            startingLineNumber = "302"
+            endingLineNumber = "302"
             landmarkName = "main(argc, argv)"
             landmarkType = "9">
          </BreakpointContent>
@@ -425,8 +409,8 @@
             filePath = "SINGER/main.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "271"
-            endingLineNumber = "271"
+            startingLineNumber = "295"
+            endingLineNumber = "295"
             landmarkName = "main(argc, argv)"
             landmarkType = "9">
          </BreakpointContent>
@@ -441,8 +425,8 @@
             filePath = "SINGER/main.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "267"
-            endingLineNumber = "267"
+            startingLineNumber = "291"
+            endingLineNumber = "291"
             landmarkName = "main(argc, argv)"
             landmarkType = "9">
          </BreakpointContent>
@@ -457,8 +441,8 @@
             filePath = "SINGER/Sampler.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "329"
-            endingLineNumber = "329"
+            startingLineNumber = "340"
+            endingLineNumber = "340"
             landmarkName = "Sampler::iterative_start()"
             landmarkType = "7">
          </BreakpointContent>
@@ -473,8 +457,8 @@
             filePath = "SINGER/main.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "276"
-            endingLineNumber = "276"
+            startingLineNumber = "300"
+            endingLineNumber = "300"
             landmarkName = "main(argc, argv)"
             landmarkType = "9">
          </BreakpointContent>
@@ -489,9 +473,41 @@
             filePath = "SINGER/Sampler.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "551"
-            endingLineNumber = "551"
+            startingLineNumber = "562"
+            endingLineNumber = "562"
             landmarkName = "Sampler::internal_sample(num_iters, spacing)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "D16E5424-417A-4E51-8B37-91EF144C21FF"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "SINGER/TSP.cpp"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "324"
+            endingLineNumber = "324"
+            landmarkName = "TSP::psmc_cdf(rho, s, t)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "79093D15-D51C-4EA9-BFEA-DD22FC8E4B00"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "SINGER/Sampler.cpp"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "332"
+            endingLineNumber = "332"
+            landmarkName = "Sampler::iterative_start()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
