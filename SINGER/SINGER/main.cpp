@@ -254,13 +254,13 @@ int main(int argc, const char * argv[]) {
     }
     Sampler sampler;
     if (r > 0 and m > 0) {
-        Sampler sampler = Sampler(Ne, r, m);
+        sampler = Sampler(Ne, r, m);
     } else {
         Rate_map recomb_map = Rate_map();
         recomb_map.load_map(recomb_map_filename);
         Rate_map mut_map = Rate_map();
         mut_map.load_map(mut_map_filename);
-        Sampler sampler = Sampler(Ne, recomb_map, mut_map);
+        sampler = Sampler(Ne, recomb_map, mut_map);
     }
     sampler.penalty = penalty;
     sampler.polar = polar;

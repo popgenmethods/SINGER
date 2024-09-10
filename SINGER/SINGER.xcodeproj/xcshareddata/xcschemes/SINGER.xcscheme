@@ -57,6 +57,10 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-Ne 1e4 -mut_map /Users/yun_deng/Desktop/SINGER/arg_files/mut_map_0.txt -recomb_map /Users/yun_deng/Desktop/SINGER/arg_files/const_rec_map_0.txt -input /Users/yun_deng/Desktop/SINGER/arg_files/50_0 -output /Users/yun_deng/Desktop/SINGER/arg_files/50_0 -n 100 -thin 20 -start 0 -end 1e6 -polar 0.99"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-Ne 20000.0 -m 1.2e-08 -r 1.2e-08 -input ../yri_polarized_chr1 -output ../singer_args/yri_polarized_chr1_0_1 -start 0.0 -end 2000000.0 -polar 0.99 -n 100 -thin 50 -seed 42"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
