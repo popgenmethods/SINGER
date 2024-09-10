@@ -780,11 +780,11 @@ void Sampler::write_cut(tuple<double, Branch, double> cut_point) {
 void Sampler::load_resume_arg() {
     arg = ARG(Ne, sequence_length);
     string node_file, branch_file, recomb_file, mut_file, coord_file;
-    node_file = output_prefix + "_fast_nodes_" + to_string(sample_index) + ".txt";
-    branch_file= output_prefix + "_fast_branches_" + to_string(sample_index) + ".txt";
-    recomb_file = output_prefix + "_fast_recombs_" + to_string(sample_index) + ".txt";
-    mut_file = output_prefix + "_fast_muts_" + to_string(sample_index) + ".txt";
-    coord_file = output_prefix + "_fast_coordinates.txt";
+    node_file = output_prefix + "_nodes_" + to_string(sample_index) + ".txt";
+    branch_file= output_prefix + "_branches_" + to_string(sample_index) + ".txt";
+    recomb_file = output_prefix + "_recombs_" + to_string(sample_index) + ".txt";
+    mut_file = output_prefix + "_muts_" + to_string(sample_index) + ".txt";
+    coord_file = output_prefix + "_coordinates.txt";
     arg.read(node_file, branch_file, recomb_file, mut_file);
     arg.read_coordinates(coord_file);
     if (mut_rate > 0 and recomb_rate > 0) {
