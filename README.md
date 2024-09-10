@@ -30,10 +30,9 @@ To sample ARGs with SINGER, you can run command line like shown below.
 **IMPORTANT!**:if you wish to get ARG for: **(1) a long chromosome or (2) a series of regions**, we have provided more support to help you (see the [next section: Tools](#Tools)). If you think there are other specific job pipeline which many people might want to use, please contact us and we might add it! 
 
 ```
-path_to_singer/singer_master -Ne 1e4 -m 1.25e-8
+path_to_singer/singer_master -m 1.25e-8
 -vcf prefix_of_vcf_file -output prefix_of_output_file
 -start 0 -end 1e6
--n 100 -thin 20
 ```
 
 This command is to get the ARG samples for a specific region in the vcf file. We specify the details of the arguments here (or you can simply type ```path_to_singer/singer_master``` to display similar information):
@@ -78,6 +77,29 @@ This tool will convert ARG sample with index from `start_index` to `end_index`, 
 
 ## Tools
 
+### Examining the convergence of the MCMC in SINGER
+
+SINGER is an MCMC-based sampling algorithm. To examine the convergence of it we normally examine the traces of summary statistics, and we have found that 2 summary statistics are quite good at indicating the convergence of the SINGER MCMC: fit to the diversity landscape and number of non-uniquely-mapped sites, as used in the manuscript. We have provided a python script to calculate the traces for these 2 quantities:
+
+```
+python compute_traces.py
+-prefix prefix_of_tree_sequence_file -m mutation_rate
+-start_index index_start_sample -end_index index_terminal_sample
+-output_filename output_trace_filename
+```
+The script will calculate the aforementioned two statistics for all samples with index between the `start_index` and the `end_index`, and they will be output as the the 2 columns in the output file. The fit to the diversity landscape and the number of non-uniquely-mapped sites typically drops with more iterations of the MCMC, and when they reach to a stable stage that is usually a good sign for convergence. 
+
+### Computing the pairwise coalescence times with respect to a particular haplotype
+
+In the manuscript we used the coalescence ratio to find introgression signals, which is based on the distribution of pairwise coalescence times between one haplytype and others, in every 10kb genome windows. Here we provide a python script tools, to compute the pairwise coalescence times between one given haplotype (indiciated by leaf node index) and others, in a windowed fashion. 
+
+```
+python compute_pairwise_coalescence_times.py
+--trees_file tree_sequence_filename --leaf_index index_of_leaf_node
+--interval_size size_of_genome_window --output_filename output_file_name
+```
+Each row in the output file stands for all the pairwise coalescence times between the input leaf node index and all others. The rows are in the order of the genome windows. 
+
 ### Running SINGER for a long chromosome
 
 Often people would like to run the ARG inference method for the entire chromosome (or even the entire genome), and we have provided a python script `parallel_singer` to facilitate you to this end. It automatically handles parallelization for you and runs SINGER multi-threaded. 
@@ -110,6 +132,11 @@ This script will:
 1. Index the vcf file for these specified windows
 2. Automatically parallelize running SINGER on these windows
 3. Convert the output to `.trees` files with `tskit` format
+
+## FAQ
+
+1. By far the most common bug is caused by not choosing the **-Ne, -m** parameter so that you roughly have $\pi=4\cdot N_e \cdot m\$. For example, some bioinformatics pipeline can remove polymorphic sites significantly. You'll have to either change (effective) mutation rate or effective population size. Another common case is centromeres with almost no sequenced sites, please make sure not to include such regions in SINGER;
+   
 
 ## Suggestions from developer
 
