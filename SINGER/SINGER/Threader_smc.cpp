@@ -78,6 +78,7 @@ void Threader_smc::internal_rethread(ARG &a, tuple<double, Branch, double> cut_p
     run_TSP(a);
     sample_joining_points(a);
     double ar = acceptance_ratio(a);
+    cout << "Acceptance ratio: " << ar << endl;
     double q = random();
     if (q < ar) {
         a.add(new_joining_branches, added_branches);

@@ -49,6 +49,8 @@ public:
     unordered_map<double, set<Node_ptr>> carriers = {};
     unordered_map<Node_ptr, set<double>> mutation_sets = {};
     
+    Sampler();
+    
     Sampler(double pop_size, double r, double m);
     
     Sampler(double pop_size, Rate_map &rm, Rate_map &mm);

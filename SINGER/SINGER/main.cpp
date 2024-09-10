@@ -224,7 +224,6 @@ int main(int argc, const char * argv[]) {
             exit(1);
         }
     }
-    /*
     if (r < 0) {
         cerr << "-r flag missing or invalid value. " << endl;
         exit(1);
@@ -233,7 +232,6 @@ int main(int argc, const char * argv[]) {
         cerr << "-m flag missing or invalid value. " << endl;
         exit(1);
     }
-     */
     if (Ne < 0) {
         cerr << "-Ne flag missing or invalid value. " << endl;
         exit(1);
@@ -254,12 +252,16 @@ int main(int argc, const char * argv[]) {
         cerr << "-thin flag is invalid. " << endl;
         exit(1);
     }
-    // Sampler sampler = Sampler(Ne, r, m);
-    Rate_map recomb_map = Rate_map();
-    recomb_map.load_map(recomb_map_filename);
-    Rate_map mut_map = Rate_map();
-    mut_map.load_map(mut_map_filename);
-    Sampler sampler = Sampler(Ne, recomb_map, mut_map);
+    Sampler sampler;
+    if (r > 0 and m > 0) {
+        Sampler sampler = Sampler(Ne, r, m);
+    } else {
+        Rate_map recomb_map = Rate_map();
+        recomb_map.load_map(recomb_map_filename);
+        Rate_map mut_map = Rate_map();
+        mut_map.load_map(mut_map_filename);
+        Sampler sampler = Sampler(Ne, recomb_map, mut_map);
+    }
     sampler.penalty = penalty;
     sampler.polar = polar;
     sampler.set_precision(epsilon_hmm, epsilon_psmc);

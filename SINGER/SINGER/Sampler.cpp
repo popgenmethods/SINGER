@@ -7,6 +7,8 @@
 
 #include "Sampler.hpp"
 
+Sampler::Sampler() {}
+
 Sampler::Sampler(double pop_size, double r, double m) {
     Ne = pop_size;
     mut_rate = m*pop_size;
