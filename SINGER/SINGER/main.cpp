@@ -273,31 +273,15 @@ int main(int argc, const char * argv[]) {
     sampler.end = end_pos;
     if (resume) {
         sampler.sequence_length = end_pos - start_pos;
-        if (fast) {
-            sampler.resume_fast_internal_sample(num_iters, spacing);
-        } else {
-            sampler.resume_internal_sample(num_iters, spacing);
-        }
+        sampler.resume_internal_sample(num_iters, spacing);
         return 0;
     } else if (debug) {
         sampler.sequence_length = end_pos - start_pos;
-        if (fast) {
-            sampler.debug_resume_fast_internal_sample(num_iters, spacing);
-        } else {
-            sampler.debug_resume_internal_sample(num_iters, spacing);
-        }
+        sampler.debug_resume_internal_sample(num_iters, spacing);
         return 0;
     }
     sampler.load_vcf(input_filename, start_pos, end_pos);
-    if (fast) {
-        sampler.fast_iterative_start();
-    } else {
-        sampler.iterative_start();
-    }
-    if (fast) {
-        sampler.fast_internal_sample(num_iters, spacing);
-    } else {
-        sampler.internal_sample(num_iters, spacing);
-    }
+    sampler.iterative_start();
+    sampler.internal_sample(num_iters, spacing);
     return 0;
 }
