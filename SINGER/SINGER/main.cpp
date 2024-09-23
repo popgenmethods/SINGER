@@ -224,16 +224,11 @@ int main(int argc, const char * argv[]) {
             exit(1);
         }
     }
-    if (r < 0) {
-        cerr << "-r flag missing or invalid value. " << endl;
-        exit(1);
-    }
-    if (m < 0) {
-        cerr << "-m flag missing or invalid value. " << endl;
-        exit(1);
-    }
-    if (Ne < 0) {
-        cerr << "-Ne flag missing or invalid value. " << endl;
+    bool bothRates = (r > 0 && m > 0);
+    bool bothMaps = !(recomb_map_filename.empty() || mut_map_filename.empty());
+    if (!(bothRates || bothMaps)) {
+        cerr << "Must provide either valid values for -r and -m, OR provide a valid "
+             << "mutation map and recombination map. " << endl;
         exit(1);
     }
     if (input_filename.size() == 0) {
@@ -253,7 +248,7 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     Sampler sampler;
-    if (r > 0 and m > 0) {
+    if (bothRates) {
         sampler = Sampler(Ne, r, m);
     } else {
         Rate_map recomb_map = Rate_map();
