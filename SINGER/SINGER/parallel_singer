@@ -14,7 +14,7 @@ def index_vcf(vcf_prefix, block_length):
     subprocess.run(["python", indexer, vcf_prefix, str(block_length)])
 
 
-def run_singer_in_parallel(vcf_prefix, output_prefix, mutation_rate, ratio, block_length, num_iters, thinning_interval, Ne, polar, num_cores):
+def run_singer_in_parallel(vcf_prefix, output_prefix, mutation_rate, ratio, block_length, num_iters, thinning_interval, Ne, polar, num_cores, recomb_map):
     """Run singer in parallel using the specified parameters."""
     
     # Read the breakpoints from the index file
@@ -31,7 +31,9 @@ def run_singer_in_parallel(vcf_prefix, output_prefix, mutation_rate, ratio, bloc
         
         # Base command
         cmd = f"{singer_master_executable} -Ne {Ne} -m {mutation_rate} -ratio {ratio} -vcf {vcf_prefix} -output {output_prefix}_{i}_{i+1} -start {start} -end {start + block_length} -n {num_iters} -thin {thinning_interval} -polar {polar}"
-        
+        if recomb_map:
+            cmd += f" -recomb_map \"{recomb_map}\""
+
         cmd_list.append(cmd)
 
     # Execute the commands in parallel
@@ -57,8 +59,9 @@ def main():
     parser.add_argument("-thin", type=int, required=True, help="Thinning interval length.")
     parser.add_argument("-polar", type=float, default=0.5, required=False, help="Site flip probability. Default: 0.5.")
     parser.add_argument("-freq", type=float, default=1, required=False, help="Convert to tskit every {freq} samples. Default: 1.")
-    parser.add_argument("-num_cores", type=int, default=20, required=False, help="Number of cores. Default: 20.")    
-        
+    parser.add_argument("-num_cores", type=int, default=20, required=False, help="Number of cores. Default: 20.")
+    parser.add_argument("-recomb_map", default=None, required=False, help="Recombination map to use.")
+
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit(1)
@@ -79,7 +82,7 @@ def main():
     print(f"Number of cores: {args.num_cores}") 
 
     index_vcf(args.vcf, args.L)
-    run_singer_in_parallel(args.vcf, args.output, args.m, args.ratio, args.L, args.n, args.thin, args.Ne, args.polar, args.num_cores)
+    run_singer_in_parallel(args.vcf, args.output, args.m, args.ratio, args.L, args.n, args.thin, args.Ne, args.polar, args.num_cores, args.recomb_map)
     convert_long_ARG(args.vcf, args.output, args.n, args.freq)
 
 if __name__ == "__main__":
