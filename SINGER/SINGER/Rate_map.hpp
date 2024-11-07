@@ -9,21 +9,23 @@
 #define Rate_map_hpp
 
 #include <stdio.h>
+#include <limits>
 #include "Node.hpp"
 
 class Rate_map {
     
 public:
     
-    double sequence_length = INT_MAX;
+    // The rate map is for the entire chromosome, typically, but you may be running SINGER on only
+    // a subset of that chromosome. This offset is where SINGER's concept of 0 starts.
+    double offset = std::numeric_limits<double>::max();
+    double sequence_length = std::numeric_limits<double>::max();
     vector<double> coordinates = {};
     vector<double> rate_distances = {};
     
-    Rate_map();
+    Rate_map(double poffset = 0.0);
     
     void load_map(string mut_map_file);
-    
-    int find_index(double x);
     
     double cumulative_distance(double x);
     
@@ -31,6 +33,8 @@ public:
     
     double mean_rate();
     
+private:
+    int find_index(double x);
 };
 
 #endif /* Rate_map_hpp */

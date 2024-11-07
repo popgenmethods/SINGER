@@ -251,9 +251,9 @@ int main(int argc, const char * argv[]) {
     if (bothRates) {
         sampler = Sampler(Ne, r, m);
     } else {
-        Rate_map recomb_map = Rate_map();
+        Rate_map recomb_map = Rate_map(start_pos);
         recomb_map.load_map(recomb_map_filename);
-        Rate_map mut_map = Rate_map();
+        Rate_map mut_map = Rate_map(start_pos);
         mut_map.load_map(mut_map_filename);
         sampler = Sampler(Ne, recomb_map, mut_map);
     }
