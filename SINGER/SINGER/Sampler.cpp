@@ -21,6 +21,7 @@ Sampler::Sampler(double pop_size, Rate_map &rm, Rate_map &mm) {
     recomb_rate = rm.mean_rate()*Ne;
     recomb_map = rm;
     mut_map = mm;
+    has_map = true;
 }
 
 void Sampler::set_precision(double c, double q) {
@@ -306,7 +307,7 @@ void Sampler::build_singleton_arg() {
     arg = ARG(Ne, sequence_length);
     arg.discretize(bin_size);
     arg.build_singleton_arg(n);
-    if (mut_rate > 0 and recomb_rate > 0) {
+    if (!has_map) {
         arg.compute_rhos_thetas(recomb_rate, mut_rate);
     } else {
         arg.compute_rhos_thetas(recomb_map, mut_map);
@@ -787,7 +788,7 @@ void Sampler::load_resume_arg() {
     coord_file = output_prefix + "_coordinates.txt";
     arg.read(node_file, branch_file, recomb_file, mut_file);
     arg.read_coordinates(coord_file);
-    if (mut_rate > 0 and recomb_rate > 0) {
+    if (!has_map) {
         arg.compute_rhos_thetas(recomb_rate, mut_rate);
     } else {
         arg.compute_rhos_thetas(recomb_map, mut_map);

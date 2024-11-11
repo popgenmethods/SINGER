@@ -48,6 +48,7 @@ public:
     vector<Node_ptr> ordered_sample_nodes = {};
     unordered_map<double, set<Node_ptr>> carriers = {};
     unordered_map<Node_ptr, set<double>> mutation_sets = {};
+    bool has_map = false;
     
     Sampler();
     
