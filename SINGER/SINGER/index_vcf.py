@@ -1,8 +1,22 @@
 import argparse
 import sys
+from pathlib import Path
+import gzip
+
+# from stackoverflow: https://stackoverflow.com/questions/41525690/open-file-depending-on-whether-its-gz-or-not
+def openfile(filename, mode='r'):
+    if filename.endswith('gz'):
+        return gzip.open(filename, mode)
+    else:
+        return open(filename, mode)
 
 def index_vcf(input_prefix, segment_length):
-    input_file = f"{input_prefix}.vcf"
+    if Path(input_prefix + ".vcf.gz").exists():
+        input_file = f"{input_prefix}.vcf.gz"
+        gz = True
+    else:
+        input_file = f"{input_prefix}.vcf"
+        gz = False
     index_file = f"{input_prefix}.index"
     
     current_segment_start = -1
@@ -14,15 +28,18 @@ def index_vcf(input_prefix, segment_length):
         f.write("")
     
     # Read VCF file line-by-line
-    with open(input_file, 'r') as f:
+    with openfile(input_file, 'r') as f:
         for line in f:
             # Skip header lines
-            if line.startswith("#"):
+            if not gz and line.startswith("#"):
                 byte_offset += len(line.encode('utf-8'))
+                continue
+            if gz and line.decode().startswith("#"):
+                byte_offset += len(line)
                 continue
             
             # Extract position
-            pos = int(line.split("\t")[1])
+            pos = int(line.decode().split("\t")[1]) if gz else int(line.split("\t")[1])
             
             # Calculate the start coordinate of the segment this variant belongs to
             segment_start = (pos // segment_length) * segment_length
@@ -36,7 +53,7 @@ def index_vcf(input_prefix, segment_length):
                 last_variant_segment = segment_start
                 current_segment_start = segment_start
             
-            byte_offset += len(line.encode('utf-8'))
+            byte_offset += len(line) if gz else len(line.encode('utf-8'))
 
 def main():
     parser = argparse.ArgumentParser(description="Index a VCF file by block length.")
