@@ -8,6 +8,14 @@ import random
 # import uuid
 import numpy as np
 # import pysam
+from pathlib import Path
+
+# from stackoverflow: https://stackoverflow.com/questions/41525690/open-file-depending-on-whether-its-gz-or-not
+def openfile(filename, mode='r'):
+    if filename.endswith('gz'):
+        return gzip.open(filename, mode)
+    else:
+        return open(filename, mode)
 
 def random_string():
     unique_id = uuid.uuid4().hex
@@ -104,7 +112,7 @@ def calculate_diversity(vcf_file, start, end):
     num_variants = 0
 
     # Open the VCF file and read it line by line
-    with open(vcf_file, 'r') as vcf:
+    with openfile(vcf_file, 'r') as vcf:
         for line in vcf:
             # Skip header lines
             if line.startswith("#"):
@@ -153,7 +161,9 @@ def calculate_diversity(vcf_file, start, end):
     return nucleotide_diversity
 
 def compute_Ne(vcf_prefix, start, end, m):
-    vcf_filename = vcf_prefix + ".vcf"
+    if Path(vcf_prefix + ".vcf.gz").exist()
+        vcf_filename = vcf_prefix + ".vcf.gz" 
+    else: vcf_filename = vcf_prefix + ".vcf"
     diversity = calculate_diversity(vcf_filename, start, end)
     Ne = diversity/4/m
     return Ne 
