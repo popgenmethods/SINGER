@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <chrono>
 #include <sstream>
+#include <zlib.h>
 #include "ARG.hpp"
 #include "Threader_smc.hpp"
 #include "Binary_emission.hpp"
