@@ -19,6 +19,7 @@
 #include "Normalizer.hpp"
 #include "Scaler.hpp"
 #include "Rate_map.hpp"
+#include "gzstream.hpp"
 
 class Sampler {
     
