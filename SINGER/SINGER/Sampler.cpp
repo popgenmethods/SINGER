@@ -162,72 +162,86 @@ void Sampler::naive_read_vcf(string prefix, double start_pos, double end_pos) {
     cout << "removed mutations: " << removed_mutation << endl;
 }
 
-void Sampler::guide_read_vcf(std::string prefix, double start, double end) {
+void Sampler::guide_read_vcf(string prefix, double start, double end) {
     random_engine.seed(random_seed);
-    std::string vcf_file = prefix + ".vcf.gz";
-
-    htsFile* fp = bcf_open(vcf_file.c_str(), "r");
-    if (!fp) {
-        std::cerr << "VCF file not found: " << vcf_file << std::endl;
+    string vcf_file = prefix + ".vcf";
+    string index_file = prefix + ".index";
+    ifstream idx_stream(index_file);
+    if (!idx_stream.is_open()) {
+        cerr << "Index file not found: " + index_file << endl;
         exit(1);
     }
-
-    bcf_hdr_t* hdr = bcf_hdr_read(fp);
-    if (!hdr) {
-        std::cerr << "Failed to read VCF header: " << vcf_file << std::endl;
+    string line;
+    long byte_offset = -1;
+    while (getline(idx_stream, line)) {
+        istringstream iss(line);
+        double segment_start;
+        long offset;
+        iss >> segment_start >> offset;
+        if (segment_start == start) {
+            byte_offset = offset;
+            break;
+        }
+    }
+    if (byte_offset == -1) {
+        cerr << "Start position not found in index file: " + index_file << endl;
         exit(1);
     }
-
-    hts_idx_t* idx = bcf_index_load(vcf_file.c_str());
-    if (!idx) {
-        std::cerr << "Index (.tbi or .csi) not found for VCF file: " << vcf_file << std::endl;
-        exit(1);
+    ifstream vcf_stream(vcf_file, ios::binary);
+    if (!vcf_stream.is_open()) {
+        cerr << "VCF file not found: " + vcf_file << endl;
     }
-
-    std::string region = "chr1:" + std::to_string((int)start) + "-" + std::to_string((int)end); // Adjust chr name as needed
-    hts_itr_t* itr = bcf_itr_querys(idx, hdr, region.c_str());
-    if (!itr) {
-        std::cerr << "Could not create iterator for region: " << region << std::endl;
-        exit(1);
-    }
-
-    bcf1_t* rec = bcf_init();
-    std::vector<Node_ptr> nodes;
-    std::vector<double> genotypes;
+    vcf_stream.seekg(byte_offset, ios::beg);
+    int prev_pos = -1;
+    vector<Node_ptr> nodes = {};
     int valid_mutation = 0;
     int removed_mutation = 0;
-    int prev_pos = -1;
-
-    while (bcf_itr_next(fp, itr, rec) >= 0) {
-        bcf_unpack(rec, BCF_UN_ALL);
-
-        int pos = rec->pos + 1; // VCF is 0-based, adjust to 1-based
-        if (pos >= end || pos == prev_pos) continue;
-        prev_pos = pos;
-
-        if (rec->n_allele != 2 || strlen(rec->d.allele[0]) != 1 || strlen(rec->d.allele[1]) != 1) {
-            removed_mutation++;
-            continue; // skip multiallelic or structural
+    vector<double> genotypes = {};
+    while (getline(vcf_stream, line)) {
+        istringstream iss(line);
+        string chrom, id, ref, alt, qual, filter, info, format, genotype;
+        int pos;
+        iss >> chrom >> pos >> id >> ref >> alt >> qual >> filter >> info >> format;
+        if (pos == prev_pos) {continue;} // skip multi-allelic sites
+        if (pos >= end) {break;} // variant out of scope
+        if (ref.size() > 1 or alt.size() > 1) {
+            removed_mutation += 1;
+            continue;
+        } // skip multi-allelic sites or structural variant
+        streampos old_pos = vcf_stream.tellg();
+        string next_line;
+        if (getline(vcf_stream, next_line)) {
+            istringstream next_iss(next_line);
+            string next_chrom;
+            int next_pos;
+            next_iss >> next_chrom >> next_pos;
+            if (next_pos == pos) {
+                removed_mutation += 1;
+                prev_pos = pos;
+                continue;
+            }
+            vcf_stream.seekg(old_pos);
         }
-
-        int ngt_arr = 0, ngt = 0;
-        int32_t* gt_arr = NULL;
-        ngt = bcf_get_genotypes(hdr, rec, &gt_arr, &ngt_arr);
-        if (ngt <= 0) continue;
-
-        int n_samples = bcf_hdr_nsamples(hdr);
-        if (genotypes.size() < (size_t)(2 * n_samples)) genotypes.resize(2 * n_samples);
-
-        for (int i = 0; i < n_samples; ++i) {
-            int32_t a = bcf_gt_allele(gt_arr[2*i]);
-            int32_t b = bcf_gt_allele(gt_arr[2*i + 1]);
-            genotypes[2*i] = a == 1 ? 1 : 0;
-            genotypes[2*i + 1] = b == 1 ? 1 : 0;
+        int individual_index = 0;
+        while (iss >> genotype) {
+            if (genotypes.size() < 2*individual_index + 2) {
+                genotypes.resize(2*individual_index + 2);
+            }
+            if (genotype[0] == '1') {
+                genotypes[2*individual_index] = 1;
+            } else {
+                genotypes[2*individual_index] = 0;
+            }
+            if (genotype[2] == '1') {
+                genotypes[2*individual_index + 1] = 1;
+            } else {
+                genotypes[2*individual_index + 1] = 0;
+            }
+            individual_index += 1;
         }
-
-        if (nodes.empty()) {
+        if (nodes.size() == 0) {
             nodes.resize(genotypes.size());
-            for (int i = 0; i < nodes.size(); ++i) {
+            for (int i = 0; i < nodes.size(); i++) {
                 nodes[i] = new_node(0.0);
                 nodes[i]->set_index(i);
                 sample_nodes.insert(nodes[i]);
@@ -235,34 +249,25 @@ void Sampler::guide_read_vcf(std::string prefix, double start, double end) {
         } else {
             assert(nodes.size() == genotypes.size());
         }
-
-        int genotype_sum = std::accumulate(genotypes.begin(), genotypes.end(), 0.0);
-        if (genotype_sum >= 1 && genotype_sum < genotypes.size()) {
-            valid_mutation++;
-            for (int i = 0; i < genotypes.size(); ++i) {
+        int genotype_sum = accumulate(genotypes.begin(), genotypes.end(), 0.0);
+        if (genotype_sum >= 1 and genotype_sum < genotypes.size()) {
+            valid_mutation += 1;
+            for (int i = 0; i < genotypes.size(); i++) {
                 if (genotypes[i] == 1) {
                     nodes[i]->add_mutation(pos - start);
                 }
             }
         }
-        free(gt_arr);
     }
-
-    bcf_destroy(rec);
-    hts_itr_destroy(itr);
-    bcf_hdr_destroy(hdr);
-    bcf_close(fp);
-    hts_idx_destroy(idx);
-
     if (valid_mutation < 3) {
-        std::cerr << "Too few variants in region, algorithm not run" << std::endl;
+        cerr << "there are too few variants in this region, algorithm not run" << endl;
     }
-
     num_samples = (int) sample_nodes.size();
-    ordered_sample_nodes = std::vector<Node_ptr>(sample_nodes.begin(), sample_nodes.end());
+    ordered_sample_nodes = vector<Node_ptr>(sample_nodes.begin(), sample_nodes.end());
+    // shuffle(ordered_sample_nodes.begin(), ordered_sample_nodes.end(), random_engine);
     sequence_length = end - start;
-    std::cout << "valid mutations: " << valid_mutation << std::endl;
-    std::cout << "removed mutations: " << removed_mutation << std::endl;
+    cout << "valid mutations: " << valid_mutation << endl;
+    cout << "removed mutations: " << removed_mutation << endl;
 }
 
 

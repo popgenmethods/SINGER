@@ -20,9 +20,6 @@
 #include "Scaler.hpp"
 #include "Rate_map.hpp"
 #include "gzstream.hpp"
-#include <htslib/vcf.h>
-#include <htslib/hts.h>
-#include <htslib/tbx.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
