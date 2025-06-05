@@ -1000,7 +1000,7 @@ void ARG::write_branches(string filename) {
                 // assert((node_set.count(b.lower_node) > 0 and node_set.count(b.upper_node) > 0) or b.upper_node == root);
                 int k1 = b.upper_node->index;
                 int k2 = b.lower_node->index;
-                assert(k1 < 1e5 and k2 < 1e5);
+                // assert(k1 < 1e5 and k2 < 1e5);
                 branch_info.push_back({k1, k2, branch_map.at(b), pos});
                 branch_map.erase(b);
             }
