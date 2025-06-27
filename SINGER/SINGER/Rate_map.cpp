@@ -7,7 +7,12 @@
 
 #include "Rate_map.hpp"
 
-Rate_map::Rate_map() {}
+// Even if there are regions of truly no recombination, we have to pretend there is
+// a really low rate to make the math work out currently.
+static constexpr double MIN_RECOMB_RATE = 1e-16;
+
+Rate_map::Rate_map(double poffset)
+    : offset(poffset) {}
 
 void Rate_map::load_map(string mut_map_file) {
     ifstream fin(mut_map_file);
@@ -21,8 +26,12 @@ void Rate_map::load_map(string mut_map_file) {
     double rate;
     double mut_dist;
     while (fin >> left >> right >> rate) {
+        if (rate < MIN_RECOMB_RATE) {
+            rate = MIN_RECOMB_RATE;
+        }
         coordinates.push_back(left);
         mut_dist = rate_distances.back() + rate*(right - left);
+        assert(mut_dist != rate_distances.back());
         rate_distances.push_back(mut_dist);
     }
     sequence_length = right;
@@ -38,16 +47,19 @@ int Rate_map::find_index(double x) {
 }
 
 double Rate_map::cumulative_distance(double x) {
-    int index = find_index(x);
+    const double actualCoordinate = x + offset;
+    int index = find_index(actualCoordinate);
     double prev_dist = rate_distances[index];
     double next_dist = rate_distances[index+1];
-    double p = (x - coordinates[index])/(coordinates[index+1] - coordinates[index]);
+    double p = (actualCoordinate - coordinates[index])/(coordinates[index+1] - coordinates[index]);
     double dist = (1-p)*prev_dist + p*next_dist;
     return dist;
 }
 
 double Rate_map::segment_distance(double x, double y) {
-    return cumulative_distance(y) - cumulative_distance(x);
+    double cd = cumulative_distance(y) - cumulative_distance(x);
+    assert(cd > 0.0);
+    return cd;
 }
 
 double Rate_map::mean_rate() {
