@@ -293,16 +293,15 @@ def main():
 
 
     if args.m:
+        if args.recomb_map:
+            parser.error("-recomb_map is not compatible with -m; you must use -mut_map")
         if args.Ne < 0:
             args.Ne = compute_Ne(args.vcf, args.start, args.end, args.m) 
         if (args.resume):
             resume_rate_singer(args.Ne, args.m, args.m*args.ratio, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.seed)
         else:
             run_rate_singer(args.Ne, args.m, args.m*args.ratio, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.seed) 
-    return 
-
-    if args.mut_map and not args.m:
-        args.m = compute_average_rate(args.mut_map, args.start, args.end) 
+    elif args.mut_map:
         if not args.recomb_map:
             parser.error("You must provide -recomb_map when using the -mut_map flag")
     
