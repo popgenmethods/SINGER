@@ -17,18 +17,16 @@ VERSION_DIR="$RELEASE_DIR/singer-$VERSION-beta-linux-x86_64"
 mkdir -p $VERSION_DIR
 
 # Compile the program with optimizations and debugging information
-g++ -std=c++17 -O3 -g -static *.cpp -o $VERSION_DIR/singer
+g++ -std=c++17 -O3 -g *.cpp -o $VERSION_DIR/singer
 
 # Compile the debug version of the program
-g++ -std=c++17 -g -static *.cpp -o $VERSION_DIR/singer_debug
+g++ -std=c++17 -g *.cpp -o $VERSION_DIR/singer_debug
 
 # Copy additional files
 cp singer_master $VERSION_DIR/singer_master
 cp convert_to_tskit $VERSION_DIR/convert_to_tskit
-cp parallel_singer $VERSION_DIR/parallel_singer
-cp multi_window_singer $VERSION_DIR/multi_window_singer
 cp index_vcf.py $VERSION_DIR/index_vcf.py
-cp convert_long_ARG.py $VERSION_DIR/convert_long_ARG.py
+cp merge_ARG.py $VERSION_DIR/merge_ARG.py
 cp ../../LICENSE $VERSION_DIR/LICENSE
 cp $VERSION_DIR/singer singer
 cp $VERSION_DIR/singer_debug singer_debug
