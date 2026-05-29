@@ -57,7 +57,7 @@ void Sampler::naive_read_vcf_haploid(string prefix, double start_pos, double end
     ifstream file(vcf_file);
     string line;
     int num_individuals = 0;
-    int prev_pos = -1;
+    long long prev_pos = -1;
     vector<Node_ptr> nodes = {};
     int valid_mutation = 0;
     int removed_mutation = 0;
@@ -84,9 +84,9 @@ void Sampler::naive_read_vcf_haploid(string prefix, double start_pos, double end
         }
         istringstream iss(line);
         string chrom, id, ref, alt, qual, filter, info, format, genotype;
-        int pos;
+        long long pos;
         iss >> chrom >> pos >> id >> ref >> alt >> qual >> filter >> info >> format;
-        
+
         if (pos < start_pos) {continue;}
         if (pos > end_pos) {break;}
         if (pos == prev_pos) {continue;} // skip multi-allelic sites
@@ -94,13 +94,13 @@ void Sampler::naive_read_vcf_haploid(string prefix, double start_pos, double end
             removed_mutation += 1;
             continue;
         } // skip multi-allelic sites or structural variant
-        
+
         streampos old_pos = file.tellg();
         string next_line;
         if (getline(file, next_line)) {
             istringstream next_iss(next_line);
             string next_chrom;
-            int next_pos;
+            long long next_pos;
             next_iss >> next_chrom >> next_pos;
             if (next_pos == pos) {
                 removed_mutation += 1;
@@ -137,7 +137,7 @@ void Sampler::naive_read_vcf(string prefix, double start_pos, double end_pos) {
     ifstream file(vcf_file);
     string line;
     int num_individuals = 0;
-    int prev_pos = -1;
+    long long prev_pos = -1;
     vector<Node_ptr> nodes = {};
     int valid_mutation = 0;
     int removed_mutation = 0;
@@ -164,9 +164,9 @@ void Sampler::naive_read_vcf(string prefix, double start_pos, double end_pos) {
         }
         istringstream iss(line);
         string chrom, id, ref, alt, qual, filter, info, format, genotype;
-        int pos;
+        long long pos;
         iss >> chrom >> pos >> id >> ref >> alt >> qual >> filter >> info >> format;
-        
+
         if (pos < start_pos) {continue;}
         if (pos > end_pos) {break;}
         if (pos == prev_pos) {continue;} // skip multi-allelic sites
@@ -174,13 +174,13 @@ void Sampler::naive_read_vcf(string prefix, double start_pos, double end_pos) {
             removed_mutation += 1;
             continue;
         } // skip multi-allelic sites or structural variant
-        
+
         streampos old_pos = file.tellg();
         string next_line;
         if (getline(file, next_line)) {
             istringstream next_iss(next_line);
             string next_chrom;
-            int next_pos;
+            long long next_pos;
             next_iss >> next_chrom >> next_pos;
             if (next_pos == pos) {
                 removed_mutation += 1;
@@ -251,7 +251,7 @@ void Sampler::guide_read_vcf(string prefix, double start, double end) {
         cerr << "VCF file not found: " + vcf_file << endl;
     }
     vcf_stream.seekg(byte_offset, ios::beg);
-    int prev_pos = -1;
+    long long prev_pos = -1;
     vector<Node_ptr> nodes = {};
     int valid_mutation = 0;
     int removed_mutation = 0;
@@ -259,7 +259,7 @@ void Sampler::guide_read_vcf(string prefix, double start, double end) {
     while (getline(vcf_stream, line)) {
         istringstream iss(line);
         string chrom, id, ref, alt, qual, filter, info, format, genotype;
-        int pos;
+        long long pos;
         iss >> chrom >> pos >> id >> ref >> alt >> qual >> filter >> info >> format;
         if (pos == prev_pos) {continue;} // skip multi-allelic sites
         if (pos >= end) {break;} // variant out of scope
@@ -272,7 +272,7 @@ void Sampler::guide_read_vcf(string prefix, double start, double end) {
         if (getline(vcf_stream, next_line)) {
             istringstream next_iss(next_line);
             string next_chrom;
-            int next_pos;
+            long long next_pos;
             next_iss >> next_chrom >> next_pos;
             if (next_pos == pos) {
                 removed_mutation += 1;
