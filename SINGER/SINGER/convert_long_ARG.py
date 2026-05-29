@@ -96,6 +96,36 @@ def write_output_ts(ts, output_prefix, MCMC_iteration):
     print(f"Save to {output_ts_filename}")
     ts.dump(output_ts_filename)
 
+def read_vcf_sample_names(vcf_file):
+    for path in (vcf_file, vcf_file + ".vcf"):
+        if not os.path.exists(path):
+            continue
+        with open(path) as f:
+            for line in f:
+                if line.startswith("#CHROM"):
+                    return line.strip().split("\t")[9:]
+    raise FileNotFoundError(f"Could not find VCF file: {vcf_file}")
+
+def add_individuals_from_vcf(ts, vcf_file):
+    sample_names = read_vcf_sample_names(vcf_file)
+    if len(sample_names) * 2 != ts.num_samples:
+        raise ValueError(
+            f"Expected {len(sample_names) * 2} sample nodes for {len(sample_names)} "
+            f"diploid VCF samples, got {ts.num_samples}."
+        )
+    tables = ts.dump_tables()
+    node_individual = tables.nodes.individual.copy()
+    node_metadata = [b""] * tables.nodes.num_rows
+    for ind_id, name in enumerate(sample_names):
+        tables.individuals.add_row(metadata=name.encode())
+        for hap in (0, 1):
+            nid = ind_id * 2 + hap
+            node_individual[nid] = ind_id
+            node_metadata[nid] = f"{name}_{hap}".encode()
+    tables.nodes.individual = node_individual
+    tables.nodes.packset_metadata(node_metadata)
+    return tables.tree_sequence()
+
 def main():
     # Argument parsing
     parser = argparse.ArgumentParser(description="Generate tskit format for a long ARG.")
