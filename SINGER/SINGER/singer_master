@@ -299,7 +299,7 @@ def main():
         if (args.resume):
             resume_rate_singer(args.Ne, args.m, args.m*args.ratio, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.seed)
         else:
-            run_rate_singer(args.Ne, args.m, args.m*args.ratio, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, arggs.ploidy, args.seed) 
+            run_rate_singer(args.Ne, args.m, args.m*args.ratio, args.start, args.end, args.vcf, args.output, args.n, args.thin, args.polar, args.ploidy, args.seed) 
     return 
 
     if args.mut_map and not args.m:
