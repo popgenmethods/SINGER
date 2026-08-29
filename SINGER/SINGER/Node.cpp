@@ -31,9 +31,15 @@ double Node::get_state(double pos) {
 
 void Node::write_state(double pos, double s) {
     if (s == 0) {
-        mutation_sites.erase(pos);
+        // Erasing the element that the cached iterator `it` points at
+        // invalidates `it`. Detect that case *before* erasing (while `it` is
+        // still valid) and let map::erase(it) return the following element, so
+        // `it` is never left dangling. Reading `it->first` after erase(pos)
+        // would be a use-after-free.
         if (it->first == pos) {
-            it = mutation_sites.begin();
+            it = mutation_sites.erase(it);
+        } else {
+            mutation_sites.erase(pos);
         }
         return;
     } else if (s == 1) {
